@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>LDSO-Operations: Operational Rule Layer</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus: "unofficial",
+      shortName: "ldso-operations",
+      latestVersion: "https://w3id.org/ldso/operations",
+      edDraftURI:    "https://w3id.org/ldso/operations",
+      publishDate: "2026-05-25",
+      editors: [{
+        name: "Stephane Fellah",
+        company: "Geoknoesis LLC",
+        url: "https://www.geoknoesis.com"
+      }],
+      license: "cc-by",
+      doJsonLd: true,
+      github: "https://github.com/geoknoesis/ldso",
+      lint: { "no-headingless-sections": false },
+      localBiblio: {
+        "LDSO-CORE": {
+          title: "LDSO-Core: Legal Document Structure Ontology",
+          href: "https://w3id.org/ldso/core",
+          publisher: "Geoknoesis LLC",
+          date: "2026-05-25"
+        },
+        "LDSO-ENTITIES": {
+          title: "LDSO-Entities: Named Entity Reference Module",
+          href: "https://w3id.org/ldso/entities",
+          publisher: "Geoknoesis LLC",
+          date: "2026-05-25"
+        },
+        "LDSO-LIFECYCLE": {
+          title: "LDSO-Lifecycle: Legal Document Lifecycle Ontology",
+          href: "https://w3id.org/ldso/lifecycle",
+          publisher: "Geoknoesis LLC",
+          date: "2026-05-25"
+        },
+        "LDSO-SEMANTICS": {
+          title: "LDSO-Semantics: Legal Semantic Annotation Ontology",
+          href: "https://w3id.org/ldso/semantics",
+          publisher: "Geoknoesis LLC",
+          date: "2026-05-25"
+        },
+        "LDSO-OPERATIONS": {
+          title: "LDSO-Operations: Operational Rule Layer",
+          href: "https://w3id.org/ldso/operations",
+          publisher: "Geoknoesis LLC",
+          date: "2026-05-25"
+        },
+        "LEGALRULEML": {
+          title: "LegalRuleML Core Specification 1.0",
+          href: "https://docs.oasis-open.org/legalruleml/legalruleml-core-spec/v1.0/",
+          publisher: "OASIS"
+        },
+        "ODRL": {
+          title: "ODRL Information Model 2.2",
+          href: "https://www.w3.org/TR/odrl-model/",
+          publisher: "W3C"
+        },
+        "OWL2": {
+          title: "OWL 2 Web Ontology Language — Document Overview",
+          href: "https://www.w3.org/TR/owl2-overview/",
+          publisher: "W3C"
+        },
+        "SHACL": {
+          title: "Shapes Constraint Language (SHACL)",
+          href: "https://www.w3.org/TR/shacl/",
+          publisher: "W3C"
+        },
+        "SKOS": {
+          title: "SKOS Simple Knowledge Organization System Reference",
+          href: "https://www.w3.org/TR/skos-reference/",
+          publisher: "W3C"
+        },
+        "RFC2119": {
+          title: "Key words for use in RFCs to Indicate Requirement Levels",
+          href: "https://www.rfc-editor.org/rfc/rfc2119",
+          publisher: "IETF"
+        },
+        "ISO8601": {
+          title: "ISO 8601 — Date and time format",
+          href: "https://www.iso.org/iso-8601-date-and-time-format.html",
+          publisher: "ISO"
+        }
+      }
+    };
+  </script>
+  <style>
+    .ont-term { font-family: monospace; font-weight: bold; }
+    .ont-table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+    .ont-table th, .ont-table td { border: 1px solid #ccc; padding: 6px 10px; vertical-align: top; }
+    .ont-table th { background: #f0f0f0; }
+    pre.example { background: #f8f8f8; border-left: 3px solid #aaa; padding: 0.8em 1em; overflow-x: auto; }
+    .layer-box { background: #eef4fb; border: 1px solid #b0c8e8; border-radius: 4px; padding: 0.6em 1em; margin: 0.4em 0; font-family: monospace; }
+    .layer-active { background: #d4e9ff; border-color: #3a7dc9; font-weight: bold; }
+    .note { background: #fffbe6; border-left: 3px solid #e6b800; padding: 0.6em 1em; margin: 0.8em 0; }
+  </style>
+</head>
+<body>
+
+<h1>LDSO-Operations: Operational Rule Layer</h1>
+
+<section id="abstract">
+  <h2>Abstract</h2>
+  <p>
+    <strong>LDSO-Operations</strong> is a domain-agnostic RDF/OWL vocabulary for expressing
+    the operational machinery of legal rules. It occupies <strong>Layer 5</strong> of the
+    Legal Document Structure Ontology (LDSO) stack, bridging the abstract deontic semantics
+    of LDSO-Semantics (Layer 4) with domain-specific vertical ontologies (Layer 5b).
+  </p>
+  <p>
+    The vocabulary defines eight core concept families:
+    <em>OperativeRule</em>, <em>Trigger</em> (five subtypes),
+    <em>Criterion</em> (five subtypes), <em>Procedure</em> and <em>Step</em>,
+    <em>Schedule</em> (three subtypes), <em>Measurement</em>,
+    <em>Comparator</em> (six named individuals), and
+    <em>DocumentaryRequirement</em>.
+    Together these allow any legal obligation, permission, or prohibition to be
+    expressed as a machine-executable rule binding activation conditions, qualifying
+    criteria, ordered procedural steps, temporal constraints, and evidentiary requirements
+    — all without importing any domain-specific vocabulary.
+  </p>
+  <p class="note">
+    <strong>Status notice:</strong> This document is not an official W3C Standard or
+    W3C Recommendation. It is a community/project specification using W3C ReSpec
+    formatting conventions.
+  </p>
+</section>
+
+<section id="sotd">
+  <p class="note">
+    This document is not an official W3C Standard or W3C Recommendation. It is a
+    community/project specification produced by Geoknoesis LLC using W3C ReSpec
+    formatting conventions.
+  </p>
+  <p>
+    This specification is part of the Legal Document Structure Ontology (LDSO) family.
+    Feedback and contributions are welcome via the
+    <a href="https://github.com/geoknoesis/ldso/issues">GitHub issue tracker</a>.
+  </p>
+  <section id="version-iri">
+    <h3>Version IRI</h3>
+    <p>
+      The version IRI for this publication is
+      <code>https://w3id.org/ldso/operations/1.0.0</code>.
+      The canonical namespace IRI is <code>https://w3id.org/ldso/operations#</code>
+      (preferred prefix: <code>ops</code>). All LDSO-Operations terms carry a
+      <code>rdfs:isDefinedBy</code> assertion pointing to
+      <code>https://w3id.org/ldso/operations</code>.
+      The ontology file is available at
+      <a href="https://w3id.org/ldso/operations/ontology.ttl">ontology.ttl</a>;
+      SHACL validation shapes are at
+      <a href="https://w3id.org/ldso/operations/shapes.ttl">shapes.ttl</a>.
+    </p>
+    <p>
+      LDSO-Operations imports LDSO-Semantics, which transitively imports LDSO-Core and
+      LDSO-Entities. All four foundational modules are required for a conformant deployment.
+    </p>
+  </section>
+</section>
+
+<section id="introduction">
+  <h2>Introduction</h2>
+
+  <section id="scope">
+    <h3>Scope and Purpose</h3>
+    <p>
+      Legal texts state obligations and permissions in abstract, natural-language terms.
+      LDSO-Semantics (Layer 4) captures those deontic statements as structured RDF.
+      But neither the text nor its deontic annotation answers the operational questions:
+      <em>when</em> does the obligation activate? <em>What</em> must be checked before it applies?
+      <em>How</em> must it be fulfilled, step by step? <em>By when?</em> With <em>what evidence</em>?
+    </p>
+    <p>
+      LDSO-Operations answers these questions through a single central concept —
+      the <a href="#OperativeRule"><code>ops:OperativeRule</code></a> — that binds
+      a trigger, criteria, a procedure, a schedule, and documentary requirements
+      into a machine-executable rule. The rule points back to its legal grounding
+      via <code>ops:operativizes</code>.
+    </p>
+    <p>
+      The module is deliberately domain-agnostic: it contains no trade, environmental,
+      financial, or other domain vocabulary. Domain verticals (Layer 5b) subclass
+      LDSO-Operations concepts and add domain-specific constraints.
+    </p>
+  </section>
+
+  <section id="layer-stack">
+    <h3>Position in the LDSO Layer Stack</h3>
+    <div class="layer-box">Layer 6 &nbsp;— Evaluation &nbsp;&nbsp;&nbsp;&nbsp;(rule results, compliance scores)</div>
+    <div class="layer-box">Layer 5b — Domain Verticals &nbsp;(Trade, Environment, Finance, …)</div>
+    <div class="layer-box layer-active">Layer 5 &nbsp;— LDSO-Operations &nbsp;← this module</div>
+    <div class="layer-box">Layer 4 &nbsp;— LDSO-Semantics &nbsp;&nbsp;(obligations, permissions, definitions)</div>
+    <div class="layer-box">Layer 3 &nbsp;— LDSO-Lifecycle &nbsp;&nbsp;(amendments, versions, consolidation)</div>
+    <div class="layer-box">Layer 2b — LDSO-Entities &nbsp;&nbsp;&nbsp;(named entity annotation)</div>
+    <div class="layer-box">Layer 1 &nbsp;— LDSO-Core &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(document structure)</div>
+  </section>
+
+  <section id="conformance">
+    <h3>Conformance and Conventions</h3>
+    <p>
+      The key words <em class="rfc2119">MUST</em>, <em class="rfc2119">MUST NOT</em>,
+      <em class="rfc2119">SHOULD</em>, <em class="rfc2119">SHOULD NOT</em>, and
+      <em class="rfc2119">MAY</em> in this document are to be interpreted as described
+      in [[RFC2119]].
+    </p>
+    <p>Namespace prefixes used throughout this specification:</p>
+    <table class="ont-table">
+      <thead><tr><th>Prefix</th><th>Namespace IRI</th></tr></thead>
+      <tbody>
+        <tr><td><code>ops:</code></td><td><code>https://w3id.org/ldso/operations#</code></td></tr>
+        <tr><td><code>leg:</code></td><td><code>https://w3id.org/ldso/semantics#</code></td></tr>
+        <tr><td><code>ent:</code></td><td><code>https://w3id.org/ldso/entities#</code></td></tr>
+        <tr><td><code>ldso:</code></td><td><code>https://w3id.org/ldso/core#</code></td></tr>
+        <tr><td><code>owl:</code></td><td><code>http://www.w3.org/2002/07/owl#</code></td></tr>
+        <tr><td><code>rdfs:</code></td><td><code>http://www.w3.org/2000/01/rdf-schema#</code></td></tr>
+        <tr><td><code>xsd:</code></td><td><code>http://www.w3.org/2001/XMLSchema#</code></td></tr>
+        <tr><td><code>skos:</code></td><td><code>http://www.w3.org/2004/02/skos/core#</code></td></tr>
+        <tr><td><code>dct:</code></td><td><code>http://purl.org/dc/terms/</code></td></tr>
+        <tr><td><code>sh:</code></td><td><code>http://www.w3.org/ns/shacl#</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<section id="design-principles">
+  <h2>Design Principles</h2>
+  <ol>
+    <li>
+      <strong>Domain-agnostic infrastructure.</strong> LDSO-Operations contains no domain
+      vocabulary. Any domain term (HS code, emission category, financial ratio) belongs in
+      a Layer 5b vertical that imports this module and subclasses its concepts.
+    </li>
+    <li>
+      <strong>Trigger–Criterion–Procedure pattern.</strong> Every operative rule is composed
+      of exactly three orthogonal concerns: what fires it (trigger), what qualifies it (criteria),
+      and how it is executed (procedure). These are never conflated into a single node.
+    </li>
+    <li>
+      <strong>Cross-layer grounding via <code>ops:operativizes</code>.</strong>
+      Every OperativeRule SHOULD link to the Layer 4 NormativeStatement it implements.
+      This preserves the audit trail from operational rule back to legal text.
+    </li>
+    <li>
+      <strong>Conjunctive criteria, disjunctive triggers.</strong> Multiple
+      <code>ops:hasCriterion</code> assertions are interpreted conjunctively (all must be met).
+      Multiple <code>ops:hasTrigger</code> assertions are interpreted disjunctively
+      (any one fires the rule).
+    </li>
+    <li>
+      <strong>Named individuals for enumerated values.</strong> Comparator operators are
+      modelled as named individuals of <code>ops:Comparator</code> rather than string literals,
+      enabling OWL reasoning over comparison logic.
+    </li>
+    <li>
+      <strong>Stepwise procedures with linked-list traversal.</strong> Procedures aggregate
+      Steps ordered by <code>ops:stepOrder</code>. The optional <code>ops:nextStep</code>
+      chain enables graph traversal without sorting.
+    </li>
+    <li>
+      <strong>Quality parity with lower layers.</strong> Every class has disjointness axioms,
+      <code>rdfs:isDefinedBy</code>, and a SHACL shape. Every property declares domain,
+      range, and applicable OWL characteristics (<code>owl:FunctionalProperty</code>,
+      <code>owl:AsymmetricProperty</code>, <code>owl:IrreflexiveProperty</code>).
+    </li>
+  </ol>
+</section>
+
+<section id="class-reference">
+  <h2>Class Reference</h2>
+
+  <section id="OperativeRule">
+    <h3><span class="ont-term">ops:OperativeRule</span></h3>
+    <table class="ont-table">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/operations#OperativeRule</code></td></tr>
+      <tr><th>Label</th><td>Operative Rule</td></tr>
+      <tr><th>Subclass of</th><td>(root class)</td></tr>
+      <tr><th>Definition</th><td>A machine-executable rule that operationalizes one or more normative statements from LDSO-Semantics. Binds a trigger, criteria, procedure, schedule, and documentary requirements into a single evaluable unit.</td></tr>
+      <tr><th>Usage</th><td>Every OperativeRule MUST carry <code>ops:hasTrigger</code> (1..*) and SHOULD carry <code>ops:operativizes</code> (1..*). At most one <code>ops:hasProcedure</code> is permitted.</td></tr>
+    </table>
+    <pre class="example" title="OperativeRule">
+ex:Rule_TemporaryAdmission
+  a ops:OperativeRule ;
+  rdfs:label "Temporary admission rule — ATA carnet"@en ;
+  ops:operativizes ex:Oblig_Para1_Admit ;
+  ops:hasTrigger ex:Trigger_CarnetPresented ;
+  ops:hasCriterion ex:Crit_ValidCarnet ;
+  ops:hasCriterion ex:Crit_GoodsMatchCarnet ;
+  ops:hasProcedure ex:Proc_CarnetAdmission ;
+  ops:hasSchedule ex:Sched_AdmissionDeadline ;
+  ops:hasDocumentaryRequirement ex:DocReq_ATACarnet ;
+  ops:performedBy ex:CustomsOfficer .</pre>
+  </section>
+
+  <section id="triggers">
+    <h3>Trigger Hierarchy</h3>
+    <p>
+      <span class="ont-term">ops:Trigger</span> is the abstract superclass for activation
+      conditions. Instantiate one of its five subclasses:
+    </p>
+    <table class="ont-table">
+      <thead>
+        <tr><th>Class</th><th>Activated when…</th><th>Typical examples</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ops:EventTrigger</code></td>
+          <td>A named real-world event occurs</td>
+          <td>Entry into force, customs inspection, reportable incident</td>
+        </tr>
+        <tr>
+          <td><code>ops:ThresholdTrigger</code></td>
+          <td>A measured value crosses a numeric boundary</td>
+          <td>Import volume exceeds quota, concentration exceeds limit</td>
+        </tr>
+        <tr>
+          <td><code>ops:StatusTrigger</code></td>
+          <td>A subject entity transitions into a specified status</td>
+          <td>Goods declared temporarily admitted, entity classified non-compliant</td>
+        </tr>
+        <tr>
+          <td><code>ops:TemporalTrigger</code></td>
+          <td>A date, duration, or period boundary is reached</td>
+          <td>Annual reporting date, 30 days after notification</td>
+        </tr>
+        <tr>
+          <td><code>ops:RequestTrigger</code></td>
+          <td>A party submits a request, application, or declaration</td>
+          <td>ATA carnet presented, permit application filed, appeal submitted</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <code>ThresholdTrigger</code> MUST carry exactly one <code>ops:hasMeasurement</code>.
+      All five Trigger subclasses are mutually disjoint.
+    </p>
+    <pre class="example" title="RequestTrigger">
+ex:Trigger_CarnetPresented
+  a ops:RequestTrigger ;
+  rdfs:label "ATA carnet presented at customs post"@en ;
+  ops:triggerDescription """Activated when a carnet holder presents goods accompanied
+by a valid ATA carnet at a border crossing point of a Contracting Party."""@en .</pre>
+  </section>
+
+  <section id="criteria">
+    <h3>Criterion Hierarchy</h3>
+    <p>
+      <span class="ont-term">ops:Criterion</span> is the abstract superclass for qualifying
+      conditions. Multiple criteria on the same rule are conjunctive. Use one of five subclasses:
+    </p>
+    <table class="ont-table">
+      <thead>
+        <tr><th>Class</th><th>Tests whether…</th><th>Required sub-properties</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ops:EligibilityCriterion</code></td>
+          <td>Subject possesses a required status or attribute</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>ops:ClassificationCriterion</code></td>
+          <td>Subject falls within a specified category</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>ops:ThresholdCriterion</code></td>
+          <td>A value stands in relation to a numeric threshold</td>
+          <td><code>ops:hasMeasurement</code> (1)</td>
+        </tr>
+        <tr>
+          <td><code>ops:DocumentaryCriterion</code></td>
+          <td>Required documentary evidence is presented</td>
+          <td><code>ops:hasDocumentaryRequirement</code> (1..*)</td>
+        </tr>
+        <tr>
+          <td><code>ops:TemporalCriterion</code></td>
+          <td>Rule is invoked within an authorized time window</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+    <pre class="example" title="DocumentaryCriterion">
+ex:Crit_ValidCarnet
+  a ops:DocumentaryCriterion ;
+  rdfs:label "Valid ATA carnet criterion"@en ;
+  ops:criterionDescription """The carnet holder must present a valid, unexpired ATA carnet
+issued by an authorized issuing association of a Contracting Party."""@en ;
+  ops:hasDocumentaryRequirement ex:DocReq_ATACarnet .</pre>
+  </section>
+
+  <section id="procedure-step">
+    <h3>Procedure and Step</h3>
+    <p>
+      <span class="ont-term">ops:Procedure</span> aggregates an ordered set of
+      <span class="ont-term">ops:Step</span> instances that together fulfil an operative rule.
+      Steps are ordered by <code>ops:stepOrder</code> (1-based integer, unique per procedure)
+      and optionally linked by <code>ops:nextStep</code> for graph traversal.
+    </p>
+    <table class="ont-table">
+      <thead><tr><th>Property</th><th>Required on</th><th>Type</th><th>Constraint</th></tr></thead>
+      <tbody>
+        <tr><td><code>ops:hasStep</code></td><td>Procedure</td><td>ops:Step IRI</td><td>minCount 1</td></tr>
+        <tr><td><code>ops:stepOrder</code></td><td>Step</td><td>xsd:integer ≥ 1</td><td>exactly 1; unique per procedure</td></tr>
+        <tr><td><code>ops:stepDescription</code></td><td>Step</td><td>rdf:langString</td><td>minCount 1</td></tr>
+        <tr><td><code>ops:performedBy</code></td><td>Step / Rule</td><td>ent:Role IRI</td><td>optional</td></tr>
+        <tr><td><code>ops:nextStep</code></td><td>Step</td><td>ops:Step IRI</td><td>optional; Irreflexive, Asymmetric</td></tr>
+      </tbody>
+    </table>
+    <pre class="example" title="Procedure and Steps">
+ex:Proc_CarnetAdmission
+  a ops:Procedure ;
+  rdfs:label "ATA carnet temporary admission procedure"@en ;
+  ops:hasStep ex:Step1_VerifyCarnet ;
+  ops:hasStep ex:Step2_InspectGoods ;
+  ops:hasStep ex:Step3_RecordEntry ;
+  ops:hasStep ex:Step4_StampCounterfoil .
+
+ex:Step1_VerifyCarnet
+  a ops:Step ;
+  rdfs:label "Step 1 — Verify carnet validity"@en ;
+  ops:stepOrder 1 ;
+  ops:stepDescription "Check that the ATA carnet has not expired."@en ;
+  ops:performedBy ex:CustomsOfficer ;
+  ops:nextStep ex:Step2_InspectGoods .</pre>
+  </section>
+
+  <section id="schedules">
+    <h3>Schedule Hierarchy</h3>
+    <p>
+      <span class="ont-term">ops:Schedule</span> is the abstract superclass for temporal
+      constraints. The three subclasses are mutually disjoint:
+    </p>
+    <table class="ont-table">
+      <thead>
+        <tr><th>Class</th><th>Semantics</th><th>Required properties</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ops:Deadline</code></td>
+          <td>Fixed or relative point by which action must be taken</td>
+          <td><code>ops:deadlineDate</code> and/or <code>ops:deadlineDuration</code> (at least one)</td>
+        </tr>
+        <tr>
+          <td><code>ops:RecurringSchedule</code></td>
+          <td>Action repeats at a fixed interval</td>
+          <td><code>ops:recurrencePeriod</code> (exactly 1, xsd:duration)</td>
+        </tr>
+        <tr>
+          <td><code>ops:PeriodSchedule</code></td>
+          <td>Rule applies within a bounded time window</td>
+          <td><code>ops:periodStart</code> and <code>ops:periodEnd</code> (each exactly 1)</td>
+        </tr>
+      </tbody>
+    </table>
+    <pre class="example" title="Deadline and RecurringSchedule">
+ex:Sched_AdmissionDeadline
+  a ops:Deadline ;
+  rdfs:label "6-month temporary admission deadline"@en ;
+  ops:deadlineDuration "P6M"^^xsd:duration .
+
+ex:Sched_AnnualReport
+  a ops:RecurringSchedule ;
+  rdfs:label "Annual reporting schedule"@en ;
+  ops:recurrencePeriod "P1Y"^^xsd:duration .</pre>
+  </section>
+
+  <section id="measurement">
+    <h3>Measurement and Comparator</h3>
+    <p>
+      <span class="ont-term">ops:Measurement</span> pairs a numeric value, a unit code,
+      and a comparison operator. It is used on <code>ops:ThresholdTrigger</code> and
+      <code>ops:ThresholdCriterion</code> instances.
+    </p>
+    <p>
+      The comparator is expressed by linking to one of six
+      <span class="ont-term">ops:Comparator</span> named individuals:
+    </p>
+    <table class="ont-table">
+      <thead><tr><th>Individual</th><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>ops:Equal</code></td><td>=</td><td>Exactly equal to threshold</td></tr>
+        <tr><td><code>ops:NotEqual</code></td><td>≠</td><td>Not equal to threshold</td></tr>
+        <tr><td><code>ops:LessThan</code></td><td>&lt;</td><td>Strictly below threshold</td></tr>
+        <tr><td><code>ops:LessThanOrEqual</code></td><td>≤</td><td>At or below threshold</td></tr>
+        <tr><td><code>ops:GreaterThan</code></td><td>&gt;</td><td>Strictly above threshold</td></tr>
+        <tr><td><code>ops:GreaterThanOrEqual</code></td><td>≥</td><td>At or above threshold</td></tr>
+      </tbody>
+    </table>
+    <pre class="example" title="Measurement">
+ex:Meas_MinRVC
+  a ops:Measurement ;
+  rdfs:label "Minimum regional value content — 60%"@en ;
+  ops:numericValue 60 ;
+  ops:unit "%" ;
+  ops:hasComparator ops:GreaterThanOrEqual .</pre>
+    <p>
+      Use standard unit codes: ISO 4217 for currencies (USD, EUR), SI symbols (kg, km),
+      or percentage (%). Domain verticals MAY constrain the unit vocabulary via SHACL
+      <code>sh:pattern</code>.
+    </p>
+  </section>
+
+  <section id="documentary-requirement">
+    <h3>DocumentaryRequirement</h3>
+    <p>
+      <span class="ont-term">ops:DocumentaryRequirement</span> specifies documentary evidence
+      required to satisfy a criterion or activate a rule. It MUST carry
+      <code>ops:documentType</code> (rdf:langString). It MAY carry <code>ops:issuedBy</code>
+      (text label) and <code>ops:validityPeriod</code> (xsd:duration).
+    </p>
+    <pre class="example" title="DocumentaryRequirement">
+ex:DocReq_ATACarnet
+  a ops:DocumentaryRequirement ;
+  rdfs:label "Valid ATA Carnet"@en ;
+  ops:documentType "ATA Carnet"@en ;
+  ops:issuedBy "Authorized Issuing Association"@en ;
+  ops:validityPeriod "P1Y"^^xsd:duration .</pre>
+  </section>
+</section>
+
+<section id="object-properties">
+  <h2>Object Properties</h2>
+  <table class="ont-table">
+    <thead>
+      <tr>
+        <th>Property</th><th>Domain</th><th>Range</th><th>Characteristics</th><th>Definition</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ops:operativizes</code></td>
+        <td>OperativeRule</td>
+        <td>leg:NormativeStatement</td>
+        <td>—</td>
+        <td>Cross-layer link: the NormativeStatement (Layer 4) this rule implements.</td>
+      </tr>
+      <tr>
+        <td><code>ops:hasTrigger</code></td>
+        <td>OperativeRule</td>
+        <td>ops:Trigger</td>
+        <td>—</td>
+        <td>Activation condition. At least one required per rule.</td>
+      </tr>
+      <tr>
+        <td><code>ops:hasCriterion</code></td>
+        <td>OperativeRule</td>
+        <td>ops:Criterion</td>
+        <td>—</td>
+        <td>Qualifying condition(s). Multiple values are conjunctive.</td>
+      </tr>
+      <tr>
+        <td><code>ops:hasProcedure</code></td>
+        <td>OperativeRule</td>
+        <td>ops:Procedure</td>
+        <td>maxCount 1</td>
+        <td>The ordered procedure to execute when the rule fires.</td>
+      </tr>
+      <tr>
+        <td><code>ops:hasStep</code></td>
+        <td>Procedure</td>
+        <td>ops:Step</td>
+        <td>—</td>
+        <td>Step membership in a procedure. At least one required.</td>
+      </tr>
+      <tr>
+        <td><code>ops:nextStep</code></td>
+        <td>Step</td>
+        <td>ops:Step</td>
+        <td>Irreflexive, Asymmetric</td>
+        <td>Linked-list successor. Last step carries none.</td>
+      </tr>
+      <tr>
+        <td><code>ops:hasSchedule</code></td>
+        <td>OperativeRule, Criterion, Step</td>
+        <td>ops:Schedule</td>
+        <td>—</td>
+        <td>Temporal constraint on a rule, criterion, or step.</td>
+      </tr>
+      <tr>
+        <td><code>ops:hasDocumentaryRequirement</code></td>
+        <td>OperativeRule, DocumentaryCriterion</td>
+        <td>ops:DocumentaryRequirement</td>
+        <td>—</td>
+        <td>Documentary evidence required. Multiple values allowed.</td>
+      </tr>
+      <tr>
+        <td><code>ops:requiresDocument</code></td>
+        <td>DocumentaryCriterion</td>
+        <td>ops:DocumentaryRequirement</td>
+        <td>subPropertyOf hasDocumentaryRequirement</td>
+        <td>Specialised form on DocumentaryCriterion.</td>
+      </tr>
+      <tr>
+        <td><code>ops:hasMeasurement</code></td>
+        <td>ThresholdTrigger, ThresholdCriterion</td>
+        <td>ops:Measurement</td>
+        <td>—</td>
+        <td>Numeric threshold definition. Exactly one per instance.</td>
+      </tr>
+      <tr>
+        <td><code>ops:hasComparator</code></td>
+        <td>Measurement</td>
+        <td>ops:Comparator</td>
+        <td>Functional</td>
+        <td>Comparison operator. Exactly one per Measurement.</td>
+      </tr>
+      <tr>
+        <td><code>ops:performedBy</code></td>
+        <td>Step, OperativeRule</td>
+        <td>ent:Role</td>
+        <td>—</td>
+        <td>Role responsible for execution. Links to LDSO-Entities Layer 2b.</td>
+      </tr>
+      <tr>
+        <td><code>ops:appliesTo</code></td>
+        <td>OperativeRule, Criterion</td>
+        <td>ent:NamedEntity</td>
+        <td>—</td>
+        <td>Named entity (party, location, etc.) that is the subject of the rule or criterion.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="datatype-properties">
+  <h2>Datatype Properties</h2>
+  <table class="ont-table">
+    <thead>
+      <tr><th>Property</th><th>Domain</th><th>Range</th><th>Char.</th><th>Definition</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ops:triggerDescription</code></td>
+        <td>Trigger</td>
+        <td>rdf:langString</td>
+        <td>—</td>
+        <td>Full narrative description of the trigger condition.</td>
+      </tr>
+      <tr>
+        <td><code>ops:criterionDescription</code></td>
+        <td>Criterion</td>
+        <td>rdf:langString</td>
+        <td>—</td>
+        <td>Full narrative description of the qualifying condition.</td>
+      </tr>
+      <tr>
+        <td><code>ops:stepOrder</code></td>
+        <td>Step</td>
+        <td>xsd:integer</td>
+        <td>Functional</td>
+        <td>1-based position within the procedure. Unique per procedure.</td>
+      </tr>
+      <tr>
+        <td><code>ops:stepDescription</code></td>
+        <td>Step</td>
+        <td>rdf:langString</td>
+        <td>—</td>
+        <td>Narrative description of the action required. Required.</td>
+      </tr>
+      <tr>
+        <td><code>ops:numericValue</code></td>
+        <td>Measurement</td>
+        <td>xsd:decimal</td>
+        <td>Functional</td>
+        <td>Numeric threshold value. Required.</td>
+      </tr>
+      <tr>
+        <td><code>ops:unit</code></td>
+        <td>Measurement</td>
+        <td>xsd:string</td>
+        <td>Functional</td>
+        <td>Standard unit code (ISO 4217, SI, %). Required.</td>
+      </tr>
+      <tr>
+        <td><code>ops:documentType</code></td>
+        <td>DocumentaryRequirement</td>
+        <td>rdf:langString</td>
+        <td>—</td>
+        <td>Name of the required document type. Required.</td>
+      </tr>
+      <tr>
+        <td><code>ops:issuedBy</code></td>
+        <td>DocumentaryRequirement</td>
+        <td>rdf:langString</td>
+        <td>—</td>
+        <td>Text label of the issuing role or authority.</td>
+      </tr>
+      <tr>
+        <td><code>ops:validityPeriod</code></td>
+        <td>DocumentaryRequirement</td>
+        <td>xsd:duration</td>
+        <td>Functional</td>
+        <td>Duration for which the document remains valid (ISO 8601).</td>
+      </tr>
+      <tr>
+        <td><code>ops:deadlineDate</code></td>
+        <td>Deadline</td>
+        <td>xsd:date</td>
+        <td>—</td>
+        <td>Absolute calendar deadline. At least one of deadlineDate / deadlineDuration required.</td>
+      </tr>
+      <tr>
+        <td><code>ops:deadlineDuration</code></td>
+        <td>Deadline</td>
+        <td>xsd:duration</td>
+        <td>—</td>
+        <td>Relative deadline from trigger (ISO 8601 duration).</td>
+      </tr>
+      <tr>
+        <td><code>ops:recurrencePeriod</code></td>
+        <td>RecurringSchedule</td>
+        <td>xsd:duration</td>
+        <td>Functional</td>
+        <td>Repeat interval (ISO 8601). Required on RecurringSchedule.</td>
+      </tr>
+      <tr>
+        <td><code>ops:periodStart</code></td>
+        <td>PeriodSchedule</td>
+        <td>xsd:date</td>
+        <td>Functional</td>
+        <td>Start of bounded time window. Required on PeriodSchedule.</td>
+      </tr>
+      <tr>
+        <td><code>ops:periodEnd</code></td>
+        <td>PeriodSchedule</td>
+        <td>xsd:date</td>
+        <td>Functional</td>
+        <td>End of bounded time window. Required on PeriodSchedule. Must be later than periodStart.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="shacl-validation">
+  <h2>SHACL Validation</h2>
+  <p>
+    The file <a href="shapes.ttl">shapes.ttl</a> defines the following node shapes.
+    Violations are <code>sh:Violation</code>; advisory checks are <code>sh:Warning</code>.
+  </p>
+  <table class="ont-table">
+    <thead>
+      <tr><th>Shape</th><th>Target class</th><th>Key constraints</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ops:OperativeRuleShape</code></td>
+        <td>ops:OperativeRule</td>
+        <td>rdfs:label (1, Violation); ops:hasTrigger (1+, Violation); ops:operativizes (1+, Warning); ops:hasProcedure (max 1, Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:TriggerShape</code></td>
+        <td>ops:Trigger</td>
+        <td>rdfs:label (1, Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:ThresholdTriggerShape</code></td>
+        <td>ops:ThresholdTrigger</td>
+        <td>ops:hasMeasurement (exactly 1, Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:CriterionShape</code></td>
+        <td>ops:Criterion</td>
+        <td>rdfs:label (1, Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:ThresholdCriterionShape</code></td>
+        <td>ops:ThresholdCriterion</td>
+        <td>ops:hasMeasurement (exactly 1, Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:DocumentaryCriterionShape</code></td>
+        <td>ops:DocumentaryCriterion</td>
+        <td>ops:hasDocumentaryRequirement (1+, Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:ProcedureShape</code></td>
+        <td>ops:Procedure</td>
+        <td>rdfs:label (1, Violation); ops:hasStep (1+, Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:StepShape</code></td>
+        <td>ops:Step</td>
+        <td>rdfs:label (1, Violation); ops:stepOrder (exactly 1, ≥1, Violation); ops:stepDescription (1, Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:ScheduleShape</code></td>
+        <td>ops:Schedule</td>
+        <td>rdfs:label (1, Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:DeadlineShape</code></td>
+        <td>ops:Deadline</td>
+        <td>SPARQL: must have deadlineDate or deadlineDuration (Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:RecurringScheduleShape</code></td>
+        <td>ops:RecurringSchedule</td>
+        <td>ops:recurrencePeriod (exactly 1, Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:PeriodScheduleShape</code></td>
+        <td>ops:PeriodSchedule</td>
+        <td>ops:periodStart (exactly 1, Violation); ops:periodEnd (exactly 1, Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:MeasurementShape</code></td>
+        <td>ops:Measurement</td>
+        <td>rdfs:label (1, Violation); ops:numericValue (exactly 1, Violation); ops:unit (exactly 1, Violation); ops:hasComparator (exactly 1, Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ops:DocumentaryRequirementShape</code></td>
+        <td>ops:DocumentaryRequirement</td>
+        <td>rdfs:label (1, Violation); ops:documentType (1+, Violation)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="usage-example">
+  <h2>Usage Example — ATA Convention Temporary Admission</h2>
+  <p>
+    The following example operationalizes the temporary admission obligation from
+    Article 2.5 of the ATA Convention, extending the LDSO-Semantics Layer 4 example
+    with full Layer 5 operational detail.
+  </p>
+
+  <section id="ex-documentary">
+    <h3>Step 1 — Documentary Requirement</h3>
+    <pre class="example" title="DocumentaryRequirement">
+ex:DocReq_ATACarnet
+  a ops:DocumentaryRequirement ;
+  rdfs:label "Valid ATA Carnet"@en ;
+  ops:documentType "ATA Carnet"@en ;
+  ops:issuedBy "Authorized Issuing Association"@en ;
+  ops:validityPeriod "P1Y"^^xsd:duration .</pre>
+  </section>
+
+  <section id="ex-trigger">
+    <h3>Step 2 — Trigger</h3>
+    <pre class="example" title="RequestTrigger">
+ex:Trigger_CarnetPresented
+  a ops:RequestTrigger ;
+  rdfs:label "ATA carnet presented at customs post"@en ;
+  ops:triggerDescription """Activated when a carnet holder presents goods accompanied
+by a valid ATA carnet at a border crossing point of a Contracting Party."""@en .</pre>
+  </section>
+
+  <section id="ex-criteria">
+    <h3>Step 3 — Criteria</h3>
+    <pre class="example" title="Criteria">
+ex:Crit_ValidCarnet
+  a ops:DocumentaryCriterion ;
+  rdfs:label "Valid ATA carnet criterion"@en ;
+  ops:criterionDescription "The carnet holder must present a valid, unexpired ATA carnet."@en ;
+  ops:hasDocumentaryRequirement ex:DocReq_ATACarnet .
+
+ex:Crit_GoodsMatchCarnet
+  a ops:EligibilityCriterion ;
+  rdfs:label "Goods match carnet description criterion"@en ;
+  ops:criterionDescription """The goods must correspond in description, quantity,
+and marks to the importation counterfoil."""@en .
+
+ex:Crit_WithinAdmissionPeriod
+  a ops:TemporalCriterion ;
+  rdfs:label "Within authorized admission period criterion"@en ;
+  ops:criterionDescription "The goods must be presented before the carnet expiry date."@en .</pre>
+  </section>
+
+  <section id="ex-procedure">
+    <h3>Step 4 — Procedure</h3>
+    <pre class="example" title="Procedure and Steps">
+ex:Proc_CarnetAdmission
+  a ops:Procedure ;
+  rdfs:label "ATA carnet temporary admission procedure"@en ;
+  ops:hasStep ex:Step1_VerifyCarnet ;
+  ops:hasStep ex:Step2_InspectGoods ;
+  ops:hasStep ex:Step3_RecordEntry ;
+  ops:hasStep ex:Step4_StampCounterfoil .
+
+ex:Step1_VerifyCarnet
+  a ops:Step ;
+  rdfs:label "Step 1 — Verify carnet validity"@en ;
+  ops:stepOrder 1 ;
+  ops:stepDescription "Check the ATA carnet has not expired and covers the goods presented."@en ;
+  ops:performedBy ex:CustomsOfficer ;
+  ops:nextStep ex:Step2_InspectGoods .
+
+ex:Step2_InspectGoods
+  a ops:Step ;
+  rdfs:label "Step 2 — Inspect goods against counterfoil"@en ;
+  ops:stepOrder 2 ;
+  ops:stepDescription "Verify goods match the importation counterfoil in description, quantity, and marks."@en ;
+  ops:performedBy ex:CustomsOfficer ;
+  ops:nextStep ex:Step3_RecordEntry .
+
+ex:Step3_RecordEntry
+  a ops:Step ;
+  rdfs:label "Step 3 — Record entry in customs register"@en ;
+  ops:stepOrder 3 ;
+  ops:stepDescription "Record the temporary admission, carnet number, goods, and re-exportation date."@en ;
+  ops:performedBy ex:CustomsOfficer ;
+  ops:nextStep ex:Step4_StampCounterfoil .
+
+ex:Step4_StampCounterfoil
+  a ops:Step ;
+  rdfs:label "Step 4 — Stamp and detach importation counterfoil"@en ;
+  ops:stepOrder 4 ;
+  ops:stepDescription "Stamp, sign, and detach the importation counterfoil; return carnet to holder."@en ;
+  ops:performedBy ex:CustomsOfficer .</pre>
+  </section>
+
+  <section id="ex-rule">
+    <h3>Step 5 — Operative Rule (cross-layer assembly)</h3>
+    <pre class="example" title="OperativeRule — full assembly">
+ex:Rule_TemporaryAdmission
+  a ops:OperativeRule ;
+  rdfs:label "Temporary admission rule — ATA carnet goods"@en ;
+  # Cross-layer grounding (Layer 4 → Layer 5)
+  ops:operativizes ex:Oblig_Para1_Admit ;
+  # Activation
+  ops:hasTrigger ex:Trigger_CarnetPresented ;
+  # Qualifying conditions (all conjunctive)
+  ops:hasCriterion ex:Crit_ValidCarnet ;
+  ops:hasCriterion ex:Crit_GoodsMatchCarnet ;
+  ops:hasCriterion ex:Crit_WithinAdmissionPeriod ;
+  # Execution
+  ops:hasProcedure ex:Proc_CarnetAdmission ;
+  # Temporal constraint
+  ops:hasSchedule ex:Sched_AdmissionDeadline ;
+  # Evidence
+  ops:hasDocumentaryRequirement ex:DocReq_ATACarnet ;
+  # Responsible role
+  ops:performedBy ex:CustomsOfficer .
+
+ex:Sched_AdmissionDeadline
+  a ops:Deadline ;
+  rdfs:label "6-month temporary admission deadline"@en ;
+  ops:deadlineDuration "P6M"^^xsd:duration .</pre>
+  </section>
+</section>
+
+<section id="competency-questions">
+  <h2>Competency Questions</h2>
+  <p>
+    The following questions define what LDSO-Operations is designed to answer.
+    Each is accompanied by a SPARQL query against a conformant dataset.
+  </p>
+
+  <section id="cq-o-01">
+    <h3>CQ-O-01 — All operative rules and the norms they implement</h3>
+    <pre class="example" title="CQ-O-01">
+PREFIX ops: &lt;https://w3id.org/ldso/operations#&gt;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+
+SELECT ?rule ?ruleLabel ?norm WHERE {
+  ?rule a ops:OperativeRule ;
+        rdfs:label ?ruleLabel ;
+        ops:operativizes ?norm .
+  FILTER(lang(?ruleLabel) = "en")
+}</pre>
+  </section>
+
+  <section id="cq-o-02">
+    <h3>CQ-O-02 — All criteria of a given rule, ordered by type</h3>
+    <pre class="example" title="CQ-O-02">
+PREFIX ops: &lt;https://w3id.org/ldso/operations#&gt;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+
+SELECT ?criterion ?criterionLabel ?type WHERE {
+  ex:Rule_TemporaryAdmission ops:hasCriterion ?criterion .
+  ?criterion a ?type ;
+             rdfs:label ?criterionLabel .
+  FILTER(lang(?criterionLabel) = "en")
+  FILTER(?type != owl:NamedIndividual)
+}</pre>
+  </section>
+
+  <section id="cq-o-03">
+    <h3>CQ-O-03 — Ordered steps of a procedure</h3>
+    <pre class="example" title="CQ-O-03">
+PREFIX ops: &lt;https://w3id.org/ldso/operations#&gt;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+
+SELECT ?order ?stepLabel ?role WHERE {
+  ex:Proc_CarnetAdmission ops:hasStep ?step .
+  ?step ops:stepOrder ?order ;
+        rdfs:label ?stepLabel .
+  OPTIONAL { ?step ops:performedBy/rdfs:label ?role . FILTER(lang(?role) = "en") }
+  FILTER(lang(?stepLabel) = "en")
+}
+ORDER BY ?order</pre>
+  </section>
+
+  <section id="cq-o-04">
+    <h3>CQ-O-04 — All documentary requirements for a given rule</h3>
+    <pre class="example" title="CQ-O-04">
+PREFIX ops: &lt;https://w3id.org/ldso/operations#&gt;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+
+SELECT ?docType ?issuedBy ?validity WHERE {
+  ex:Rule_TemporaryAdmission ops:hasDocumentaryRequirement ?docReq .
+  ?docReq ops:documentType ?docType .
+  OPTIONAL { ?docReq ops:issuedBy ?issuedBy }
+  OPTIONAL { ?docReq ops:validityPeriod ?validity }
+  FILTER(lang(?docType) = "en")
+}</pre>
+  </section>
+
+  <section id="cq-o-05">
+    <h3>CQ-O-05 — Rules with ThresholdCriteria and their measurement values</h3>
+    <pre class="example" title="CQ-O-05">
+PREFIX ops: &lt;https://w3id.org/ldso/operations#&gt;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+
+SELECT ?rule ?value ?unit ?comparator WHERE {
+  ?rule a ops:OperativeRule ;
+        ops:hasCriterion ?crit .
+  ?crit a ops:ThresholdCriterion ;
+        ops:hasMeasurement ?meas .
+  ?meas ops:numericValue ?value ;
+        ops:unit ?unit ;
+        ops:hasComparator ?comparator .
+}</pre>
+  </section>
+
+  <section id="cq-o-06">
+    <h3>CQ-O-06 — Which rules are in effect on a given date?</h3>
+    <pre class="example" title="CQ-O-06">
+PREFIX ops:  &lt;https://w3id.org/ldso/operations#&gt;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+PREFIX xsd:  &lt;http://www.w3.org/2001/XMLSchema#&gt;
+
+BIND("2026-06-01"^^xsd:date AS ?today)
+
+SELECT ?rule ?ruleLabel WHERE {
+  ?rule a ops:OperativeRule ;
+        ops:hasSchedule ?sched .
+  ?sched ops:periodStart ?start .
+  OPTIONAL { ?sched ops:periodEnd ?end }
+  FILTER(?start &lt;= ?today)
+  FILTER(!BOUND(?end) || ?end &gt;= ?today)
+  OPTIONAL { ?rule rdfs:label ?ruleLabel }
+}
+ORDER BY ?ruleLabel</pre>
+  </section>
+
+  <section id="cq-o-07">
+    <h3>CQ-O-07 — Which triggers are associated with event-based rules?</h3>
+    <pre class="example" title="CQ-O-07">
+PREFIX ops:  &lt;https://w3id.org/ldso/operations#&gt;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+
+SELECT ?rule ?ruleLabel ?trigger ?triggerLabel WHERE {
+  ?rule a ops:OperativeRule ;
+        ops:hasTrigger ?trigger .
+  ?trigger a ops:EventTrigger .
+  OPTIONAL { ?rule    rdfs:label ?ruleLabel    . FILTER(LANG(?ruleLabel)    = "en") }
+  OPTIONAL { ?trigger rdfs:label ?triggerLabel . FILTER(LANG(?triggerLabel) = "en") }
+}
+ORDER BY ?ruleLabel</pre>
+  </section>
+</section>
+
+<section id="alignment">
+  <h2>Alignment Notes</h2>
+  <table class="ont-table">
+    <thead>
+      <tr><th>LDSO-Operations concept</th><th>Related concept</th><th>Vocabulary</th><th>Relationship</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ops:OperativeRule</code></td>
+        <td><code>lrml:LegalRule</code></td>
+        <td>LegalRuleML [[LEGALRULEML]]</td>
+        <td>Analogous: both operationalize legal norms. LDSO-Operations is RDF/OWL-native; LegalRuleML is XML-based.</td>
+      </tr>
+      <tr>
+        <td><code>ops:operativizes</code></td>
+        <td><code>lrml:refersTo</code></td>
+        <td>LegalRuleML [[LEGALRULEML]]</td>
+        <td>Both link operational rules back to source legal provisions.</td>
+      </tr>
+      <tr>
+        <td><code>ops:Criterion</code></td>
+        <td><code>odrl:Constraint</code></td>
+        <td>ODRL [[ODRL]]</td>
+        <td>Analogous: ODRL Constraint tests a left-operand against a right-operand. LDSO-Operations uses typed subclasses.</td>
+      </tr>
+      <tr>
+        <td><code>ops:Measurement</code> + <code>ops:Comparator</code></td>
+        <td><code>odrl:Constraint</code> with <code>odrl:operator</code></td>
+        <td>ODRL [[ODRL]]</td>
+        <td>Structurally equivalent. LDSO-Operations uses named individuals; ODRL uses IRIs from the ODRL vocabulary.</td>
+      </tr>
+      <tr>
+        <td><code>ops:Procedure</code> / <code>ops:Step</code></td>
+        <td>No direct equivalent</td>
+        <td>ODRL, LegalRuleML</td>
+        <td>LDSO-Operations introduces procedural sequencing not present in either alignment target.</td>
+      </tr>
+      <tr>
+        <td><code>ops:DocumentaryRequirement</code></td>
+        <td><code>lrml:PrescriptiveStatement</code></td>
+        <td>LegalRuleML [[LEGALRULEML]]</td>
+        <td>Partial overlap: both capture evidentiary requirements in legal rules.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="extending">
+  <h2>Extending via Domain Verticals</h2>
+  <p>
+    Layer 5b domain verticals import LDSO-Operations and subclass its concepts to
+    add domain-specific constraints without duplicating the rule machinery.
+    A trade vertical, for example, would:
+  </p>
+  <ul>
+    <li>Subclass <code>ops:ClassificationCriterion</code> as <code>trade:HSClassificationCriterion</code>
+        and add a <code>trade:hsCode</code> property constrained to the HS chapter vocabulary.</li>
+    <li>Subclass <code>ops:ThresholdCriterion</code> as <code>trade:RegionalValueContentCriterion</code>
+        and constrain <code>ops:unit</code> to <code>"%"</code> via SHACL.</li>
+    <li>Subclass <code>ops:DocumentaryRequirement</code> as <code>trade:CertificateOfOriginRequirement</code>
+        and fix <code>ops:documentType</code> to <code>"Certificate of Origin"@en</code>.</li>
+  </ul>
+  <p>
+    The key invariant: all domain verticals inherit the trigger–criterion–procedure
+    pattern and the SHACL shapes from LDSO-Operations, ensuring cross-vertical
+    consistency at the operational layer.
+  </p>
+  <pre class="example" title="Trade vertical subclassing">
+@prefix trade: &lt;https://example.org/trade-ontology#&gt; .
+@prefix ops:   &lt;https://w3id.org/ldso/operations#&gt; .
+
+trade:HSClassificationCriterion
+  a owl:Class ;
+  rdfs:subClassOf ops:ClassificationCriterion ;
+  rdfs:label "HS Classification Criterion"@en ;
+  skos:definition "A criterion requiring that goods be classified under a specified HS heading or chapter."@en .
+
+trade:hsCode
+  a owl:DatatypeProperty ;
+  rdfs:domain trade:HSClassificationCriterion ;
+  rdfs:range  xsd:string ;
+  rdfs:label "HS code"@en .</pre>
+</section>
+
+<section id="ref">
+  <h2>References</h2>
+  <section id="normative-references">
+    <h3>Normative References</h3>
+    <dl>
+      <dt id="bib-rfc2119">RFC2119</dt>
+      <dd>[[RFC2119]]</dd>
+      <dt id="bib-owl2">OWL2</dt>
+      <dd>[[OWL2]]</dd>
+      <dt id="bib-shacl">SHACL</dt>
+      <dd>[[SHACL]]</dd>
+      <dt id="bib-skos">SKOS</dt>
+      <dd>[[SKOS]]</dd>
+      <dt id="bib-iso8601">ISO8601</dt>
+      <dd>[[ISO8601]]</dd>
+    </dl>
+  </section>
+  <section id="informative-references">
+    <h3>Informative References</h3>
+    <dl>
+      <dt id="bib-ldso-core">LDSO-CORE</dt>
+      <dd>[[LDSO-CORE]]</dd>
+      <dt id="bib-ldso-entities">LDSO-ENTITIES</dt>
+      <dd>[[LDSO-ENTITIES]]</dd>
+      <dt id="bib-ldso-lifecycle">LDSO-LIFECYCLE</dt>
+      <dd>[[LDSO-LIFECYCLE]]</dd>
+      <dt id="bib-ldso-semantics">LDSO-SEMANTICS</dt>
+      <dd>[[LDSO-SEMANTICS]]</dd>
+      <dt id="bib-legalruleml">LEGALRULEML</dt>
+      <dd>[[LEGALRULEML]]</dd>
+      <dt id="bib-odrl">ODRL</dt>
+      <dd>[[ODRL]]</dd>
+    </dl>
+  </section>
+</section>
+
+<section id="appendix-a" class="appendix">
+  <h2>Appendix A — Namespace Prefixes</h2>
+  <table class="ont-table">
+    <thead><tr><th>Prefix</th><th>Namespace IRI</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td><code>ops:</code></td><td><code>https://w3id.org/ldso/operations#</code></td><td>This module</td></tr>
+      <tr><td><code>leg:</code></td><td><code>https://w3id.org/ldso/semantics#</code></td><td>LDSO-Semantics (Layer 4)</td></tr>
+      <tr><td><code>ent:</code></td><td><code>https://w3id.org/ldso/entities#</code></td><td>LDSO-Entities (Layer 2b)</td></tr>
+      <tr><td><code>ldso:</code></td><td><code>https://w3id.org/ldso/core#</code></td><td>LDSO-Core (Layer 1)</td></tr>
+      <tr><td><code>owl:</code></td><td><code>http://www.w3.org/2002/07/owl#</code></td><td>OWL 2</td></tr>
+      <tr><td><code>rdfs:</code></td><td><code>http://www.w3.org/2000/01/rdf-schema#</code></td><td>RDF Schema</td></tr>
+      <tr><td><code>xsd:</code></td><td><code>http://www.w3.org/2001/XMLSchema#</code></td><td>XML Schema datatypes</td></tr>
+      <tr><td><code>skos:</code></td><td><code>http://www.w3.org/2004/02/skos/core#</code></td><td>SKOS</td></tr>
+      <tr><td><code>dct:</code></td><td><code>http://purl.org/dc/terms/</code></td><td>Dublin Core Terms</td></tr>
+      <tr><td><code>sh:</code></td><td><code>http://www.w3.org/ns/shacl#</code></td><td>SHACL</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="appendix-b" class="appendix">
+  <h2>Appendix B — Class Hierarchy Summary</h2>
+  <pre>
+ops:OperativeRule
+
+ops:Trigger
+  ├── ops:EventTrigger
+  ├── ops:ThresholdTrigger          [requires ops:hasMeasurement]
+  ├── ops:StatusTrigger
+  ├── ops:TemporalTrigger
+  └── ops:RequestTrigger
+
+ops:Criterion
+  ├── ops:EligibilityCriterion
+  ├── ops:ClassificationCriterion
+  ├── ops:ThresholdCriterion         [requires ops:hasMeasurement]
+  ├── ops:DocumentaryCriterion       [requires ops:hasDocumentaryRequirement]
+  └── ops:TemporalCriterion
+
+ops:Procedure
+ops:Step
+
+ops:Schedule
+  ├── ops:Deadline                   [deadlineDate and/or deadlineDuration]
+  ├── ops:RecurringSchedule          [requires ops:recurrencePeriod]
+  └── ops:PeriodSchedule             [requires ops:periodStart + ops:periodEnd]
+
+ops:Measurement                      [requires numericValue + unit + hasComparator]
+ops:Comparator (named individuals)
+  ├── ops:Equal
+  ├── ops:NotEqual
+  ├── ops:LessThan
+  ├── ops:LessThanOrEqual
+  ├── ops:GreaterThan
+  └── ops:GreaterThanOrEqual
+
+ops:DocumentaryRequirement           [requires ops:documentType]
+  </pre>
+</section>
+
+<section id="appendix-c" class="appendix">
+  <h2>Appendix C — Disjointness Axioms</h2>
+  <p>The following disjointness axioms are asserted in the ontology:</p>
+  <ul>
+    <li>All five Trigger subclasses are pairwise disjoint (<code>owl:AllDisjointClasses</code>).</li>
+    <li>All five Criterion subclasses are pairwise disjoint (<code>owl:AllDisjointClasses</code>).</li>
+    <li>All three Schedule subclasses are pairwise disjoint (<code>owl:AllDisjointClasses</code>).</li>
+    <li><code>ops:OperativeRule</code> is disjoint with <code>ops:Trigger</code>, <code>ops:Criterion</code>, <code>ops:Procedure</code>, <code>ops:Schedule</code>, <code>ops:Measurement</code>, and <code>ops:DocumentaryRequirement</code>.</li>
+    <li><code>ops:Trigger</code> is disjoint with <code>ops:Criterion</code> and <code>ops:Procedure</code>.</li>
+    <li><code>ops:Criterion</code> is disjoint with <code>ops:Procedure</code>.</li>
+    <li><code>ops:Procedure</code> is disjoint with <code>ops:Step</code>.</li>
+    <li><code>ops:Step</code> is disjoint with <code>ops:Schedule</code>.</li>
+    <li><code>ops:Measurement</code> is disjoint with <code>ops:Comparator</code>.</li>
+  </ul>
+</section>
+
+</body>
+</html>

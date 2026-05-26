@@ -1,0 +1,355 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix leg:  <https://w3id.org/ldso/semantics#> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Semantics SHACL Validation Shapes
+# Validates structural integrity. Does NOT encode legal reasoning.
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/semantics/shapes>
+  a owl:Ontology ;
+  dct:title "LDSO-Semantics SHACL Shapes"@en ;
+  dct:description "SHACL validation shapes for LDSO-Semantics annotation instances."@en ;
+  dct:creator "Stephane Fellah" ;
+  dct:publisher "Geoknoesis LLC" ;
+  dct:created "2026-05-25"^^xsd:date ;
+  dct:modified "2026-05-25"^^xsd:date ;
+  owl:imports <https://w3id.org/ldso/semantics> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# LEGAL ANNOTATION BASE SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:LegalAnnotationShape
+  a sh:NodeShape ;
+  sh:targetClass leg:LegalAnnotation ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Legal Annotation" ;
+  sh:description "Every LegalAnnotation must point to a source structural element via leg:annotates." ;
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Warning ;
+    sh:message "LegalAnnotation SHOULD have at least one rdfs:label (language-tagged)." ;
+  ] ;
+  sh:property [
+    sh:path leg:annotates ;
+    sh:minCount 1 ;
+    sh:class ldso:LegalElement ;
+    sh:message "LegalAnnotation must have at least one leg:annotates pointing to a ldso:LegalElement." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# NORMATIVE STATEMENT SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:NormativeStatementShape
+  a sh:NodeShape ;
+  sh:targetClass leg:NormativeStatement ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Normative Statement" ;
+  sh:description "A NormativeStatement must carry a deontic modal and should identify its normative subject." ;
+  sh:property [
+    sh:path leg:deonticModal ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "NormativeStatement must have leg:deonticModal (e.g., 'shall', 'may', 'shall not')." ;
+  ] ;
+  sh:property [
+    sh:path leg:normativeSubject ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Warning ;
+    sh:message "NormativeStatement SHOULD identify its normative subject via leg:normativeSubject (IRI)." ;
+  ] ;
+  sh:property [
+    sh:path leg:normativeObject ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Warning ;
+    sh:message "NormativeStatement normativeObject SHOULD be a named IRI resource, not a literal." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# OBLIGATION SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:ObligationShape
+  a sh:NodeShape ;
+  sh:targetClass leg:Obligation ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Obligation" ;
+  sh:description "An Obligation must use an obligatory modal ('shall', 'must', 'is required to')." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:message "Obligation deonticModal should express obligatory force ('shall', 'must', 'is required to', 'is obliged to')." ;
+    sh:severity sh:Warning ;
+    sh:select """
+      PREFIX leg: <https://w3id.org/ldso/semantics#>
+      SELECT $this ?modal WHERE {
+        $this leg:deonticModal ?modal .
+        FILTER(!REGEX(LCASE(?modal),
+          "^(shall|must|is required to|is obliged to|are required to|shall be required)"))
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# PERMISSION SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:PermissionShape
+  a sh:NodeShape ;
+  sh:targetClass leg:Permission ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Permission" ;
+  sh:description "A Permission must use a permissive modal ('may', 'is permitted to', 'is authorized to')." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:message "Permission deonticModal should express permissive force ('may', 'is permitted to', 'is authorized to')." ;
+    sh:severity sh:Warning ;
+    sh:select """
+      PREFIX leg: <https://w3id.org/ldso/semantics#>
+      SELECT $this ?modal WHERE {
+        $this leg:deonticModal ?modal .
+        FILTER(!REGEX(LCASE(?modal),
+          "^(may|is permitted to|is authorized to|are permitted to|may be)"))
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# PROHIBITION SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:ProhibitionShape
+  a sh:NodeShape ;
+  sh:targetClass leg:Prohibition ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Prohibition" ;
+  sh:description "A Prohibition must use a prohibitive modal ('shall not', 'must not', 'is prohibited from')." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:message "Prohibition deonticModal should express prohibitive force ('shall not', 'must not', 'is prohibited from', 'may not')." ;
+    sh:severity sh:Warning ;
+    sh:select """
+      PREFIX leg: <https://w3id.org/ldso/semantics#>
+      SELECT $this ?modal WHERE {
+        $this leg:deonticModal ?modal .
+        FILTER(!REGEX(LCASE(?modal),
+          "^(shall not|must not|is prohibited from|may not|are prohibited from)"))
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# RIGHT SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:RightShape
+  a sh:NodeShape ;
+  sh:targetClass leg:Right ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Right" ;
+  sh:description "A Right must use an entitlement modal ('is entitled to', 'has the right to', 'shall be entitled to')." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:message "Right deonticModal should express entitlement ('is entitled to', 'has the right to', 'shall be entitled to', 'are entitled to')." ;
+    sh:severity sh:Warning ;
+    sh:select """
+      PREFIX leg: <https://w3id.org/ldso/semantics#>
+      SELECT $this ?modal WHERE {
+        $this leg:deonticModal ?modal .
+        FILTER(!REGEX(LCASE(?modal),
+          "^(is entitled to|has the right to|shall be entitled to|are entitled to|have the right to)"))
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DISCRETION SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:DiscretionShape
+  a sh:NodeShape ;
+  sh:targetClass leg:Discretion ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Discretion" ;
+  sh:description "A Discretion must use a discretionary operational modal ('may at its discretion', 'may determine', 'is empowered to')." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:message "Discretion deonticModal should express discretionary power ('may at its discretion', 'may determine', 'is empowered to', 'may extend')." ;
+    sh:severity sh:Warning ;
+    sh:select """
+      PREFIX leg: <https://w3id.org/ldso/semantics#>
+      SELECT $this ?modal WHERE {
+        $this leg:deonticModal ?modal .
+        FILTER(!REGEX(LCASE(?modal),
+          "^(may at its discretion|may determine|is empowered to|may extend|may decide|at its discretion)"))
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DEFINITION SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:DefinitionShape
+  a sh:NodeShape ;
+  sh:targetClass leg:Definition ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Definition" ;
+  sh:description "A Definition must carry the defined term and the definition text." ;
+  sh:property [
+    sh:path leg:definedTerm ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:message "Definition must have leg:definedTerm (language-tagged term label)." ;
+  ] ;
+  sh:property [
+    sh:path leg:definitionText ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:message "Definition must have leg:definitionText (language-tagged definition)." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# EXCEPTION SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:ExceptionShape
+  a sh:NodeShape ;
+  sh:targetClass leg:Exception ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Exception" ;
+  sh:description "An Exception should identify the norm it qualifies via leg:exceptionOf." ;
+  sh:property [
+    sh:path leg:exceptionOf ;
+    sh:minCount 1 ;
+    sh:class leg:NormativeStatement ;
+    sh:severity sh:Warning ;
+    sh:message "Exception SHOULD link to its governing NormativeStatement via leg:exceptionOf." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CONDITION SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:ConditionShape
+  a sh:NodeShape ;
+  sh:targetClass leg:Condition ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Condition" ;
+  sh:description "A Condition must carry a conditionText." ;
+  sh:property [
+    sh:path leg:conditionText ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:message "Condition must have leg:conditionText (language-tagged prerequisite text)." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SCOPE SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:ScopeShape
+  a sh:NodeShape ;
+  sh:targetClass leg:Scope ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Scope" ;
+  sh:description "A Scope annotation should carry a scopeText." ;
+  sh:property [
+    sh:path leg:scopeText ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Warning ;
+    sh:message "Scope SHOULD have leg:scopeText describing the range of applicability." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# EXEMPTION SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:ExemptionShape
+  a sh:NodeShape ;
+  sh:targetClass leg:Exemption ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Exemption" ;
+  sh:description "An Exemption must identify who is exempt (normativeSubject) and the norm being exempted from (exceptionOf)." ;
+  sh:property [
+    sh:path leg:normativeSubject ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Warning ;
+    sh:message "Exemption SHOULD identify who is exempt via leg:normativeSubject." ;
+  ] ;
+  sh:property [
+    sh:path leg:exceptionOf ;
+    sh:minCount 1 ;
+    sh:class leg:NormativeStatement ;
+    sh:severity sh:Warning ;
+    sh:message "Exemption SHOULD link to the NormativeStatement it exempts from via leg:exceptionOf." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# EXCEPTION INVERSE CONSISTENCY
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:ExceptionInverseShape
+  a sh:NodeShape ;
+  sh:targetSubjectsOf leg:exceptedBy ;
+  sh:name "Exception Inverse Consistency" ;
+  sh:description "If A leg:exceptedBy B, then B must have leg:exceptionOf A." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:message "Exception chain broken: if A leg:exceptedBy B, then B must have leg:exceptionOf A." ;
+    sh:select """
+      PREFIX leg: <https://w3id.org/ldso/semantics#>
+      SELECT $this ?exc WHERE {
+        $this leg:exceptedBy ?exc .
+        FILTER NOT EXISTS { ?exc leg:exceptionOf $this }
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CONDITION INVERSE CONSISTENCY
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:ConditionInverseShape
+  a sh:NodeShape ;
+  sh:targetSubjectsOf leg:conditionedBy ;
+  sh:name "Condition Inverse Consistency" ;
+  sh:description "If A leg:conditionedBy B, then B must have leg:conditionOf A." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:message "Condition chain broken: if A leg:conditionedBy B, then B must have leg:conditionOf A." ;
+    sh:select """
+      PREFIX leg: <https://w3id.org/ldso/semantics#>
+      SELECT $this ?cond WHERE {
+        $this leg:conditionedBy ?cond .
+        FILTER NOT EXISTS { ?cond leg:conditionOf $this }
+      }
+    """ ;
+  ] .

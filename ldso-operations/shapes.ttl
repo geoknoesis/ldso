@@ -1,0 +1,567 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix ops:  <https://w3id.org/ldso/operations#> .
+@prefix leg:  <https://w3id.org/ldso/semantics#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Operations SHACL Shapes
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/operations/shapes>
+  a owl:Ontology ;
+  dct:title "LDSO-Operations SHACL Validation Shapes"@en ;
+  dct:description "SHACL node shapes for validating instances of LDSO-Operations classes."@en ;
+  owl:imports <https://w3id.org/ldso/operations> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# OperativeRule
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:OperativeRuleShape
+  a sh:NodeShape ;
+  sh:targetClass ops:OperativeRule ;
+  sh:nodeKind sh:IRI ;
+
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "OperativeRule MUST have at least one rdfs:label (language-tagged)." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:hasTrigger ;
+    sh:minCount 1 ;
+    sh:class ops:Trigger ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "OperativeRule MUST reference at least one Trigger via ops:hasTrigger." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:operativizes ;
+    sh:minCount 1 ;
+    sh:class leg:NormativeStatement ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Warning ;
+    sh:message "OperativeRule SHOULD reference the NormativeStatement it implements via ops:operativizes." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:hasProcedure ;
+    sh:maxCount 1 ;
+    sh:class ops:Procedure ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "OperativeRule MUST NOT reference more than one Procedure via ops:hasProcedure." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:hasCriterion ;
+    sh:class ops:Criterion ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "ops:hasCriterion values MUST be IRI references to Criterion instances." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:hasSchedule ;
+    sh:class ops:Schedule ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "ops:hasSchedule values MUST be IRI references to Schedule instances." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Trigger
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:TriggerShape
+  a sh:NodeShape ;
+  sh:targetClass ops:Trigger ;
+  sh:nodeKind sh:IRI ;
+
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "Trigger MUST have at least one rdfs:label (language-tagged)." ;
+  ] .
+
+ops:ThresholdTriggerShape
+  a sh:NodeShape ;
+  sh:targetClass ops:ThresholdTrigger ;
+
+  sh:property [
+    sh:path ops:hasMeasurement ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class ops:Measurement ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "ThresholdTrigger MUST have exactly one ops:hasMeasurement." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Criterion
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:CriterionShape
+  a sh:NodeShape ;
+  sh:targetClass ops:Criterion ;
+  sh:nodeKind sh:IRI ;
+
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "Criterion MUST have at least one rdfs:label (language-tagged)." ;
+  ] .
+
+ops:ThresholdCriterionShape
+  a sh:NodeShape ;
+  sh:targetClass ops:ThresholdCriterion ;
+
+  sh:property [
+    sh:path ops:hasMeasurement ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class ops:Measurement ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "ThresholdCriterion MUST have exactly one ops:hasMeasurement." ;
+  ] .
+
+ops:DocumentaryCriterionShape
+  a sh:NodeShape ;
+  sh:targetClass ops:DocumentaryCriterion ;
+
+  sh:property [
+    sh:path ops:hasDocumentaryRequirement ;
+    sh:minCount 1 ;
+    sh:class ops:DocumentaryRequirement ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "DocumentaryCriterion MUST reference at least one DocumentaryRequirement via ops:hasDocumentaryRequirement." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Procedure
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:ProcedureShape
+  a sh:NodeShape ;
+  sh:targetClass ops:Procedure ;
+  sh:nodeKind sh:IRI ;
+
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "Procedure MUST have at least one rdfs:label." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:hasStep ;
+    sh:minCount 1 ;
+    sh:class ops:Step ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "Procedure MUST have at least one Step via ops:hasStep." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Step
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:StepShape
+  a sh:NodeShape ;
+  sh:targetClass ops:Step ;
+  sh:nodeKind sh:IRI ;
+
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "Step MUST have at least one rdfs:label." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:stepOrder ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:severity sh:Violation ;
+    sh:message "Step MUST have exactly one ops:stepOrder (positive integer, 1-based)." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:stepDescription ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "Step MUST have at least one ops:stepDescription (language-tagged)." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:nextStep ;
+    sh:class ops:Step ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "ops:nextStep MUST reference a Step IRI." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Schedule
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:ScheduleShape
+  a sh:NodeShape ;
+  sh:targetClass ops:Schedule ;
+  sh:nodeKind sh:IRI ;
+
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "Schedule MUST have at least one rdfs:label." ;
+  ] .
+
+ops:DeadlineShape
+  a sh:NodeShape ;
+  sh:targetClass ops:Deadline ;
+
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Violation ;
+    sh:message "Deadline MUST have at least one of ops:deadlineDate or ops:deadlineDuration." ;
+    sh:select """
+      PREFIX ops: <https://w3id.org/ldso/operations#>
+      SELECT $this WHERE {
+        FILTER NOT EXISTS { $this ops:deadlineDate ?d }
+        FILTER NOT EXISTS { $this ops:deadlineDuration ?dur }
+      }
+    """ ;
+  ] .
+
+ops:RecurringScheduleShape
+  a sh:NodeShape ;
+  sh:targetClass ops:RecurringSchedule ;
+
+  sh:property [
+    sh:path ops:recurrencePeriod ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:duration ;
+    sh:severity sh:Violation ;
+    sh:message "RecurringSchedule MUST have exactly one ops:recurrencePeriod (xsd:duration)." ;
+  ] .
+
+ops:PeriodScheduleShape
+  a sh:NodeShape ;
+  sh:targetClass ops:PeriodSchedule ;
+
+  sh:property [
+    sh:path ops:periodStart ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:date ;
+    sh:severity sh:Violation ;
+    sh:message "PeriodSchedule MUST have exactly one ops:periodStart." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:periodEnd ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:date ;
+    sh:severity sh:Violation ;
+    sh:message "PeriodSchedule MUST have exactly one ops:periodEnd." ;
+  ] ;
+
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Violation ;
+    sh:message "PeriodSchedule ops:periodEnd MUST be later than ops:periodStart." ;
+    sh:select """
+      PREFIX ops: <https://w3id.org/ldso/operations#>
+      SELECT $this WHERE {
+        $this ops:periodStart ?start ;
+              ops:periodEnd   ?end .
+        FILTER (?end <= ?start)
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Measurement
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:MeasurementShape
+  a sh:NodeShape ;
+  sh:targetClass ops:Measurement ;
+  sh:nodeKind sh:IRI ;
+
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "Measurement MUST have at least one rdfs:label." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:numericValue ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:decimal ;
+    sh:severity sh:Violation ;
+    sh:message "Measurement MUST have exactly one ops:numericValue (xsd:decimal)." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:unit ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:severity sh:Violation ;
+    sh:message "Measurement MUST have exactly one ops:unit (xsd:string)." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:hasComparator ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class ops:Comparator ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "Measurement MUST have exactly one ops:hasComparator pointing to a Comparator named individual." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DocumentaryRequirement
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:DocumentaryRequirementShape
+  a sh:NodeShape ;
+  sh:targetClass ops:DocumentaryRequirement ;
+  sh:nodeKind sh:IRI ;
+
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "DocumentaryRequirement MUST have at least one rdfs:label." ;
+  ] ;
+
+  sh:property [
+    sh:path ops:documentType ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "DocumentaryRequirement MUST have at least one ops:documentType (language-tagged)." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Trigger Subtype Shapes
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:EventTriggerShape
+  a sh:NodeShape ;
+  sh:targetClass ops:EventTrigger ;
+  sh:nodeKind sh:IRI ;
+  sh:property [
+    sh:path ops:triggerDescription ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Warning ;
+    sh:message "EventTrigger SHOULD carry ops:triggerDescription (language-tagged narrative)." ;
+  ] .
+
+ops:StatusTriggerShape
+  a sh:NodeShape ;
+  sh:targetClass ops:StatusTrigger ;
+  sh:nodeKind sh:IRI ;
+  sh:property [
+    sh:path ops:triggerDescription ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Warning ;
+    sh:message "StatusTrigger SHOULD carry ops:triggerDescription (language-tagged narrative)." ;
+  ] .
+
+ops:TemporalTriggerShape
+  a sh:NodeShape ;
+  sh:targetClass ops:TemporalTrigger ;
+  sh:nodeKind sh:IRI ;
+  sh:property [
+    sh:path ops:triggerDescription ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Warning ;
+    sh:message "TemporalTrigger SHOULD carry ops:triggerDescription (language-tagged narrative)." ;
+  ] .
+
+ops:RequestTriggerShape
+  a sh:NodeShape ;
+  sh:targetClass ops:RequestTrigger ;
+  sh:nodeKind sh:IRI ;
+  sh:property [
+    sh:path ops:triggerDescription ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Warning ;
+    sh:message "RequestTrigger SHOULD carry ops:triggerDescription (language-tagged narrative)." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Criterion Subtype Shapes
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:EligibilityCriterionShape
+  a sh:NodeShape ;
+  sh:targetClass ops:EligibilityCriterion ;
+  sh:nodeKind sh:IRI ;
+  sh:property [
+    sh:path ops:criterionDescription ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Warning ;
+    sh:message "EligibilityCriterion SHOULD carry ops:criterionDescription (language-tagged narrative)." ;
+  ] .
+
+ops:ClassificationCriterionShape
+  a sh:NodeShape ;
+  sh:targetClass ops:ClassificationCriterion ;
+  sh:nodeKind sh:IRI ;
+  sh:property [
+    sh:path ops:criterionDescription ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Warning ;
+    sh:message "ClassificationCriterion SHOULD carry ops:criterionDescription (language-tagged narrative)." ;
+  ] .
+
+ops:TemporalCriterionShape
+  a sh:NodeShape ;
+  sh:targetClass ops:TemporalCriterion ;
+  sh:nodeKind sh:IRI ;
+  sh:property [
+    sh:path ops:criterionDescription ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Warning ;
+    sh:message "TemporalCriterion SHOULD carry ops:criterionDescription (language-tagged narrative)." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Comparator
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:ComparatorShape
+  a sh:NodeShape ;
+  sh:targetClass ops:Comparator ;
+  sh:nodeKind sh:IRI ;
+
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "Comparator MUST have at least one rdfs:label (language-tagged)." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# PeriodSchedule — start < end (SPARQL)
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:SchedulePeriodOrderShape
+  a sh:NodeShape ;
+  sh:targetClass ops:PeriodSchedule ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Period Schedule Ordering" ;
+  sh:description "ops:periodStart MUST be strictly earlier than ops:periodEnd." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Violation ;
+    sh:message "ops:periodStart MUST be strictly earlier than ops:periodEnd on a PeriodSchedule." ;
+    sh:select """
+      PREFIX ops: <https://w3id.org/ldso/operations#>
+      SELECT $this WHERE {
+        $this ops:periodStart ?start ;
+              ops:periodEnd   ?end .
+        FILTER (?start >= ?end)
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Step — Order Uniqueness (SPARQL)
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:StepOrderUniquenessShape
+  a sh:NodeShape ;
+  sh:targetClass ops:Step ;
+
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Violation ;
+    sh:message "ops:stepOrder MUST be unique within a Procedure — two Steps of the same Procedure share an order value." ;
+    sh:select """
+      PREFIX ops: <https://w3id.org/ldso/operations#>
+      SELECT $this WHERE {
+        ?proc ops:hasStep $this ;
+              ops:hasStep ?other .
+        $this ops:stepOrder ?order .
+        ?other ops:stepOrder ?order .
+        FILTER ($this != ?other)
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Step — nextStep Cycle Detection (SPARQL)
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:NextStepAcyclicShape
+  a sh:NodeShape ;
+  sh:targetClass ops:Step ;
+
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Violation ;
+    sh:message "ops:nextStep chain forms a cycle — a Step directly or indirectly references itself via ops:nextStep." ;
+    sh:select """
+      PREFIX ops: <https://w3id.org/ldso/operations#>
+      SELECT $this WHERE {
+        $this ops:nextStep+ $this .
+      }
+    """ ;
+  ] .

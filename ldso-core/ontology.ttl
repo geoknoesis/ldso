@@ -1,0 +1,785 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Core: Legal Document Structure Ontology — Core Module
+# Version: 1.0.0
+# Namespace: https://w3id.org/ldso/core#
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/core>
+  a owl:Ontology ;
+  dct:title "LDSO-Core: Legal Document Structure Ontology — Core Module"@en ;
+  dct:description """A generic, modular RDF/OWL ontology for representing the
+structural hierarchy, ordering, and identity of legal documents.
+Covers document structure only. Legal semantics, obligations, and
+operational rules belong to separate LDSO modules."""@en ;
+  dct:creator "Stephane Fellah" ;
+  dct:publisher "Geoknoesis LLC" ;
+  dct:created "2026-05-24"^^xsd:date ;
+  dct:modified "2026-05-25"^^xsd:date ;
+  owl:versionIRI <https://w3id.org/ldso/core/1.0.0> ;
+  owl:versionInfo "1.0.0" ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+  vann:preferredNamespacePrefix "ldso" ;
+  vann:preferredNamespaceUri "https://w3id.org/ldso/core#" ;
+  rdfs:seeAlso <https://w3id.org/ldso/core/index.html> ;
+  rdfs:comment """DISCLAIMER: This ontology is not an official W3C Standard or W3C Recommendation.
+It is a community/project specification using W3C ReSpec formatting conventions."""@en .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# TOP-LEVEL CLASSES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:LegalResource
+  a owl:Class ;
+  rdfs:label "Legal Resource"@en ;
+  skos:definition """The abstract legal instrument — a treaty, law, regulation,
+contract, standard, or other legal text considered independently of any
+particular language version, date, or format. 'The ATA Agreement' is one
+LegalResource; its English and French texts are separate LegalExpressions."""@en ;
+  skos:scopeNote """Root class for all referenceable nodes in a legal graph.
+Specialise with ldso:LegalExpression for a specific language/date version, or
+with ldso:LegalElement for structural components within a document."""@en ;
+  skos:example """
+ex:resource_ata
+  a ldso:LegalResource ;
+  dct:title "ATA Convention"@en ."""@en .
+
+ldso:LegalExpression
+  a owl:Class ;
+  rdfs:label "Legal Expression"@en ;
+  skos:definition """A specific language-version instance of a ldso:LegalResource:
+the English text adopted on 2026-01-15, the French consolidated text of 2024, etc.
+A LegalExpression adds language (dct:language), date (dct:issued), and optionally
+format (dct:format) to the abstract instrument it realises."""@en ;
+  rdfs:subClassOf ldso:LegalResource ;
+  skos:scopeNote """Use dct:language for the BCP 47 / ISO 639-3 language code
+(e.g., 'en', 'fra'), dct:issued for the version date, and dct:format for the
+MIME type. The concrete structural content — Body, Chapters, Articles — lives in
+the ldso:Document subclass. Inspired by FRBR Expression and ELI, but dependent
+on neither standard."""@en ;
+  skos:example """
+ex:doc_ata_en
+  a ldso:LegalExpression ;
+  dct:title "ATA Convention"@en ;
+  dct:language "en" ;
+  dct:issued "1961-12-06"^^xsd:date ;
+  ldso:expressionOf ex:resource_ata ."""@en .
+
+ldso:LegalElement
+  a owl:Class ;
+  rdfs:label "Legal Element"@en ;
+  skos:definition """A structural component within a legal document,
+including containers, hierarchical divisions, provision units, lists,
+tables, annexes, and references."""@en ;
+  rdfs:subClassOf ldso:LegalResource ;
+  skos:scopeNote """All nodes that appear inside a document are LegalElements.
+Documents themselves are LegalExpressions but not LegalElements."""@en ;
+  skos:example """
+ex:art_5
+  a ldso:Article ;        # Article is a LegalElement
+  ldso:notation "5" ;
+  ldso:partOf ex:chp_2 ."""@en .
+
+ldso:Document
+  a owl:Class ;
+  rdfs:label "Document"@en ;
+  skos:definition """A complete legal document such as a treaty, trade agreement,
+law, regulation, contract, insurance policy, standard, judicial decision, or
+parliamentary act. A Document is a ldso:LegalExpression that adds structural
+content — Body, Chapters, Articles — via ldso:contains."""@en ;
+  rdfs:subClassOf ldso:LegalExpression ;
+  skos:scopeNote """Documents contain elements via ldso:contains.
+A document is not itself a LegalElement — it sits at the root of the
+structural graph. Use dct:title for the official title, dct:language for its
+language, and dct:issued for its version date."""@en ;
+  skos:example """
+ex:doc_ata_en
+  a ldso:Document ;
+  dct:title "ATA Convention"@en ;
+  dct:language "en" ;
+  dct:issued "1961-12-06"^^xsd:date ;
+  ldso:expressionOf ex:resource_ata ;
+  ldso:contains ex:body_ata ."""@en .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DOCUMENT-LEVEL CONTAINERS
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:Preface
+  a owl:Class ;
+  rdfs:label "Preface"@en ;
+  skos:definition """The preliminary matter of a legal document preceding
+the body, typically containing scope statements, long titles, and
+enacting formulas."""@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Distinct from Preamble. Use for front-matter before operative recitals."@en ;
+  skos:example """
+ex:preface_ata
+  a ldso:Preface ;
+  ldso:partOf ex:doc_ata_en ;
+  ldso:text "Done at Brussels, on the sixth day of December 1961."@en ."""@en .
+
+ldso:Preamble
+  a owl:Class ;
+  rdfs:label "Preamble"@en ;
+  skos:definition """The formal introductory section of a legal document
+stating motivation, parties, and context, typically consisting of recitals
+in WHEREAS-clause form."""@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Preambles in treaties list recitals and motivations. Distinct from Preface."@en ;
+  skos:example """
+ex:preamble_ata
+  a ldso:Preamble ;
+  ldso:partOf ex:doc_ata_en ;
+  ldso:text "CONSIDERING that with a view to facilitating international trade and tourism ..."@en ."""@en .
+
+ldso:Body
+  a owl:Class ;
+  rdfs:label "Body"@en ;
+  skos:definition "The main operative content of a legal document containing all substantive provisions."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Every Document has exactly one Body. The Body contains Parts, Titles, Chapters, Sections, and Articles."@en ;
+  skos:example """
+ex:body_ata
+  a ldso:Body ;
+  ldso:partOf ex:doc_ata_en ;
+  ldso:contains ex:chp_1, ex:chp_2 ."""@en .
+
+ldso:Conclusions
+  a owl:Class ;
+  rdfs:label "Conclusions"@en ;
+  skos:definition """The final section of a legal document containing closing
+provisions, authentication clauses, and signature blocks."""@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Appears after the Body. Contains authentication and signature matter."@en ;
+  skos:example """
+ex:conclusions_ata
+  a ldso:Conclusions ;
+  ldso:partOf ex:doc_ata_en ;
+  ldso:text "IN WITNESS WHEREOF, the undersigned, duly authorised thereto ..."@en ."""@en .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# HIERARCHICAL DIVISIONS
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:Part
+  a owl:Class ;
+  rdfs:label "Part"@en ;
+  skos:definition "A major subdivision of the body of a legal document, grouping related chapters or sections."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Highest structural level below Body. Example: 'Part I — General Provisions'."@en ;
+  skos:example """
+ex:part_I
+  a ldso:Part ;
+  ldso:notation "I" ;
+  dct:title "General Provisions"@en ;
+  ldso:partOf ex:body_ata ."""@en .
+
+ldso:Title
+  a owl:Class ;
+  rdfs:label "Title"@en ;
+  skos:definition """A named subdivision of a legal document, used in civil
+law traditions as an intermediate level between Part and Chapter."""@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Used in EU treaties and regulations. May appear below Part and above Chapter."@en ;
+  skos:example """
+ex:title_III
+  a ldso:Title ;
+  ldso:notation "III" ;
+  dct:title "Agriculture"@en ;
+  ldso:partOf ex:part_I ."""@en .
+
+ldso:Chapter
+  a owl:Class ;
+  rdfs:label "Chapter"@en ;
+  skos:definition "A subdivision grouping related sections or articles on a common topic."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Chapters appear within Parts or Titles. Use ldso:notation for the chapter number or letter."@en ;
+  skos:example """
+ex:chp_2
+  a ldso:Chapter ;
+  ldso:notation "2" ;
+  dct:title "Temporary Admission"@en ;
+  ldso:partOf ex:body_ata ."""@en .
+
+ldso:Section
+  a owl:Class ;
+  rdfs:label "Section"@en ;
+  skos:definition "A subdivision of a Chapter grouping related articles or provisions."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote """Sections appear within Chapters. May be numbered or unnumbered.
+A Section contained within another Section occupies the structural position
+conventionally called 'subsection'; this is not a separate class but is
+identified by the ldso:partOf relationship pointing to a Section."""@en ;
+  skos:example """
+ex:sec_1
+  a ldso:Section ;
+  ldso:notation "1" ;
+  dct:title "Scope"@en ;
+  ldso:partOf ex:chp_2 ."""@en .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# PROVISION LEVEL
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:Article
+  a owl:Class ;
+  rdfs:label "Article"@en ;
+  skos:definition "A primary self-contained provision unit in a legal document, identified by a number or letter."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Articles are the primary unit of normative content in treaties and regulations. Use ldso:notation for the article number."@en ;
+  skos:example """
+ex:art_5
+  a ldso:Article ;
+  ldso:notation "5" ;
+  dct:title "Conditions of Temporary Admission"@en ;
+  ldso:partOf ex:chp_2 ."""@en .
+
+ldso:Paragraph
+  a owl:Class ;
+  rdfs:label "Paragraph"@en ;
+  skos:definition "A numbered or lettered subdivision of an Article or other provision unit."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote """A Paragraph is the primary subdivision of an Article.
+A Paragraph contained within another Paragraph occupies the structural
+position conventionally called 'subparagraph'; this is not a separate class
+but is identified by the ldso:partOf relationship pointing to a Paragraph.
+Use ldso:orderIndex and ldso:notation for sequence and label."""@en ;
+  skos:example """
+ex:para_2
+  a ldso:Paragraph ;
+  ldso:notation "2" ;
+  ldso:orderIndex 2 ;
+  ldso:text "The Contracting Parties may require that goods be identified on re-importation."@en ;
+  ldso:partOf ex:art_5 ."""@en .
+
+ldso:Clause
+  a owl:Class ;
+  rdfs:label "Clause"@en ;
+  skos:definition "A provision unit used in contracts, standards, and non-treaty legal instruments."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Preferred over Article for contracts, insurance policies, and standards that use 'clause' as the primary provision term."@en ;
+  skos:example """
+ex:cl_3
+  a ldso:Clause ;
+  ldso:notation "3" ;
+  ldso:text "The insurer shall pay within 30 days of receipt of a valid claim."@en ;
+  ldso:partOf ex:doc_policy ."""@en .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# LIST ELEMENTS
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:Point
+  a owl:Class ;
+  rdfs:label "Point"@en ;
+  skos:definition "A labeled structural element within a provision introducing an enumerated list."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote """A Point introduces a BlockList. A Point contained within
+another Point occupies the structural position conventionally called 'subpoint';
+this is not a separate class but is identified by the ldso:partOf relationship
+pointing to a Point."""@en ;
+  skos:example """
+ex:point_a
+  a ldso:Point ;
+  ldso:notation "a" ;
+  ldso:orderIndex 1 ;
+  ldso:partOf ex:para_2 ."""@en .
+
+ldso:BlockList
+  a owl:Class ;
+  rdfs:label "Block List"@en ;
+  skos:definition "An ordered collection of Items within a legal provision."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "A BlockList contains one or more Items. Ordering is expressed via ldso:next, ldso:previous, and ldso:orderIndex on Items."@en ;
+  skos:example """
+ex:list_1
+  a ldso:BlockList ;
+  ldso:partOf ex:para_2 ;
+  ldso:contains ex:item_a, ex:item_b, ex:item_c ."""@en .
+
+ldso:Item
+  a owl:Class ;
+  rdfs:label "Item"@en ;
+  skos:definition "A single labeled element within a BlockList, identified by a letter or number."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Use ldso:notation for the item label (a, b, c, i, ii, etc.). Use ldso:orderIndex and ldso:next/previous for sequence."@en ;
+  skos:example """
+ex:item_a
+  a ldso:Item ;
+  ldso:notation "a" ;
+  ldso:orderIndex 1 ;
+  ldso:text "motor vehicles and their accessories;"@en ;
+  ldso:partOf ex:list_1 ."""@en .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ANNEXES AND ATTACHMENTS
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:Annex
+  a owl:Class ;
+  rdfs:label "Annex"@en ;
+  skos:definition "A supplementary document attached to the main body of a legal instrument forming an integral, legally binding part of it."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Annexes are identified by number (Annex I, Annex II). Use ldso:notation for the annex number and dct:title for its heading."@en ;
+  skos:example """
+ex:annex_A
+  a ldso:Annex ;
+  ldso:notation "A" ;
+  dct:title "List of Goods Eligible for Temporary Admission"@en ;
+  ldso:partOf ex:doc_ata_en ."""@en .
+
+ldso:Schedule
+  a owl:Class ;
+  rdfs:label "Schedule"@en ;
+  skos:definition "A supplement to a legal document listing specific items, rates, entities, or data tables relevant to the main body."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Schedules are widely used in trade agreements for tariff rate tables, origin product lists, and commitment schedules."@en ;
+  skos:example """
+ex:schedule_1
+  a ldso:Schedule ;
+  ldso:notation "1" ;
+  dct:title "Tariff Reduction Schedule — Party A"@en ;
+  ldso:partOf ex:doc_ata_en ."""@en .
+
+ldso:Appendix
+  a owl:Class ;
+  rdfs:label "Appendix"@en ;
+  skos:definition "Supplementary material attached to the main body providing additional context or technical detail."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Appendices may or may not be legally binding depending on the instrument. Refer to the main text for status."@en ;
+  skos:example """
+ex:appendix_1
+  a ldso:Appendix ;
+  ldso:notation "1" ;
+  dct:title "Technical Specifications"@en ;
+  ldso:partOf ex:annex_A ."""@en .
+
+ldso:Attachment
+  a owl:Class ;
+  rdfs:label "Attachment"@en ;
+  skos:definition "A generic document or file attached to a legal instrument as a reference or exhibit."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Use when Annex, Schedule, or Appendix do not apply. Covers exhibits, forms, templates, and other attachments."@en ;
+  skos:example """
+ex:attachment_form_1
+  a ldso:Attachment ;
+  dct:title "ATA Carnet Application Form"@en ;
+  ldso:partOf ex:annex_A ."""@en .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# TABLE STRUCTURE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:Table
+  a owl:Class ;
+  rdfs:label "Table"@en ;
+  skos:definition "A structured grid of rows and cells within a legal document."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Use for tabular data within provisions. Tables are related to their containing element via ldso:hasTable or ldso:contains."@en ;
+  skos:example """
+ex:tbl_rates
+  a ldso:Table ;
+  ldso:partOf ex:schedule_1 ;
+  ldso:hasRow ex:row_1, ex:row_2, ex:row_3 ."""@en .
+
+ldso:Row
+  a owl:Class ;
+  rdfs:label "Row"@en ;
+  skos:definition "A single horizontal row within a Table."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Use ldso:orderIndex for row sequence. Rows contain Cells via ldso:hasCell."@en ;
+  skos:example """
+ex:row_1
+  a ldso:Row ;
+  ldso:orderIndex 1 ;
+  ldso:isHeader true ;
+  ldso:partOf ex:tbl_rates ."""@en .
+
+ldso:Cell
+  a owl:Class ;
+  rdfs:label "Cell"@en ;
+  skos:definition "A single data cell within a Row of a Table."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Use ldso:text for cell content. Use ldso:orderIndex for column position within the Row."@en ;
+  skos:example """
+ex:cell_1a
+  a ldso:Cell ;
+  ldso:orderIndex 1 ;
+  ldso:text "HS Code"@en ;
+  ldso:partOf ex:row_1 ."""@en .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# REFERENCES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:Reference
+  a owl:Class ;
+  rdfs:label "Reference"@en ;
+  skos:definition "A structural pointer from one legal element to another legal resource, either within the same document or externally."@en ;
+  rdfs:subClassOf ldso:LegalElement ;
+  skos:scopeNote "Superclass for all reference types. Prefer InternalReference, ExternalReference, or Citation where applicable."@en ;
+  skos:example """
+ex:ref_1
+  a ldso:Reference ;
+  ldso:partOf ex:para_2 ;
+  ldso:refersTo ex:art_7 ."""@en .
+
+ldso:InternalReference
+  a owl:Class ;
+  rdfs:label "Internal Reference"@en ;
+  skos:definition "A reference from one element in a document to another element within the same document."@en ;
+  rdfs:subClassOf ldso:Reference ;
+  skos:scopeNote "Use ldso:refersTo to link the InternalReference to its target element within the same document graph."@en ;
+  skos:example """
+ex:iref_1
+  a ldso:InternalReference ;
+  ldso:anchorText "paragraph 2 of this Article"@en ;
+  ldso:refersTo ex:para_2 ;
+  ldso:partOf ex:art_5 ."""@en .
+
+ldso:ExternalReference
+  a owl:Class ;
+  rdfs:label "External Reference"@en ;
+  skos:definition "A reference from an element in a document to a resource or element in a different document."@en ;
+  rdfs:subClassOf ldso:Reference ;
+  skos:scopeNote "The target of ldso:refersTo may be a URI in an external knowledge graph or document store."@en ;
+  skos:example """
+ex:eref_1
+  a ldso:ExternalReference ;
+  ldso:anchorText "Article 3 of the Kyoto Convention"@en ;
+  ldso:refersTo <https://example.org/kyoto/art_3> ;
+  ldso:partOf ex:art_5 ."""@en .
+
+ldso:Citation
+  a owl:Class ;
+  rdfs:label "Citation"@en ;
+  skos:definition "A formal citation of a legal authority, precedent, instrument, or standard within the text of a legal document."@en ;
+  rdfs:subClassOf ldso:Reference ;
+  skos:scopeNote "Use ldso:cites to link to the cited resource. Distinct from structural InternalReference — Citations are normative or authoritative references."@en ;
+  skos:example """
+ex:cit_1
+  a ldso:Citation ;
+  ldso:anchorText "the ATA Convention"@en ;
+  ldso:cites ex:resource_ata ;
+  ldso:partOf ex:preamble_ata ."""@en .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# OBJECT PROPERTIES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:contains
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "contains"@en ;
+  skos:definition "Relates a legal resource to a directly contained structural child element."@en ;
+  rdfs:range ldso:LegalElement ;
+  owl:inverseOf ldso:partOf ;
+  skos:scopeNote """Records the immediate parent–child containment relationship only.
+Do not declare as owl:TransitiveProperty: transitivity would conflate direct and
+indirect containment, breaking queries that rely on immediate-child semantics.
+For transitive traversal use the SPARQL property path ldso:contains+ or ldso:partOf+.
+ldso:hasTable, ldso:hasRow, and ldso:hasCell are sub-properties of ldso:contains."""@en ;
+  skos:example """
+ex:chp_2  ldso:contains ex:art_5 .
+ex:art_5  ldso:contains ex:para_1, ex:para_2, ex:para_3 ."""@en .
+
+ldso:partOf
+  a owl:ObjectProperty, owl:FunctionalProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "part of"@en ;
+  skos:definition "Relates a legal element to the resource that directly contains it."@en ;
+  rdfs:range ldso:LegalResource ;
+  owl:inverseOf ldso:contains ;
+  skos:scopeNote """Inverse of ldso:contains. Records the immediate parent only.
+For ancestor queries use the SPARQL property path ldso:partOf+ :
+  ?element ldso:partOf+ ?ancestor ."""@en ;
+  skos:example """
+ex:art_5   ldso:partOf ex:chp_2 .
+ex:para_2  ldso:partOf ex:art_5 ."""@en .
+
+ldso:next
+  a owl:ObjectProperty, owl:FunctionalProperty, owl:IrreflexiveProperty, owl:AsymmetricProperty ;
+  rdfs:label "next"@en ;
+  skos:definition "Relates a legal element to the immediately following sibling element in document order."@en ;
+  rdfs:range ldso:LegalElement ;
+  owl:inverseOf ldso:previous ;
+  skos:scopeNote """Used with ldso:previous and ldso:orderIndex to implement a
+doubly-linked list of siblings without RDF Collections. An element has at most
+one next sibling (FunctionalProperty) and cannot point to itself (IrreflexiveProperty)."""@en ;
+  skos:example """
+ex:para_1  ldso:next ex:para_2 .
+ex:para_2  ldso:next ex:para_3 ."""@en .
+
+ldso:previous
+  a owl:ObjectProperty, owl:FunctionalProperty, owl:IrreflexiveProperty, owl:AsymmetricProperty ;
+  rdfs:label "previous"@en ;
+  skos:definition "Relates a legal element to the immediately preceding sibling element in document order."@en ;
+  rdfs:range ldso:LegalElement ;
+  owl:inverseOf ldso:next ;
+  skos:scopeNote """Inverse of ldso:next. An element has at most one previous sibling
+(FunctionalProperty) and cannot point to itself (IrreflexiveProperty)."""@en ;
+  skos:example """
+ex:para_2  ldso:previous ex:para_1 .
+ex:para_3  ldso:previous ex:para_2 ."""@en .
+
+ldso:refersTo
+  a owl:ObjectProperty ;
+  rdfs:label "refers to"@en ;
+  skos:definition "Relates a Reference element to the legal element or resource it designates."@en ;
+  rdfs:range ldso:LegalResource ;
+  skos:scopeNote "Use on InternalReference, ExternalReference, or Citation instances. The target may be a URI not yet loaded in the local graph."@en ;
+  skos:example """
+ex:iref_1  ldso:refersTo ex:para_2 .
+ex:eref_1  ldso:refersTo <https://example.org/kyoto/art_3> ."""@en .
+
+ldso:cites
+  a owl:ObjectProperty ;
+  rdfs:label "cites"@en ;
+  skos:definition "Relates a legal element to a legal resource it formally cites as authority, precedent, or normative reference."@en ;
+  rdfs:range ldso:LegalResource ;
+  skos:scopeNote "Used on Citation instances and on LegalElements that directly cite another resource without an explicit Citation node."@en ;
+  skos:example """
+ex:cit_1  ldso:cites ex:resource_ata .
+ex:art_5  ldso:cites ex:resource_ata ."""@en .
+
+ldso:expressionOf
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "expression of"@en ;
+  skos:definition "Relates a LegalExpression to the abstract LegalResource of which it is a version."@en ;
+  rdfs:range ldso:LegalResource ;
+  rdfs:subPropertyOf dct:isVersionOf ;
+  owl:inverseOf ldso:hasExpression ;
+  skos:scopeNote """Every LegalExpression SHOULD be linked to its parent LegalResource
+via ldso:expressionOf. The LegalResource carries the abstract identity (IRI, title);
+the LegalExpression adds language (dct:language) and date (dct:issued).
+Sub-property of dct:isVersionOf for DC Terms compatibility."""@en ;
+  skos:example """
+ex:doc_ata_en  ldso:expressionOf ex:resource_ata .
+# ex:resource_ata is the abstract instrument; ex:doc_ata_en is the English text."""@en .
+
+ldso:hasExpression
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "has expression"@en ;
+  skos:definition "Relates a LegalResource to a LegalExpression that realises it in a specific language and version."@en ;
+  rdfs:range ldso:LegalExpression ;
+  owl:inverseOf ldso:expressionOf ;
+  skos:scopeNote """Convenience inverse of ldso:expressionOf. A single LegalResource may
+have multiple expressions (one per language or consolidated version).
+Use dct:language on the LegalExpression node to identify the language."""@en ;
+  skos:example """
+ex:resource_ata
+  ldso:hasExpression ex:doc_ata_en, ex:doc_ata_fr ."""@en .
+
+ldso:hasTable
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "has table"@en ;
+  skos:definition "Relates a legal element to a Table contained within it."@en ;
+  rdfs:range ldso:Table ;
+  rdfs:subPropertyOf ldso:contains ;
+  skos:scopeNote "Convenience sub-property of ldso:contains for table navigation."@en ;
+  skos:example "ex:art_5  ldso:hasTable ex:tbl_rates ."@en .
+
+ldso:hasRow
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "has row"@en ;
+  skos:definition "Relates a legal element to a Row it directly contains."@en ;
+  rdfs:range ldso:Row ;
+  rdfs:subPropertyOf ldso:contains ;
+  skos:scopeNote """Domain is ldso:LegalElement (not just ldso:Table) to support
+nested tables: a Cell may contain a Table which in turn has Rows.
+Use ldso:orderIndex on each Row for ordered iteration."""@en ;
+  skos:example """
+ex:tbl_rates  ldso:hasRow ex:row_1, ex:row_2, ex:row_3 .
+ex:row_1      ldso:orderIndex 1 ; ldso:isHeader true ."""@en .
+
+ldso:hasCell
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "has cell"@en ;
+  skos:definition "Relates a legal element to a Cell it directly contains."@en ;
+  rdfs:range ldso:Cell ;
+  rdfs:subPropertyOf ldso:contains ;
+  skos:scopeNote """Domain is ldso:LegalElement (not just ldso:Row) to support
+nested table structures where a Row contains sub-Rows rather than Cells directly.
+Use ldso:orderIndex on each Cell for column position."""@en ;
+  skos:example """
+ex:row_2  ldso:hasCell ex:cell_2a, ex:cell_2b .
+ex:cell_2a  ldso:orderIndex 1 ; ldso:text "originating goods"@en ."""@en .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DATATYPE PROPERTIES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:citation
+  a owl:DatatypeProperty ;
+  rdfs:label "citation"@en ;
+  skos:definition """The full human-readable citation path to a legal element,
+formed by concatenating ldso:notation values from the document root to the element
+and joining them with dots (e.g., 'I.1.c.ii', '2.5.1.a', 'Art. 5(2)(a)')."""@en ;
+  rdfs:range xsd:string ;
+  skos:scopeNote """This value mirrors how practitioners cite provisions in legal
+text. It is derivable from the graph by walking ldso:partOf and collecting
+ldso:notation values, but storing it explicitly enables fast SPARQL lookups and
+full-text search without recursive traversal. The notation system at each level
+(Roman numerals, Arabic, lowercase letters, lowercase Roman) is determined by
+the document, not the ontology."""@en ;
+  skos:example """
+ex:art_5   ldso:citation "Art. 5" .
+ex:para_2  ldso:citation "Art. 5(2)" .
+ex:item_a  ldso:citation "Art. 5(2)(a)" ."""@en .
+
+ldso:orderIndex
+  a owl:DatatypeProperty ;
+  rdfs:label "order index"@en ;
+  skos:definition "An integer indicating the sequential position of a legal element among its siblings."@en ;
+  rdfs:range xsd:integer ;
+  skos:scopeNote "1-based. Use together with ldso:next and ldso:previous for complete ordering. Supports amendment insertion by allowing non-consecutive indices."@en ;
+  skos:example """
+ex:para_1  ldso:orderIndex 1 .
+ex:para_2  ldso:orderIndex 2 .
+ex:para_3  ldso:orderIndex 3 ."""@en .
+
+ldso:notation
+  a owl:DatatypeProperty ;
+  rdfs:label "notation"@en ;
+  skos:definition "The human-readable identifier or label of a legal element as it appears in the source document."@en ;
+  rdfs:range xsd:string ;
+  skos:scopeNote "Examples: '2', '5', 'a', 'I', 'IV', 'bis'. The local label only — not the full citation path. Preserve the exact notation from the source text, including punctuation."@en ;
+  skos:example """
+ex:art_5   ldso:notation "5" .
+ex:para_2  ldso:notation "2" .
+ex:item_a  ldso:notation "a" ."""@en .
+
+ldso:text
+  a owl:DatatypeProperty ;
+  rdfs:label "text"@en ;
+  skos:definition "The verbatim text content of a legal element as it appears in the authoritative source."@en ;
+  rdfs:range rdf:langString ;
+  skos:scopeNote """Always assert with a language tag (e.g., \"...\"@en, \"...\"@fr).
+Legal instruments are routinely multilingual; language-tagged literals allow
+multiple translations to coexist on the same node. For large corpora,
+linking to a content store via dct:source is recommended instead."""@en ;
+  skos:example """
+ex:para_1
+  ldso:text "Goods shall be admitted temporarily into the customs territory of a Contracting Party without payment of import duties and taxes, provided that they are intended for re-exportation within the period specified in Article 7."@en ."""@en .
+
+ldso:anchorText
+  a owl:DatatypeProperty ;
+  rdfs:label "anchor text"@en ;
+  skos:definition """The surface form of a reference as it appears in the text of the
+containing element — the exact phrase that constitutes the reference anchor."""@en ;
+  rdfs:range rdf:langString ;
+  skos:scopeNote """Always assert with a language tag. This property bridges the flat
+ldso:text literal and the structured ldso:refersTo link: it records which phrase
+in the text triggers the reference without requiring character offsets.
+Examples: \"paragraph 2 of this Article\"@en, \"Article 2.5\"@en."""@en ;
+  skos:example """
+ex:iref_1  ldso:anchorText "paragraph 2 of this Article"@en .
+ex:cit_1   ldso:anchorText "the ATA Convention"@en ."""@en .
+
+ldso:isHeader
+  a owl:DatatypeProperty ;
+  rdfs:label "is header"@en ;
+  skos:definition "Indicates that a Row serves as a column-header row within its containing Table."@en ;
+  rdfs:range xsd:boolean ;
+  skos:scopeNote """A header row is a structural role, not a distinct class.
+Assert ldso:isHeader true on a Row when the source document treats it as
+a column-label row. Absence of the property means the row is a data row.
+Applies equally to header rows in nested tables."""@en ;
+  skos:example "ex:row_1  ldso:isHeader true ."@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DISJOINTNESS AXIOMS
+# ═════════════════════════════════════════════════════════════════════════════
+
+# Document-level containers — a structural node cannot be simultaneously
+# the preamble and the body of the same document.
+[ a owl:AllDisjointClasses ;
+  owl:members ( ldso:Preface ldso:Preamble ldso:Body ldso:Conclusions ) ] .
+
+# Hierarchical division levels are mutually exclusive.
+[ a owl:AllDisjointClasses ;
+  owl:members ( ldso:Part ldso:Title ldso:Chapter ldso:Section ) ] .
+
+# Provision unit types are mutually exclusive at their own level.
+[ a owl:AllDisjointClasses ;
+  owl:members ( ldso:Article ldso:Paragraph ldso:Clause ) ] .
+
+# List structure types are mutually exclusive.
+[ a owl:AllDisjointClasses ;
+  owl:members ( ldso:Point ldso:BlockList ldso:Item ) ] .
+
+# Supplementary attachment types are mutually exclusive.
+[ a owl:AllDisjointClasses ;
+  owl:members ( ldso:Annex ldso:Schedule ldso:Appendix ldso:Attachment ) ] .
+
+# Table structure types are mutually exclusive.
+[ a owl:AllDisjointClasses ;
+  owl:members ( ldso:Table ldso:Row ldso:Cell ) ] .
+
+# Reference types are mutually exclusive.
+[ a owl:AllDisjointClasses ;
+  owl:members ( ldso:InternalReference ldso:ExternalReference ldso:Citation ) ] .
+
+# Major partition: LegalExpression and LegalElement are disjoint.
+# A Document (LegalExpression) is not itself a structural element.
+ldso:LegalExpression owl:disjointWith ldso:LegalElement .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# rdfs:isDefinedBy — applied to all LDSO-Core terms
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:LegalResource    rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:LegalExpression  rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:LegalElement     rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Document         rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Preface          rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Preamble         rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Body             rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Conclusions      rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Part             rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Title            rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Chapter          rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Section          rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Article          rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Paragraph        rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Clause           rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Point            rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:BlockList        rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Item             rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Annex            rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Schedule         rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Appendix         rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Attachment       rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Table            rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Row              rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Cell             rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Reference        rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:InternalReference rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:ExternalReference rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:Citation         rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:contains         rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:partOf           rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:next             rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:previous         rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:refersTo         rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:cites            rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:expressionOf     rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:hasExpression    rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:hasTable         rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:hasRow           rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:hasCell          rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:citation         rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:orderIndex       rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:notation         rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:text             rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:anchorText       rdfs:isDefinedBy <https://w3id.org/ldso/core> .
+ldso:isHeader         rdfs:isDefinedBy <https://w3id.org/ldso/core> .

@@ -1,0 +1,243 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+@prefix leg:  <https://w3id.org/ldso/semantics#> .
+@prefix ops:  <https://w3id.org/ldso/operations#> .
+@prefix ex:   <https://example.org/ata-ops#> .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# LDSO-Operations Usage Example
+# ATA Convention — Temporary Admission Operative Rules
+#
+# Extends the LDSO-Semantics ATA example with Layer 5 operational detail.
+# Demonstrates: RequestTrigger, DocumentaryCriterion, EligibilityCriterion,
+# TemporalCriterion, Procedure/Step chain, Deadline, DocumentaryRequirement,
+# and cross-layer operativizes link to Layer 4 NormativeStatements.
+# ═════════════════════════════════════════════════════════════════════════════
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Layer 2b: Roles (from LDSO-Entities)
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:CustomsOfficer
+  a ent:Role ;
+  rdfs:label "Customs Officer"@en ;
+  ent:showAs "Customs Officer"@en ;
+  ent:href "https://www.wcoomd.org/roles/customs-officer"^^xsd:anyURI .
+
+ex:CarnetHolder
+  a ent:Role ;
+  rdfs:label "ATA Carnet Holder"@en ;
+  ent:showAs "ATA Carnet Holder"@en .
+
+ex:IssuingAssociation
+  a ent:Role ;
+  rdfs:label "Authorized Issuing Association"@en ;
+  ent:showAs "Authorized Issuing Association"@en .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Layer 4: NormativeStatements (cross-references from LDSO-Semantics example)
+# These are declared here for graph self-containment; in production they are
+# imported from the LDSO-Semantics document graph.
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Oblig_Para1_Admit
+  a leg:Obligation ;
+  rdfs:label "Obligation to admit goods temporarily — ATA Art. 2.5 §1"@en .
+
+ex:Oblig_Para2_Present
+  a leg:Obligation ;
+  rdfs:label "Obligation to accept presentation of goods for re-exportation — ATA Art. 2.5 §2"@en .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Documentary Requirements
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:DocReq_ATACarnet
+  a ops:DocumentaryRequirement ;
+  rdfs:label "Valid ATA Carnet"@en ;
+  ops:documentType "ATA Carnet"@en ;
+  ops:issuedBy "Authorized Issuing Association"@en ;
+  ops:validityPeriod "P1Y"^^xsd:duration .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Triggers
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Trigger_CarnetPresented
+  a ops:RequestTrigger ;
+  rdfs:label "ATA carnet presented at customs post"@en ;
+  ops:triggerDescription """Activated when a carnet holder presents goods accompanied by a
+valid ATA carnet at a border crossing point of a Contracting Party."""@en .
+
+ex:Trigger_GoodsForReExport
+  a ops:RequestTrigger ;
+  rdfs:label "Goods presented for re-exportation under ATA carnet"@en ;
+  ops:triggerDescription """Activated when the carnet holder presents goods at a customs post
+for re-exportation, completing the temporary admission cycle."""@en .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Criteria — Temporary Admission
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Crit_ValidCarnet
+  a ops:DocumentaryCriterion ;
+  rdfs:label "Valid ATA carnet criterion"@en ;
+  ops:criterionDescription """The carnet holder must present a valid, unexpired ATA carnet
+issued by an authorized issuing association of a Contracting Party."""@en ;
+  ops:hasDocumentaryRequirement ex:DocReq_ATACarnet .
+
+ex:Crit_GoodsMatchCarnet
+  a ops:EligibilityCriterion ;
+  rdfs:label "Goods match carnet description criterion"@en ;
+  ops:criterionDescription """The goods presented must correspond in description, quantity,
+and identifying marks to the entries on the ATA carnet importation counterfoil."""@en .
+
+ex:Crit_WithinAdmissionPeriod
+  a ops:TemporalCriterion ;
+  rdfs:label "Within authorized admission period criterion"@en ;
+  ops:criterionDescription "The goods must be presented before the expiry date shown on the ATA carnet."@en .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Criteria — Re-exportation
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Crit_IdenticalGoods
+  a ops:EligibilityCriterion ;
+  rdfs:label "Identical goods for re-exportation criterion"@en ;
+  ops:criterionDescription """The goods presented for re-exportation must be the same goods
+admitted under the carnet, in the same condition as at admission
+(normal depreciation excepted)."""@en .
+
+ex:Crit_ReExportBeforeDeadline
+  a ops:TemporalCriterion ;
+  rdfs:label "Re-exportation before admission deadline criterion"@en ;
+  ops:criterionDescription "The goods must be re-exported before the end of the authorized admission period."@en .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Procedure — Temporary Admission
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Proc_CarnetAdmission
+  a ops:Procedure ;
+  rdfs:label "ATA carnet temporary admission procedure"@en ;
+  ops:hasStep ex:Step1_VerifyCarnet ;
+  ops:hasStep ex:Step2_InspectGoods ;
+  ops:hasStep ex:Step3_RecordEntry ;
+  ops:hasStep ex:Step4_StampCounterfoil .
+
+ex:Step1_VerifyCarnet
+  a ops:Step ;
+  rdfs:label "Step 1 — Verify carnet validity"@en ;
+  ops:stepOrder 1 ;
+  ops:stepDescription """Check that the ATA carnet has not expired and has not been
+previously cancelled or fully discharged. Confirm the issuing association is
+authorised by a Contracting Party."""@en ;
+  ops:performedBy ex:CustomsOfficer ;
+  ops:nextStep ex:Step2_InspectGoods .
+
+ex:Step2_InspectGoods
+  a ops:Step ;
+  rdfs:label "Step 2 — Inspect goods against counterfoil"@en ;
+  ops:stepOrder 2 ;
+  ops:stepDescription """Verify that the goods presented correspond in description,
+quantity, and identifying marks to the entries on the importation counterfoil."""@en ;
+  ops:performedBy ex:CustomsOfficer ;
+  ops:nextStep ex:Step3_RecordEntry .
+
+ex:Step3_RecordEntry
+  a ops:Step ;
+  rdfs:label "Step 3 — Record entry in customs register"@en ;
+  ops:stepOrder 3 ;
+  ops:stepDescription """Record the temporary admission in the customs register, noting
+the carnet number, goods description, holder identity, and the authorized
+re-exportation date."""@en ;
+  ops:performedBy ex:CustomsOfficer ;
+  ops:nextStep ex:Step4_StampCounterfoil .
+
+ex:Step4_StampCounterfoil
+  a ops:Step ;
+  rdfs:label "Step 4 — Stamp and detach importation counterfoil"@en ;
+  ops:stepOrder 4 ;
+  ops:stepDescription """Stamp and sign the importation counterfoil, detach it from the
+carnet, and return the carnet to the holder."""@en ;
+  ops:performedBy ex:CustomsOfficer .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Procedure — Re-exportation
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Proc_CarnetReExportation
+  a ops:Procedure ;
+  rdfs:label "ATA carnet re-exportation procedure"@en ;
+  ops:hasStep ex:StepR1_VerifyIdentity ;
+  ops:hasStep ex:StepR2_StampReExport .
+
+ex:StepR1_VerifyIdentity
+  a ops:Step ;
+  rdfs:label "Step 1 — Verify goods identity for re-export"@en ;
+  ops:stepOrder 1 ;
+  ops:stepDescription """Check that the goods presented for re-exportation match the
+importation counterfoil in description, quantity, and identifying marks."""@en ;
+  ops:performedBy ex:CustomsOfficer ;
+  ops:nextStep ex:StepR2_StampReExport .
+
+ex:StepR2_StampReExport
+  a ops:Step ;
+  rdfs:label "Step 2 — Stamp re-exportation counterfoil"@en ;
+  ops:stepOrder 2 ;
+  ops:stepDescription """Stamp and sign the re-exportation counterfoil to discharge the
+temporary admission for this Contracting Party and return the carnet to the holder."""@en ;
+  ops:performedBy ex:CustomsOfficer .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Schedule
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Sched_AdmissionDeadline
+  a ops:Deadline ;
+  rdfs:label "Temporary admission re-exportation deadline"@en ;
+  ops:deadlineDuration "P6M"^^xsd:duration .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Operative Rules
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Rule_TemporaryAdmission
+  a ops:OperativeRule ;
+  rdfs:label "Temporary admission rule — ATA carnet goods"@en ;
+  ops:operativizes ex:Oblig_Para1_Admit ;
+  ops:hasTrigger ex:Trigger_CarnetPresented ;
+  ops:hasCriterion ex:Crit_ValidCarnet ;
+  ops:hasCriterion ex:Crit_GoodsMatchCarnet ;
+  ops:hasCriterion ex:Crit_WithinAdmissionPeriod ;
+  ops:hasProcedure ex:Proc_CarnetAdmission ;
+  ops:hasSchedule ex:Sched_AdmissionDeadline ;
+  ops:hasDocumentaryRequirement ex:DocReq_ATACarnet ;
+  ops:performedBy ex:CustomsOfficer .
+
+ex:Rule_ReExportation
+  a ops:OperativeRule ;
+  rdfs:label "Re-exportation rule — ATA carnet goods"@en ;
+  ops:operativizes ex:Oblig_Para2_Present ;
+  ops:hasTrigger ex:Trigger_GoodsForReExport ;
+  ops:hasCriterion ex:Crit_IdenticalGoods ;
+  ops:hasCriterion ex:Crit_ReExportBeforeDeadline ;
+  ops:hasProcedure ex:Proc_CarnetReExportation ;
+  ops:hasSchedule ex:Sched_AdmissionDeadline ;
+  ops:performedBy ex:CustomsOfficer .

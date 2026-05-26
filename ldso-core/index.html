@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LDSO-Core: Legal Document Structure Ontology — Core Module</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus:   "unofficial",
+      shortName:    "ldso-core",
+      latestVersion: "https://w3id.org/ldso/core/index.html",
+      edDraftURI:    "https://w3id.org/ldso/core/index.html",
+      editors: [
+        {
+          name:    "Stephane Fellah",
+          company: "Geoknoesis LLC",
+          url:     "https://www.geoknoesis.com"
+        }
+      ],
+      publishDate: "2026-05-25",
+      github:  "https://github.com/geoknoesis/ldso",
+      license: "cc-by",
+      doJsonLd: true,
+      xref:    false,
+      lint:    true,
+      localBiblio: {
+        "AKN": {
+          title:     "Akoma Ntoso XML for Parliamentary, Legislative & Judiciary Documents",
+          href:      "http://www.akomantoso.org/",
+          publisher: "OASIS"
+        },
+        "FRBR": {
+          title:     "Functional Requirements for Bibliographic Records",
+          href:      "https://www.ifla.org/publications/functional-requirements-for-bibliographic-records/",
+          publisher: "IFLA"
+        },
+        "ELI": {
+          title:     "European Legislation Identifier",
+          href:      "https://eur-lex.europa.eu/eli-register/about.html",
+          publisher: "Publications Office of the EU"
+        },
+        "SHACL": {
+          title:     "Shapes Constraint Language (SHACL)",
+          href:      "https://www.w3.org/TR/shacl/",
+          publisher: "W3C"
+        },
+        "OWL2": {
+          title:     "OWL 2 Web Ontology Language Primer",
+          href:      "https://www.w3.org/TR/owl2-primer/",
+          publisher: "W3C"
+        },
+        "SKOS": {
+          title:     "SKOS Simple Knowledge Organization System",
+          href:      "https://www.w3.org/TR/skos-reference/",
+          publisher: "W3C"
+        },
+        "TURTLE": {
+          title:     "RDF 1.1 Turtle",
+          href:      "https://www.w3.org/TR/turtle/",
+          publisher: "W3C"
+        },
+        "JSON-LD11": {
+          title:     "JSON-LD 1.1",
+          href:      "https://www.w3.org/TR/json-ld11/",
+          publisher: "W3C"
+        }
+      }
+    };
+  </script>
+  <style>
+    table.props { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+    table.props th, table.props td { border: 1px solid #ccc; padding: 6px 10px; vertical-align: top; }
+    table.props th { background: #f0f0f0; font-weight: bold; }
+    .note-disclaimer { border-left: 4px solid #e67e22; background: #fef9f0; padding: 0.75em 1em; margin: 1em 0; }
+    pre.example { background: #f8f8f8; border: 1px solid #ddd; padding: 1em; overflow-x: auto; font-size: 0.85em; }
+    code.iri { font-family: monospace; color: #333; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ABSTRACT -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="abstract">
+  <p>
+    This document specifies <strong>LDSO-Core</strong>, the Core Module of the
+    Legal Document Structure Ontology (LDSO). LDSO-Core provides a generic,
+    modular RDF/OWL vocabulary for representing the structural hierarchy,
+    ordering, and identity of legal documents including treaties, trade
+    agreements, laws, regulations, contracts, insurance policies, standards,
+    judicial decisions, and parliamentary acts.
+  </p>
+  <p>
+    LDSO-Core covers document structure only. Legal semantics (obligations,
+    permissions, definitions), legal lifecycle (amendments, versioning), and
+    domain-specific operational rules belong to separate LDSO modules.
+  </p>
+  <p>
+    The ontology namespace is
+    <code class="iri">https://w3id.org/ldso/core#</code>
+    (preferred prefix: <code>ldso</code>).
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- STATUS OF THIS DOCUMENT -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="sotd">
+  <div class="note-disclaimer">
+    <strong>Disclaimer:</strong> This document is <em>not</em> an official W3C
+    Standard, W3C Recommendation, OASIS Standard, or any other standards body
+    specification. It is a community and project specification produced by
+    Geoknoesis LLC using W3C ReSpec formatting conventions.
+  </div>
+  <p>
+    This specification is under active development. Comments and contributions
+    are welcome via the <a href="https://github.com/geoknoesis/ldso/issues">GitHub
+    issue tracker</a>. The ontology follows Semantic Versioning.
+  </p>
+  <section id="version-iri">
+    <h3>Version IRI</h3>
+    <p>
+      The version IRI for this publication is
+      <code>https://w3id.org/ldso/core/1.0.0</code>.
+      The canonical namespace IRI is <code>https://w3id.org/ldso/core#</code>
+      (preferred prefix: <code>ldso</code>). All LDSO-Core terms are identified
+      by IRIs in this namespace and carry a <code>rdfs:isDefinedBy</code>
+      assertion pointing to <code>https://w3id.org/ldso/core</code>.
+    </p>
+  </section>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 1. INTRODUCTION -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="intro">
+  <h2>Introduction</h2>
+
+  <section id="intro-purpose">
+    <h3>Purpose</h3>
+    <p>
+      Every legal instrument — a trade agreement, a statute, a contract, a
+      judicial decision — is built from the same structural grammar. A treaty
+      has a preamble, a body divided into chapters, chapters divided into
+      articles, articles divided into numbered paragraphs, paragraphs
+      introducing lettered lists, lists containing items, items containing
+      further structure. This grammar is not decoration: it is the primary
+      addressing system by which legal practitioners, courts, automated systems,
+      and knowledge graphs navigate, cite, and reason about legal text.
+    </p>
+    <p>
+      <strong>LDSO-Core</strong> provides a generic, graph-native RDF/OWL
+      vocabulary for representing that structural grammar. It answers the
+      question: <em>where is this text, and how does it relate to the other
+      text around it?</em> — without saying anything about what the text
+      means legally.
+    </p>
+    <p>
+      Structure and meaning are kept strictly separate. The class
+      <code>ldso:Article</code> records that a node is a primary provision unit
+      at a given position in a document. Whether that article imposes an
+      obligation, grants a permission, or provides a definition is the concern
+      of LDSO-Semantics, a higher-layer module. LDSO-Core never encodes legal
+      meaning.
+    </p>
+  </section>
+
+  <section id="intro-problems">
+    <h3>Problems This Specification Solves</h3>
+
+    <section id="prob-fragmentation">
+      <h4>Structural fragmentation across corpora</h4>
+      <p>
+        A trade lawyer working across the CPTPP, the EU-Mercosur Agreement, and
+        a domestic regulation encounters three different document structures,
+        three different numbering schemes, and three different digital formats.
+        No common graph vocabulary exists to represent all three uniformly so
+        that a single SPARQL query can retrieve, say, all articles in all three
+        instruments that deal with temporary admission.
+      </p>
+      <p>
+        LDSO-Core solves this by providing instrument-neutral classes such as
+        <code>ldso:Article</code>, <code>ldso:Paragraph</code>, and
+        <code>ldso:Item</code> that apply across jurisdictions and document
+        types. The notation "2.5" is preserved in <code>ldso:notation</code>
+        regardless of whether the source is a treaty, a regulation, or an
+        insurance policy.
+      </p>
+    </section>
+
+    <section id="prob-ordering">
+      <h4>Ordering without RDF Collections</h4>
+      <p>
+        RDF Collections (<code>rdf:List</code>) represent ordered sequences but
+        are cumbersome for large legal corpora: they cannot be extended without
+        rewriting the list, they do not support amendment insertion, and they
+        do not support bidirectional traversal or index-based lookup in SPARQL.
+      </p>
+      <p>
+        LDSO-Core solves this with a doubly-linked list pattern:
+        <code>ldso:next</code> and <code>ldso:previous</code> chain siblings,
+        and <code>ldso:orderIndex</code> provides an integer for
+        <code>ORDER BY</code> queries. When a new paragraph is inserted by
+        amendment, only two pointer updates are required; no renumbering of
+        the list is needed.
+      </p>
+      <pre class="example turtle">
+# Before amendment: para_1 → para_2
+:para_1  ldso:next :para_2 ; ldso:orderIndex 1 .
+:para_2  ldso:previous :para_1 ; ldso:orderIndex 2 .
+
+# After inserting para_1bis between para_1 and para_2:
+:para_1     ldso:next :para_1bis ; ldso:orderIndex 1 .
+:para_1bis  ldso:previous :para_1 ; ldso:next :para_2 ; ldso:orderIndex 2 .
+:para_2     ldso:previous :para_1bis ; ldso:orderIndex 3 .
+      </pre>
+    </section>
+
+    <section id="prob-identity">
+      <h4>Stable element identity and multilingual versions</h4>
+      <p>
+        A provision cited in a legal brief must remain identifiable even after
+        the document is amended. LDSO-Core uses a graph-native identity model:
+        the node IRI is the primary identity for every legal element.
+        <code>ldso:notation</code> carries the local label as printed in the
+        source document (e.g., <code>"5"</code>), and <code>ldso:citation</code>
+        carries the full concatenated citation path (e.g., <code>"2.5"</code>).
+      </p>
+      <p>
+        At the document level, LDSO-Core separates the abstract instrument from
+        its language versions using <code>ldso:LegalResource</code> and
+        <code>ldso:LegalExpression</code>. The English and French texts of a
+        treaty are two <code>ldso:LegalExpression</code> nodes linked to the
+        same <code>ldso:LegalResource</code>. Bibliographic metadata
+        (<code>dct:title</code>, <code>dct:language</code>, <code>dct:issued</code>)
+        is carried by the LegalExpression, not by custom LDSO properties.
+      </p>
+      <pre class="example turtle">
+&lt;https://example.org/resource/ta&gt;
+  a ldso:LegalResource ;
+  dct:title "Agreement on Temporary Admission"@en ;
+  ldso:hasExpression &lt;https://example.org/doc/ta/EN&gt; ,
+                     &lt;https://example.org/doc/ta/FR&gt; .
+
+&lt;https://example.org/doc/ta/EN&gt;
+  a ldso:Document ;
+  dct:title "Agreement on Temporary Admission"@en ;
+  dct:language "en" ;
+  dct:issued "2026-01-15"^^xsd:date ;
+  ldso:expressionOf &lt;https://example.org/resource/ta&gt; .
+
+&lt;https://example.org/doc/ta/EN/body/chp_2/art_5&gt;
+  ldso:notation "5" ;   # local label as printed
+  ldso:citation "2.5" . # dot-concatenated path from document root
+      </pre>
+    </section>
+
+    <section id="prob-inline-refs">
+      <h4>Inline cross-references within text</h4>
+      <p>
+        Legal text is dense with cross-references: "as referred to in paragraph 2",
+        "subject to Article 5.3", "as defined in Annex I". These references
+        are embedded in prose but must be traversable as graph edges for
+        citation analysis, impact assessment, and question answering.
+      </p>
+      <p>
+        LDSO-Core solves this by modelling each inline reference as a
+        <code>ldso:InternalReference</code> or
+        <code>ldso:ExternalReference</code> node contained by the citing
+        element. The property <code>ldso:anchorText</code> records the surface
+        phrase; <code>ldso:refersTo</code> points to the target node.
+      </p>
+      <pre class="example turtle">
+:para_1
+  ldso:text "...goods referred to in paragraph 2 of this Article..."@en ;
+  ldso:contains :para_1/ref_1 .
+
+:para_1/ref_1
+  a ldso:InternalReference ;
+  ldso:anchorText "paragraph 2 of this Article"@en ;
+  ldso:refersTo   :para_2 .
+      </pre>
+    </section>
+
+    <section id="prob-multilingual">
+      <h4>Multilingual text on the same structural node</h4>
+      <p>
+        International instruments are authenticated in multiple languages, all
+        equally authoritative. LDSO-Core uses <code>rdf:langString</code> for
+        <code>ldso:text</code>, allowing multiple language variants to be
+        asserted on the same node without structural duplication.
+      </p>
+      <pre class="example turtle">
+:art_2p5/para_1
+  ldso:text "Each Party shall allow the temporary admission..."@en ;
+  ldso:text "Chaque Partie autorise l'admission temporaire..."@fr ;
+  ldso:text "Cada Parte permitirá la admisión temporal..."@es .
+      </pre>
+    </section>
+  </section>
+
+  <section id="intro-layer-model">
+    <h3>Module Architecture and Layer Relationships</h3>
+    <p>
+      LDSO-Core is the foundation layer of the Legal Document Structure
+      Ontology family. Each layer above it imports and extends the layers
+      below. The separation is enforced as a hard architectural constraint:
+      no concept from a higher layer may appear in a lower-layer instance.
+    </p>
+
+    <table class="props">
+      <thead>
+        <tr><th>Layer</th><th>Module</th><th>Responsibility</th><th>Depends on</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>6</td>
+          <td>Evaluation</td>
+          <td>Rule execution results, compliance scores, gap analysis outputs</td>
+          <td>Layer 5</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>Domain ontologies<br>(Trade Agreement Ontology, Insurance Ontology…)</td>
+          <td>Operational rules: tariff rules, origin rules, document requirements, policy conditions</td>
+          <td>Layer 4</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>LDSO-Semantics</td>
+          <td>Legal meaning: obligations, permissions, prohibitions, exceptions, definitions, conditions</td>
+          <td>Layer 3</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>LDSO-Lifecycle</td>
+          <td>Legal change: amendments, repeal, consolidation, versioning, entry into force</td>
+          <td>Layers 1 + 2</td>
+        </tr>
+        <tr>
+          <td>2b</td>
+          <td>LDSO-Entities</td>
+          <td>Named entity annotation: persons, organizations, locations, concepts, roles, events, processes</td>
+          <td>Layer 1</td>
+        </tr>
+        <tr>
+          <td><strong>1</strong></td>
+          <td><strong>LDSO-Core ← this specification</strong></td>
+          <td>Legal resource and expression identity, document structure, hierarchy, ordering, text content, references</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      The key invariant: structure tells <em>where</em> text is.
+      Semantics tells <em>what</em> text means. Lifecycle tells <em>how</em>
+      text changes. Domain rules tell <em>how to operationalise</em> the
+      meaning. These concerns must never be mixed in a single layer.
+    </p>
+    <p>
+      A correct multi-layer instance looks like this:
+    </p>
+    <pre class="example turtle">
+# Layer 1 — LDSO-Core: where the text is
+:art_2p5
+  a ldso:Article ;
+  ldso:notation "2.5" ;
+  dct:title "Temporary Admission of Goods"@en .
+
+# Layer 4 — LDSO-Semantics: what the text means (separate graph)
+:obligation_art2p5_para1
+  a leg:Obligation ;
+  leg:derivedFrom :art_2p5/para_1 ;
+  leg:subject     :Party ;
+  leg:modality    leg:MUST .
+
+# Layer 5 — Domain: operational rule (separate graph)
+:rule_temporaryAdmission
+  a trade:CustomsProcedureRule ;
+  trade:sourceProvision :art_2p5 ;
+  trade:modality trade:MUST_NOT_COLLECT_DUTY .
+    </pre>
+
+    <p>
+      The structural node <code>:art_2p5</code> is the anchor.
+      Higher layers point to it; they do not modify it.
+    </p>
+  </section>
+
+  <section id="intro-class-guide">
+    <h3>Class Guide — Rationale and Usage</h3>
+    <p>
+      The following sections explain each class: why it exists as a distinct
+      class, when to use it, and a concrete example.
+    </p>
+
+    <section id="guide-LegalResource">
+      <h4><code>ldso:LegalResource</code></h4>
+      <p>
+        The root of the class hierarchy. Anything that can be cited or
+        referenced in a legal graph is a LegalResource — a complete document,
+        an element within a document, or an external reference target. It
+        exists to give <code>ldso:refersTo</code> and <code>ldso:cites</code>
+        a typed range that covers both documents and elements without forcing
+        them into the same class.
+      </p>
+      <p>
+        In practice you will never instantiate <code>ldso:LegalResource</code>
+        directly — use <code>ldso:Document</code> or one of the
+        <code>ldso:LegalElement</code> subclasses.
+      </p>
+    </section>
+
+    <section id="guide-Document">
+      <h4><code>ldso:Document</code></h4>
+      <p>
+        A complete legal instrument. It is a <code>ldso:LegalResource</code>
+        but deliberately <em>not</em> a <code>ldso:LegalElement</code> —
+        documents contain elements, they are not contained by them.
+      </p>
+      <pre class="example turtle">
+&lt;https://example.org/doc/cptpp/EN&gt;
+  a ldso:Document ;
+  dct:title "Comprehensive and Progressive Agreement for Trans-Pacific Partnership"@en ;
+  dct:language "en" ;
+  dct:issued "2018-12-30"^^xsd:date ;
+  ldso:contains &lt;.../preamble&gt; , &lt;.../body&gt; , &lt;.../conclusions&gt; .
+      </pre>
+    </section>
+
+    <section id="guide-Preface-Preamble-Body-Conclusions">
+      <h4><code>ldso:Preface</code>, <code>ldso:Preamble</code>, <code>ldso:Body</code>, <code>ldso:Conclusions</code></h4>
+      <p>
+        These are the four top-level containers within a document. They exist
+        as distinct classes because they have different legal functions: the
+        Preamble states motivation (and is used in treaty interpretation); the
+        Body contains operative provisions; the Conclusions contain
+        authentication. Distinguishing them allows queries such as "retrieve
+        all preamble recitals that mention climate" without scanning the entire
+        document.
+      </p>
+      <pre class="example turtle">
+&lt;.../preamble&gt;
+  a ldso:Preamble ;
+  ldso:orderIndex 1 ;
+  ldso:contains &lt;.../preamble/recital_1&gt; , &lt;.../preamble/recital_2&gt; .
+
+&lt;.../body&gt;
+  a ldso:Body ;
+  ldso:orderIndex 2 ;
+  ldso:contains &lt;.../body/chp_1&gt; , &lt;.../body/chp_2&gt; .
+      </pre>
+    </section>
+
+    <section id="guide-Part-Title-Chapter-Section">
+      <h4><code>ldso:Part</code>, <code>ldso:Title</code>, <code>ldso:Chapter</code>, <code>ldso:Section</code></h4>
+      <p>
+        These are the hierarchical division classes. Each exists because
+        different legal traditions use different levels: common law statutes
+        typically use Part → Section; civil law instruments use Part → Title →
+        Chapter → Section. Not every instrument uses every level. Use only
+        the levels that appear in the source document.
+      </p>
+      <p>
+        There is no separate <code>ldso:Subsection</code> class. A Section
+        contained within another Section occupies the "subsection" position —
+        that role is determined by the <code>ldso:partOf</code> graph edge, not
+        by type assignment. Creating a subclass would be anti-rigid: the same
+        node could be a Section in one context and a Subsection in another.
+      </p>
+      <pre class="example turtle">
+&lt;.../body/chp_2&gt;
+  a ldso:Chapter ;
+  ldso:notation "2" ;
+  dct:title "Customs Facilitation"@en ;
+  ldso:orderIndex 2 ;
+  ldso:next &lt;.../body/chp_3&gt; .
+      </pre>
+    </section>
+
+    <section id="guide-Article">
+      <h4><code>ldso:Article</code></h4>
+      <p>
+        The primary normative provision unit in treaties and regulations.
+        Articles are the unit at which legal practitioners cite: "Article 2.5
+        of the Agreement". They are also the natural unit for legal semantic
+        annotation by LDSO-Semantics.
+      </p>
+      <p>
+        Use <code>ldso:Article</code> when the source document uses "Article"
+        as the primary provision term. Use <code>ldso:Clause</code> for
+        contracts and standards that use "clause" instead.
+      </p>
+      <pre class="example turtle">
+&lt;.../chp_2/art_5&gt;
+  a ldso:Article ;
+  ldso:notation "5" ;
+  ldso:citation "2.5" ;
+  dct:title "Temporary Admission of Goods"@en ;
+  ldso:orderIndex 5 ;
+  ldso:previous &lt;.../chp_2/art_4&gt; ;
+  ldso:next     &lt;.../chp_2/art_6&gt; .
+      </pre>
+    </section>
+
+    <section id="guide-Paragraph">
+      <h4><code>ldso:Paragraph</code></h4>
+      <p>
+        A numbered or lettered subdivision of an Article. Paragraphs are the
+        most frequently cited sub-article unit: "Article 2.5, paragraph 2".
+        They may contain further text, BlockLists, Tables, or nested
+        Paragraphs.
+      </p>
+      <p>
+        There is no separate <code>ldso:Subparagraph</code> class. The
+        structural position conventionally called "subparagraph" is a
+        <code>ldso:Paragraph</code> whose <code>ldso:partOf</code> points to
+        another <code>ldso:Paragraph</code>. This is a positional role
+        determined by the containment graph, not an intrinsic property of the
+        node — creating a subclass would produce an anti-rigid class that
+        violates sound ontological design.
+      </p>
+      <pre class="example turtle">
+&lt;.../art_5/para_2&gt;
+  a ldso:Paragraph ;
+  ldso:notation "2" ;
+  ldso:citation "2.5.2" ;
+  ldso:orderIndex 2 ;
+  ldso:text "The following goods shall be eligible..."@en ;
+  ldso:previous &lt;.../art_5/para_1&gt; ;
+  ldso:next     &lt;.../art_5/para_3&gt; .
+      </pre>
+    </section>
+
+    <section id="guide-Clause">
+      <h4><code>ldso:Clause</code></h4>
+      <p>
+        The equivalent of <code>ldso:Article</code> for instruments that use
+        "clause" as the primary provision term: contracts, commercial
+        agreements, insurance policies, technical standards. The class
+        distinction allows queries that scope to a specific document type
+        without relying on document metadata.
+      </p>
+      <pre class="example turtle">
+&lt;.../policy/clause_4p2&gt;
+  a ldso:Clause ;
+  ldso:notation "4.2" ;
+  dct:title "Exclusions"@en ;
+  ldso:orderIndex 2 .
+      </pre>
+    </section>
+
+    <section id="guide-BlockList-Item">
+      <h4><code>ldso:BlockList</code> and <code>ldso:Item</code></h4>
+      <p>
+        Legal provisions frequently enumerate conditions, exceptions, or
+        eligible categories as lettered or numbered lists. A
+        <code>ldso:BlockList</code> is the container; each
+        <code>ldso:Item</code> is one entry. Items are ordered via
+        <code>ldso:next</code>, <code>ldso:previous</code>, and
+        <code>ldso:orderIndex</code>.
+      </p>
+      <p>
+        There is no separate <code>ldso:Subpoint</code> class for the same
+        reason there is no <code>ldso:Subparagraph</code>: a "subpoint" is a
+        <code>ldso:Point</code> contained within another
+        <code>ldso:Point</code>, identified by the graph structure alone.
+      </p>
+      <pre class="example turtle">
+&lt;.../para_2/list_1&gt;
+  a ldso:BlockList ;
+  ldso:contains
+    &lt;.../list_1/item_a&gt; ,
+    &lt;.../list_1/item_b&gt; ,
+    &lt;.../list_1/item_c&gt; .
+
+&lt;.../list_1/item_a&gt;
+  a ldso:Item ;
+  ldso:notation "a" ;
+  ldso:orderIndex 1 ;
+  ldso:text "goods for display at exhibitions;"@en ;
+  ldso:next &lt;.../list_1/item_b&gt; .
+      </pre>
+    </section>
+
+    <section id="guide-Annex-Schedule-Appendix-Attachment">
+      <h4><code>ldso:Annex</code>, <code>ldso:Schedule</code>, <code>ldso:Appendix</code>, <code>ldso:Attachment</code></h4>
+      <p>
+        Supplements to the main body. They are distinct classes because they
+        have different legal status: Annexes are typically legally binding and
+        form an integral part of the instrument; Schedules are data tables
+        (tariff rates, product lists); Appendices are typically explanatory;
+        Attachments are generic exhibits. Using the correct class allows
+        downstream modules to apply the right legal treatment.
+      </p>
+      <pre class="example turtle">
+&lt;.../annex_I&gt;
+  a ldso:Annex ;
+  ldso:notation "I" ;
+  dct:title "Tariff Elimination Schedule — Party A"@en ;
+  ldso:orderIndex 1 ;
+  ldso:contains &lt;.../annex_I/table_1&gt; .
+      </pre>
+    </section>
+
+    <section id="guide-Table-Row-Cell">
+      <h4><code>ldso:Table</code>, <code>ldso:Row</code>, <code>ldso:Cell</code></h4>
+      <p>
+        Tabular data is pervasive in legal documents: tariff rate tables,
+        compliance matrices, schedules of commitments. The table model is
+        recursive: a <code>ldso:Cell</code> may contain a nested
+        <code>ldso:Table</code> via <code>ldso:hasTable</code>, and a
+        <code>ldso:Row</code> may contain sub-rows via <code>ldso:hasRow</code>.
+        Both <code>ldso:hasRow</code> and <code>ldso:hasCell</code> are
+        sub-properties of <code>ldso:contains</code> and have domain
+        <code>ldso:LegalElement</code> to support this recursion.
+      </p>
+      <p>
+        A row that serves as a column-header row is identified by asserting
+        <code>ldso:isHeader true</code>. This is a datatype property, not a
+        subclass, because "header" is a structural role determined by position,
+        not an intrinsic property of the row.
+      </p>
+      <pre class="example turtle">
+&lt;.../table_1&gt;
+  a ldso:Table ;
+  ldso:hasRow &lt;.../table_1/row_1&gt; , &lt;.../table_1/row_2&gt; .
+
+&lt;.../table_1/row_1&gt;
+  a ldso:Row ;
+  ldso:isHeader true ;
+  ldso:orderIndex 1 ;
+  ldso:next &lt;.../table_1/row_2&gt; ;
+  ldso:hasCell &lt;.../row_1/cell_1&gt; , &lt;.../row_1/cell_2&gt; .
+
+&lt;.../row_1/cell_1&gt;
+  a ldso:Cell ;
+  ldso:orderIndex 1 ;
+  ldso:text "HS Code"@en .
+      </pre>
+    </section>
+
+    <section id="guide-Reference">
+      <h4><code>ldso:Reference</code>, <code>ldso:InternalReference</code>, <code>ldso:ExternalReference</code>, <code>ldso:Citation</code></h4>
+      <p>
+        Legal text is connected text. Every provision that says "as provided
+        in Article 5" or "subject to the WTO Agreement" creates a navigable
+        edge in the legal graph. LDSO-Core reifies these edges as first-class
+        nodes so that reference metadata — the surface phrase, the target, the
+        type of reference — can be stored and queried.
+      </p>
+      <p>
+        An <code>ldso:InternalReference</code> points to another element
+        within the same document. An <code>ldso:ExternalReference</code>
+        points to a resource in a different document. A
+        <code>ldso:Citation</code> is a formal citation of a legal authority
+        or precedent. All three require <code>ldso:anchorText</code> (the
+        surface phrase in the source text) and <code>ldso:refersTo</code> or
+        <code>ldso:cites</code> (the graph target).
+      </p>
+      <pre class="example turtle">
+&lt;.../para_1&gt;
+  ldso:text "...referred to in paragraph 2 of this Article..."@en ;
+  ldso:contains &lt;.../para_1/ref_1&gt; .
+
+&lt;.../para_1/ref_1&gt;
+  a ldso:InternalReference ;
+  ldso:anchorText "paragraph 2 of this Article"@en ;
+  ldso:refersTo   &lt;.../para_2&gt; .
+
+&lt;.../para_3&gt;
+  ldso:text "...in accordance with the WTO Agreement on Customs Valuation..."@en ;
+  ldso:contains &lt;.../para_3/ref_1&gt; .
+
+&lt;.../para_3/ref_1&gt;
+  a ldso:ExternalReference ;
+  ldso:anchorText "the WTO Agreement on Customs Valuation"@en ;
+  ldso:refersTo   &lt;https://www.wto.org/instruments/customs-valuation&gt; .
+      </pre>
+    </section>
+  </section>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 2. SCOPE -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="scope">
+  <h2>Scope</h2>
+
+  <section id="in-scope">
+    <h3>In Scope</h3>
+    <ul>
+      <li>Document-level containers: Preface, Preamble, Body, Conclusions</li>
+      <li>Hierarchical divisions: Part, Title, Chapter, Section (subsection position is emergent from containment, not a class)</li>
+      <li>Provision units: Article, Paragraph, Clause (subparagraph position is emergent from containment, not a class)</li>
+      <li>List elements: Point, BlockList, Item (subpoint position is emergent from containment, not a class)</li>
+      <li>Supplements: Annex, Schedule, Appendix, Attachment</li>
+      <li>Table structure: Table, Row, Cell — recursive (nested tables, sub-rows, header rows)</li>
+      <li>Structural references: Reference, InternalReference, ExternalReference, Citation</li>
+      <li>Element ordering, multilingual text content, inline reference anchors, and element identity</li>
+    </ul>
+  </section>
+
+  <section id="out-of-scope">
+    <h3>Out of Scope</h3>
+    <ul>
+      <li>Legal semantics: obligations, permissions, prohibitions, exceptions — see LDSO-Semantics</li>
+      <li>Legal lifecycle: amendments, versions, consolidation — see LDSO-Lifecycle</li>
+      <li>Named entity annotation: persons, organizations, locations, concepts — see LDSO-Entities</li>
+      <li>Trade operational rules: tariff rules, origin rules — see Trade Agreement Ontology</li>
+      <li>SHACL execution semantics or rule evaluation results</li>
+    </ul>
+  </section>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 3. NAMESPACES -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="namespaces">
+  <h2>Namespaces</h2>
+
+  <table class="props">
+    <thead>
+      <tr><th>Prefix</th><th>Namespace IRI</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>ldso</code></td><td><code>https://w3id.org/ldso/core#</code></td><td>This ontology (LDSO-Core)</td></tr>
+      <tr><td><code>rdf</code></td><td><code>http://www.w3.org/1999/02/22-rdf-syntax-ns#</code></td><td>RDF core</td></tr>
+      <tr><td><code>rdfs</code></td><td><code>http://www.w3.org/2000/01/rdf-schema#</code></td><td>RDFS vocabulary</td></tr>
+      <tr><td><code>owl</code></td><td><code>http://www.w3.org/2002/07/owl#</code></td><td>OWL 2</td></tr>
+      <tr><td><code>xsd</code></td><td><code>http://www.w3.org/2001/XMLSchema#</code></td><td>XML Schema datatypes</td></tr>
+      <tr><td><code>skos</code></td><td><code>http://www.w3.org/2004/02/skos/core#</code></td><td>Definitions and notes</td></tr>
+      <tr><td><code>dct</code></td><td><code>http://purl.org/dc/terms/</code></td><td>Dublin Core Terms</td></tr>
+      <tr><td><code>sh</code></td><td><code>http://www.w3.org/ns/shacl#</code></td><td>SHACL validation shapes</td></tr>
+    </tbody>
+  </table>
+
+  <p>All Turtle examples in this document use the prefix declarations above.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 4. COMPETENCY QUESTIONS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="competency-questions">
+  <h2>Competency Questions</h2>
+  <p>
+    The following natural-language questions define the scope of what LDSO-Core is designed
+    to answer. Each is accompanied by a representative SPARQL query against a conformant dataset.
+    All queries assume the namespace prefix declarations from <a href="#conventions">§ Conventions</a>.
+  </p>
+
+  <section id="cq-c-01">
+    <h3>CQ-C-01 — Which structural elements are contained in a given chapter?</h3>
+    <pre class="example turtle" title="CQ-C-01">
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+
+SELECT ?element ?type ?citation WHERE {
+  ?chapter a ldso:Chapter ;
+           ldso:notation "3" .
+  ?chapter ldso:contains+ ?element .
+  ?element a ?type ;
+           ldso:citation ?citation .
+  FILTER(?type != owl:NamedIndividual)
+}
+ORDER BY ?citation</pre>
+  </section>
+
+  <section id="cq-c-02">
+    <h3>CQ-C-02 — What is the citation path of a given element?</h3>
+    <pre class="example turtle" title="CQ-C-02">
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+
+SELECT ?citation ?notation ?title WHERE {
+  &lt;https://example.org/ata/art_5_para_2&gt;
+    ldso:citation ?citation ;
+    ldso:notation ?notation .
+  OPTIONAL { &lt;https://example.org/ata/art_5_para_2&gt; ldso:title ?title }
+}</pre>
+  </section>
+
+  <section id="cq-c-03">
+    <h3>CQ-C-03 — Which element comes immediately before or after a given article?</h3>
+    <pre class="example turtle" title="CQ-C-03">
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+
+SELECT ?prev ?next WHERE {
+  OPTIONAL { &lt;https://example.org/ata/art_5&gt; ldso:previous ?prev . }
+  OPTIONAL { &lt;https://example.org/ata/art_5&gt; ldso:next     ?next . }
+}</pre>
+  </section>
+
+  <section id="cq-c-04">
+    <h3>CQ-C-04 — Which language expressions are available for a given legal resource?</h3>
+    <pre class="example turtle" title="CQ-C-04">
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+PREFIX dct:  &lt;http://purl.org/dc/terms/&gt;
+
+SELECT ?expression ?language ?issued WHERE {
+  &lt;https://example.org/ata&gt; ldso:hasExpression ?expression .
+  ?expression dct:language ?language .
+  OPTIONAL { ?expression dct:issued ?issued }
+}
+ORDER BY ?language</pre>
+  </section>
+
+  <section id="cq-c-05">
+    <h3>CQ-C-05 — What is the top-level structural outline of a document?</h3>
+    <pre class="example turtle" title="CQ-C-05">
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+
+SELECT ?element ?type ?notation ?orderIndex WHERE {
+  &lt;https://example.org/ata/body&gt; ldso:contains ?element .
+  ?element a ?type ;
+           ldso:orderIndex ?orderIndex .
+  OPTIONAL { ?element ldso:notation ?notation }
+  FILTER(?type != owl:NamedIndividual)
+}
+ORDER BY ?orderIndex</pre>
+  </section>
+
+  <section id="cq-c-06">
+    <h3>CQ-C-06 — Are there broken next/previous chain links (integrity check)?</h3>
+    <pre class="example turtle" title="CQ-C-06">
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+
+SELECT ?a ?b WHERE {
+  ?a ldso:next ?b .
+  FILTER NOT EXISTS { ?b ldso:previous ?a . }
+}
+# Expected result: no rows in a valid graph.</pre>
+  </section>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 5. CONFORMANCE -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="conformance">
+  <h2>Conformance</h2>
+  <p>
+    A conforming LDSO-Core instance MUST:
+  </p>
+  <ol>
+    <li>Use the namespace <code>https://w3id.org/ldso/core#</code> for all LDSO-Core terms.</li>
+    <li>Identify every node by its IRI as the primary identity. Use <code>ldso:notation</code> for the local label and <code>ldso:citation</code> for the full concatenated citation path. Use <code>dct:title</code>, <code>dct:language</code>, and <code>dct:issued</code> for document metadata. Link <code>ldso:LegalExpression</code> nodes to their parent <code>ldso:LegalResource</code> via <code>ldso:expressionOf</code>.</li>
+    <li>Express sibling ordering using <code>ldso:next</code>, <code>ldso:previous</code>, and <code>ldso:orderIndex</code>. RDF Collections (<code>rdf:List</code>) MUST NOT be used for ordering.</li>
+    <li>Maintain chain integrity: if <code>A ldso:next B</code>, then <code>B ldso:previous A</code> MUST also hold.</li>
+    <li>Not place legal semantics, obligations, permissions, or operational rules in LDSO-Core instances.</li>
+    <li>Pass all SHACL shapes defined in <code>shapes.ttl</code> without violations.</li>
+  </ol>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 5. ONTOLOGY OVERVIEW -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="overview">
+  <h2>Ontology Overview</h2>
+
+  <section id="class-overview">
+    <h3>Class Hierarchy</h3>
+    <pre class="example">
+ldso:LegalResource
+├── ldso:LegalExpression
+│   └── ldso:Document
+└── ldso:LegalElement
+    ├── ldso:Preface
+    ├── ldso:Preamble
+    ├── ldso:Body
+    ├── ldso:Conclusions
+    ├── ldso:Part
+    ├── ldso:Title
+    ├── ldso:Chapter
+    ├── ldso:Section
+    ├── ldso:Article
+    ├── ldso:Paragraph
+    ├── ldso:Clause
+    ├── ldso:Point
+    ├── ldso:BlockList
+    ├── ldso:Item
+    ├── ldso:Annex
+    ├── ldso:Schedule
+    ├── ldso:Appendix
+    ├── ldso:Attachment
+    ├── ldso:Table
+    ├── ldso:Row
+    ├── ldso:Cell
+    └── ldso:Reference
+        ├── ldso:InternalReference
+        ├── ldso:ExternalReference
+        └── ldso:Citation
+    </pre>
+  </section>
+
+  <section id="property-overview">
+    <h3>Property Summary</h3>
+
+    <table class="props">
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Domain</th><th>Range</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ldso:expressionOf</code></td><td>ObjectProperty (subPropertyOf dct:isVersionOf)</td><td>LegalExpression</td><td>LegalResource</td></tr>
+        <tr><td><code>ldso:hasExpression</code></td><td>ObjectProperty (inverse of expressionOf)</td><td>LegalResource</td><td>LegalExpression</td></tr>
+        <tr><td><code>ldso:contains</code></td><td>ObjectProperty</td><td>LegalElement</td><td>LegalElement</td></tr>
+        <tr><td><code>ldso:partOf</code></td><td>ObjectProperty (inverse of contains)</td><td>LegalElement</td><td>LegalElement</td></tr>
+        <tr><td><code>ldso:next</code></td><td>ObjectProperty, FunctionalProperty, IrreflexiveProperty</td><td>LegalElement</td><td>LegalElement</td></tr>
+        <tr><td><code>ldso:previous</code></td><td>ObjectProperty, FunctionalProperty, IrreflexiveProperty (inverse of next)</td><td>LegalElement</td><td>LegalElement</td></tr>
+        <tr><td><code>ldso:refersTo</code></td><td>ObjectProperty</td><td>Reference</td><td>LegalResource</td></tr>
+        <tr><td><code>ldso:cites</code></td><td>ObjectProperty</td><td>LegalElement</td><td>LegalResource</td></tr>
+        <tr><td><code>ldso:hasTable</code></td><td>ObjectProperty (subPropertyOf contains)</td><td>LegalElement</td><td>Table</td></tr>
+        <tr><td><code>ldso:hasRow</code></td><td>ObjectProperty (subPropertyOf contains)</td><td>LegalElement</td><td>Row</td></tr>
+        <tr><td><code>ldso:hasCell</code></td><td>ObjectProperty (subPropertyOf contains)</td><td>LegalElement</td><td>Cell</td></tr>
+        <tr><td><code>ldso:citation</code></td><td>DatatypeProperty</td><td>LegalElement</td><td>xsd:string</td></tr>
+        <tr><td><code>ldso:orderIndex</code></td><td>DatatypeProperty</td><td>LegalElement</td><td>xsd:integer</td></tr>
+        <tr><td><code>ldso:notation</code></td><td>DatatypeProperty</td><td>LegalElement</td><td>xsd:string</td></tr>
+        <tr><td><code>ldso:text</code></td><td>DatatypeProperty</td><td>LegalElement</td><td>rdf:langString</td></tr>
+        <tr><td><code>ldso:anchorText</code></td><td>DatatypeProperty</td><td>Reference</td><td>rdf:langString</td></tr>
+        <tr><td><code>ldso:isHeader</code></td><td>DatatypeProperty</td><td>Row</td><td>xsd:boolean</td></tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 6. CLASS DEFINITIONS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="classes">
+  <h2>Class Definitions</h2>
+
+  <!-- ─── Top-level ──────────────────────────────────────────────────────── -->
+
+  <section id="class-LegalResource">
+    <h3>Class: <code>ldso:LegalResource</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#LegalResource</code></td></tr>
+      <tr><th>Definition</th><td>Any citable legal resource — a complete document, a structural element within a document, or a reference target in an external knowledge graph.</td></tr>
+      <tr><th>Superclass</th><td>—</td></tr>
+      <tr><th>Usage note</th><td>Root class. Use subclasses in practice.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-LegalExpression">
+    <h3>Class: <code>ldso:LegalExpression</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#LegalExpression</code></td></tr>
+      <tr><th>Definition</th><td>A specific language-version instance of a ldso:LegalResource: the English text adopted on a given date, the French consolidated text of a given year, etc.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalResource</code></td></tr>
+      <tr><th>Usage note</th><td>Use <code>dct:language</code> for the BCP 47 language code, <code>dct:issued</code> for the version date, and <code>dct:format</code> for the MIME type. Link to the abstract LegalResource via <code>ldso:expressionOf</code>. The subclass <code>ldso:Document</code> adds structural content.</td></tr>
+    </table>
+    <pre class="example turtle">
+&lt;https://example.org/resource/ta&gt;
+  a ldso:LegalResource ;
+  dct:title "Agreement on Temporary Admission"@en ;
+  ldso:hasExpression &lt;https://example.org/doc/ta/EN&gt; ,
+                     &lt;https://example.org/doc/ta/FR&gt; .
+
+&lt;https://example.org/doc/ta/EN&gt;
+  a ldso:Document ;          # Document is a subclass of LegalExpression
+  dct:title "Agreement on Temporary Admission"@en ;
+  dct:language "en" ;
+  dct:issued "2026-01-15"^^xsd:date ;
+  dct:format "text/turtle" ;
+  ldso:expressionOf &lt;https://example.org/resource/ta&gt; .
+    </pre>
+  </section>
+
+  <section id="class-LegalElement">
+    <h3>Class: <code>ldso:LegalElement</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#LegalElement</code></td></tr>
+      <tr><th>Definition</th><td>A structural component within a legal document, including containers, hierarchical divisions, provision units, lists, tables, annexes, and references.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalResource</code></td></tr>
+      <tr><th>Usage note</th><td>All nodes inside a document are LegalElements. Documents are not LegalElements.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Document">
+    <h3>Class: <code>ldso:Document</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Document</code></td></tr>
+      <tr><th>Definition</th><td>A complete legal document such as a treaty, trade agreement, law, regulation, contract, insurance policy, standard, judicial decision, or parliamentary act. A Document is a LegalExpression that adds structural content.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalExpression</code></td></tr>
+      <tr><th>Usage note</th><td>Use <code>dct:title</code> for the official title, <code>dct:language</code> for its language code, and <code>dct:issued</code> for the version date. Documents contain elements via <code>ldso:contains</code>. A document is not itself a LegalElement.</td></tr>
+    </table>
+    <pre class="example turtle">
+&lt;https://example.org/doc/agreement/EN&gt;
+  a ldso:Document ;
+  dct:title "Agreement on Trade Facilitation"@en ;
+  dct:language "en" ;
+  dct:issued "2026-01-15"^^xsd:date ;
+  ldso:expressionOf &lt;https://example.org/resource/agreement&gt; ;
+  ldso:contains &lt;https://example.org/doc/agreement/EN/body&gt; .
+    </pre>
+  </section>
+
+  <!-- ─── Document-level containers ─────────────────────────────────────── -->
+
+  <section id="class-Preface">
+    <h3>Class: <code>ldso:Preface</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Preface</code></td></tr>
+      <tr><th>Definition</th><td>The preliminary matter of a legal document preceding the body, containing scope statements, long titles, and enacting formulas.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Distinct from Preamble. Use for front-matter before operative recitals.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Preamble">
+    <h3>Class: <code>ldso:Preamble</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Preamble</code></td></tr>
+      <tr><th>Definition</th><td>The formal introductory section of a legal document stating motivation, parties, and context, typically consisting of WHEREAS-clause recitals.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Preambles in treaties list recitals. Distinct from Preface.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Body">
+    <h3>Class: <code>ldso:Body</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Body</code></td></tr>
+      <tr><th>Definition</th><td>The main operative content of a legal document containing all substantive provisions.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Every Document has exactly one Body. The Body contains Parts, Chapters, Sections, and Articles.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Conclusions">
+    <h3>Class: <code>ldso:Conclusions</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Conclusions</code></td></tr>
+      <tr><th>Definition</th><td>The final section of a legal document containing closing provisions, authentication clauses, and signature blocks.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Appears after the Body.</td></tr>
+    </table>
+  </section>
+
+  <!-- ─── Hierarchical divisions ────────────────────────────────────────── -->
+
+  <section id="class-Part">
+    <h3>Class: <code>ldso:Part</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Part</code></td></tr>
+      <tr><th>Definition</th><td>A major subdivision of the body of a legal document, grouping related chapters or sections.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Highest structural level below Body. Example: "Part I — General Provisions".</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Title">
+    <h3>Class: <code>ldso:Title</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Title</code></td></tr>
+      <tr><th>Definition</th><td>A named subdivision used in civil law traditions as an intermediate level between Part and Chapter.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Common in EU treaties and French legislation. May appear below Part and above Chapter.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Chapter">
+    <h3>Class: <code>ldso:Chapter</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Chapter</code></td></tr>
+      <tr><th>Definition</th><td>A subdivision grouping related sections or articles on a common topic.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Use <code>ldso:notation</code> for the chapter number or letter.</td></tr>
+    </table>
+    <pre class="example turtle">
+:chp_2
+  a ldso:Chapter ;
+  ldso:notation "2" ;
+  ldso:citation "2" ;
+  dct:title "Customs Facilitation"@en ;
+  ldso:orderIndex 2 .
+    </pre>
+  </section>
+
+  <section id="class-Section">
+    <h3>Class: <code>ldso:Section</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Section</code></td></tr>
+      <tr><th>Definition</th><td>A subdivision of a Chapter grouping related articles or provisions.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>May be numbered or unnumbered. A Section whose <code>ldso:partOf</code> points to another Section occupies the "subsection" position — no separate class is needed.</td></tr>
+    </table>
+  </section>
+
+  <!-- ─── Provision level ───────────────────────────────────────────────── -->
+
+  <section id="class-Article">
+    <h3>Class: <code>ldso:Article</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Article</code></td></tr>
+      <tr><th>Definition</th><td>A primary self-contained provision unit in a legal document, identified by a number or letter.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Use <code>ldso:notation</code> for the local article label (e.g., "5") and <code>ldso:citation</code> for the full citation path (e.g., "2.5"). Articles are the primary normative unit.</td></tr>
+    </table>
+    <pre class="example turtle">
+:art_5
+  a ldso:Article ;
+  ldso:notation "5" ;
+  ldso:citation "2.5" ;
+  dct:title "Temporary Admission of Goods"@en ;
+  ldso:orderIndex 5 .
+    </pre>
+  </section>
+
+  <section id="class-Paragraph">
+    <h3>Class: <code>ldso:Paragraph</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Paragraph</code></td></tr>
+      <tr><th>Definition</th><td>A numbered or lettered subdivision of an Article or other provision unit.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Use <code>ldso:orderIndex</code> and <code>ldso:notation</code> for sequence and label. Use <code>ldso:next</code>/<code>ldso:previous</code> to chain siblings.</td></tr>
+    </table>
+    <p>
+      There is no separate <code>ldso:Subparagraph</code> class.
+      The structural position conventionally called "subparagraph" is a
+      <code>ldso:Paragraph</code> whose <code>ldso:partOf</code> points to
+      another <code>ldso:Paragraph</code>. The sub-position is an emergent
+      property of the graph, not a rigid classification.
+    </p>
+    <pre class="example">
+# Identifying subparagraphs via SPARQL (no separate class needed):
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+SELECT ?sub ?parent WHERE {
+  ?sub   a ldso:Paragraph ;
+         ldso:partOf ?parent .
+  ?parent a ldso:Paragraph .
+}
+    </pre>
+  </section>
+
+  <section id="class-Clause">
+    <h3>Class: <code>ldso:Clause</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Clause</code></td></tr>
+      <tr><th>Definition</th><td>A provision unit used in contracts, standards, and non-treaty legal instruments.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Preferred over Article for contracts, insurance policies, and standards that use "clause" terminology.</td></tr>
+    </table>
+  </section>
+
+  <!-- ─── List elements ─────────────────────────────────────────────────── -->
+
+  <section id="class-Point">
+    <h3>Class: <code>ldso:Point</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Point</code></td></tr>
+      <tr><th>Definition</th><td>A labeled structural element within a provision introducing an enumerated list.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>A Point introduces a BlockList. The structural position called "subpoint" is a <code>ldso:Point</code> whose <code>ldso:partOf</code> points to another <code>ldso:Point</code> — not a separate class.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-BlockList">
+    <h3>Class: <code>ldso:BlockList</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#BlockList</code></td></tr>
+      <tr><th>Definition</th><td>An ordered collection of Items within a legal provision.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>A BlockList contains one or more Items. Ordering is expressed via <code>ldso:next</code>, <code>ldso:previous</code>, and <code>ldso:orderIndex</code> on Items. Do not use rdf:List.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Item">
+    <h3>Class: <code>ldso:Item</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Item</code></td></tr>
+      <tr><th>Definition</th><td>A single labeled element within a BlockList, identified by a letter or number.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Use <code>ldso:notation</code> for the item label (a, b, c, i, ii, etc.).</td></tr>
+    </table>
+    <pre class="example turtle">
+:item_a
+  a ldso:Item ;
+  ldso:notation "a" ;
+  ldso:citation "2.5.2.a" ;
+  ldso:orderIndex 1 ;
+  ldso:text "goods for display or demonstration at exhibitions;"@en ;
+  ldso:next :item_b .
+    </pre>
+  </section>
+
+  <!-- ─── Annexes ────────────────────────────────────────────────────────── -->
+
+  <section id="class-Annex">
+    <h3>Class: <code>ldso:Annex</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Annex</code></td></tr>
+      <tr><th>Definition</th><td>A supplementary document forming an integral, legally binding part of the instrument.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Identified by number (Annex I, Annex II). Requires <code>ldso:notation</code> and <code>dct:title</code>.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Schedule">
+    <h3>Class: <code>ldso:Schedule</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Schedule</code></td></tr>
+      <tr><th>Definition</th><td>A supplement listing specific items, rates, entities, or data tables relevant to the main body.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Widely used in trade agreements for tariff schedules and commitment lists.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Appendix">
+    <h3>Class: <code>ldso:Appendix</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Appendix</code></td></tr>
+      <tr><th>Definition</th><td>Supplementary material providing additional context or technical detail.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Binding status depends on the instrument. Refer to the main text.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Attachment">
+    <h3>Class: <code>ldso:Attachment</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Attachment</code></td></tr>
+      <tr><th>Definition</th><td>A generic document or file attached to a legal instrument as a reference or exhibit.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Use when Annex, Schedule, or Appendix do not apply.</td></tr>
+    </table>
+  </section>
+
+  <!-- ─── Table ─────────────────────────────────────────────────────────── -->
+
+  <section id="class-Table">
+    <h3>Class: <code>ldso:Table</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Table</code></td></tr>
+      <tr><th>Definition</th><td>A structured grid of rows and cells within a legal document.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Must contain at least one Row via <code>ldso:hasRow</code>.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Row">
+    <h3>Class: <code>ldso:Row</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Row</code></td></tr>
+      <tr><th>Definition</th><td>A single horizontal row within a Table.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Use <code>ldso:orderIndex</code> for row sequence and <code>ldso:next</code>/<code>ldso:previous</code> for row ordering.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Cell">
+    <h3>Class: <code>ldso:Cell</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Cell</code></td></tr>
+      <tr><th>Definition</th><td>A single data cell within a Row of a Table.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Use <code>ldso:text</code> for content and <code>ldso:orderIndex</code> for column position.</td></tr>
+    </table>
+  </section>
+
+  <!-- ─── References ────────────────────────────────────────────────────── -->
+
+  <section id="class-Reference">
+    <h3>Class: <code>ldso:Reference</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Reference</code></td></tr>
+      <tr><th>Definition</th><td>A structural pointer from one legal element to another legal resource.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Usage note</th><td>Must carry <code>ldso:refersTo</code>. Prefer InternalReference, ExternalReference, or Citation where applicable.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-InternalReference">
+    <h3>Class: <code>ldso:InternalReference</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#InternalReference</code></td></tr>
+      <tr><th>Definition</th><td>A reference from one element to another within the same document.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:Reference</code></td></tr>
+      <tr><th>Usage note</th><td>Use <code>ldso:refersTo</code> to link to the target element within the same document graph.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-ExternalReference">
+    <h3>Class: <code>ldso:ExternalReference</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#ExternalReference</code></td></tr>
+      <tr><th>Definition</th><td>A reference to a resource or element in a different document.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:Reference</code></td></tr>
+      <tr><th>Usage note</th><td>The target may be a URI in an external knowledge graph.</td></tr>
+    </table>
+  </section>
+
+  <section id="class-Citation">
+    <h3>Class: <code>ldso:Citation</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#Citation</code></td></tr>
+      <tr><th>Definition</th><td>A formal citation of a legal authority, precedent, or normative reference.</td></tr>
+      <tr><th>Superclass</th><td><code>ldso:Reference</code></td></tr>
+      <tr><th>Usage note</th><td>Use <code>ldso:cites</code> to link to the cited resource.</td></tr>
+    </table>
+  </section>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 7. OBJECT PROPERTY DEFINITIONS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="object-properties">
+  <h2>Object Property Definitions</h2>
+
+  <section id="prop-expressionOf">
+    <h3>Property: <code>ldso:expressionOf</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#expressionOf</code></td></tr>
+      <tr><th>Definition</th><td>Relates a LegalExpression to the abstract LegalResource of which it is a version.</td></tr>
+      <tr><th>Domain</th><td><code>ldso:LegalExpression</code></td></tr>
+      <tr><th>Range</th><td><code>ldso:LegalResource</code></td></tr>
+      <tr><th>Sub-property of</th><td><code>dct:isVersionOf</code></td></tr>
+      <tr><th>Inverse</th><td><code>ldso:hasExpression</code></td></tr>
+      <tr><th>Usage note</th><td>Every LegalExpression SHOULD be linked to its parent LegalResource via this property. The LegalResource carries the abstract identity; the LegalExpression adds language and date.</td></tr>
+    </table>
+  </section>
+
+  <section id="prop-hasExpression">
+    <h3>Property: <code>ldso:hasExpression</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#hasExpression</code></td></tr>
+      <tr><th>Definition</th><td>Relates a LegalResource to a LegalExpression that realises it in a specific language and version.</td></tr>
+      <tr><th>Domain</th><td><code>ldso:LegalResource</code></td></tr>
+      <tr><th>Range</th><td><code>ldso:LegalExpression</code></td></tr>
+      <tr><th>Inverse</th><td><code>ldso:expressionOf</code></td></tr>
+      <tr><th>Usage note</th><td>A single LegalResource may have multiple expressions, one per language or consolidated version.</td></tr>
+    </table>
+  </section>
+
+  <section id="prop-contains">
+    <h3>Property: <code>ldso:contains</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#contains</code></td></tr>
+      <tr><th>Definition</th><td>Relates a legal element to a directly contained structural child element.</td></tr>
+      <tr><th>Domain</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Range</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Inverse</th><td><code>ldso:partOf</code></td></tr>
+      <tr><th>Usage note</th><td>Immediate containment only. Do not use for transitive membership.</td></tr>
+    </table>
+  </section>
+
+  <section id="prop-partOf">
+    <h3>Property: <code>ldso:partOf</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#partOf</code></td></tr>
+      <tr><th>Definition</th><td>Relates a legal element to the element that directly contains it.</td></tr>
+      <tr><th>Domain</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Range</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Inverse</th><td><code>ldso:contains</code></td></tr>
+    </table>
+  </section>
+
+  <section id="prop-next">
+    <h3>Property: <code>ldso:next</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#next</code></td></tr>
+      <tr><th>Definition</th><td>Relates a legal element to the immediately following sibling in document order.</td></tr>
+      <tr><th>Type</th><td>owl:FunctionalProperty</td></tr>
+      <tr><th>Inverse</th><td><code>ldso:previous</code></td></tr>
+      <tr><th>Usage note</th><td>An element has at most one next sibling. Chain integrity: if A next B, then B previous A.</td></tr>
+    </table>
+    <pre class="example turtle">
+:para_1  ldso:orderIndex 1 ; ldso:next :para_2 .
+:para_2  ldso:orderIndex 2 ; ldso:previous :para_1 ; ldso:next :para_3 .
+:para_3  ldso:orderIndex 3 ; ldso:previous :para_2 .
+    </pre>
+  </section>
+
+  <section id="prop-previous">
+    <h3>Property: <code>ldso:previous</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#previous</code></td></tr>
+      <tr><th>Definition</th><td>Relates a legal element to the immediately preceding sibling in document order.</td></tr>
+      <tr><th>Type</th><td>owl:FunctionalProperty</td></tr>
+      <tr><th>Inverse</th><td><code>ldso:next</code></td></tr>
+    </table>
+  </section>
+
+  <section id="prop-refersTo">
+    <h3>Property: <code>ldso:refersTo</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#refersTo</code></td></tr>
+      <tr><th>Definition</th><td>Relates a Reference element to the legal element or resource it designates.</td></tr>
+      <tr><th>Domain</th><td><code>ldso:Reference</code></td></tr>
+      <tr><th>Range</th><td><code>ldso:LegalResource</code></td></tr>
+    </table>
+  </section>
+
+  <section id="prop-cites">
+    <h3>Property: <code>ldso:cites</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#cites</code></td></tr>
+      <tr><th>Definition</th><td>Relates a legal element to a legal resource it formally cites as authority or precedent.</td></tr>
+      <tr><th>Domain</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Range</th><td><code>ldso:LegalResource</code></td></tr>
+    </table>
+  </section>
+
+  <section id="prop-hasTable">
+    <h3>Property: <code>ldso:hasTable</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#hasTable</code></td></tr>
+      <tr><th>Definition</th><td>Relates a legal element to a Table contained within it.</td></tr>
+      <tr><th>Sub-property of</th><td><code>ldso:contains</code></td></tr>
+    </table>
+  </section>
+
+  <section id="prop-hasRow">
+    <h3>Property: <code>ldso:hasRow</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#hasRow</code></td></tr>
+      <tr><th>Definition</th><td>Relates a Table to a Row it contains.</td></tr>
+      <tr><th>Domain</th><td><code>ldso:Table</code></td></tr>
+      <tr><th>Range</th><td><code>ldso:Row</code></td></tr>
+      <tr><th>Sub-property of</th><td><code>ldso:contains</code></td></tr>
+    </table>
+  </section>
+
+  <section id="prop-hasCell">
+    <h3>Property: <code>ldso:hasCell</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#hasCell</code></td></tr>
+      <tr><th>Definition</th><td>Relates a Row to a Cell it contains.</td></tr>
+      <tr><th>Domain</th><td><code>ldso:Row</code></td></tr>
+      <tr><th>Range</th><td><code>ldso:Cell</code></td></tr>
+      <tr><th>Sub-property of</th><td><code>ldso:contains</code></td></tr>
+    </table>
+  </section>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 8. DATATYPE PROPERTY DEFINITIONS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="datatype-properties">
+  <h2>Datatype Property Definitions</h2>
+
+  <section id="prop-citation">
+    <h3>Property: <code>ldso:citation</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#citation</code></td></tr>
+      <tr><th>Definition</th><td>The full human-readable citation path to a legal element, formed by concatenating <code>ldso:notation</code> values from the document root to the element and joining them with dots.</td></tr>
+      <tr><th>Domain</th><td><code>ldso:LegalElement</code></td></tr>
+      <tr><th>Range</th><td><code>xsd:string</code></td></tr>
+      <tr><th>Usage note</th><td>Examples: <code>"2"</code> (chapter), <code>"2.5"</code> (article), <code>"2.5.1"</code> (paragraph), <code>"2.5.2.a"</code> (item). Validated by <code>ldso:CitationChainShape</code>.</td></tr>
+    </table>
+  </section>
+
+  <section id="prop-orderIndex">
+    <h3>Property: <code>ldso:orderIndex</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#orderIndex</code></td></tr>
+      <tr><th>Definition</th><td>An integer indicating the sequential position of a legal element among its siblings (1-based).</td></tr>
+      <tr><th>Range</th><td><code>xsd:integer</code></td></tr>
+      <tr><th>Usage note</th><td>Use together with <code>ldso:next</code> and <code>ldso:previous</code>. Non-consecutive values are allowed to support amendment insertion.</td></tr>
+    </table>
+  </section>
+
+  <section id="prop-notation">
+    <h3>Property: <code>ldso:notation</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#notation</code></td></tr>
+      <tr><th>Definition</th><td>The human-readable identifier or label of a legal element as it appears in the source document.</td></tr>
+      <tr><th>Range</th><td><code>xsd:string</code></td></tr>
+      <tr><th>Usage note</th><td>The local label at this structural level as printed in the source: "2", "5", "a", "I", "IV", "bis". Preserve exact source notation. For the full citation path, use <code>ldso:citation</code>.</td></tr>
+    </table>
+  </section>
+
+  <section id="prop-text">
+    <h3>Property: <code>ldso:text</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#text</code></td></tr>
+      <tr><th>Definition</th><td>The verbatim text content of a legal element as it appears in the authoritative source.</td></tr>
+      <tr><th>Range</th><td><code>rdf:langString</code></td></tr>
+      <tr><th>Usage note</th><td>
+        Always assert with a BCP 47 language tag (<code>@en</code>, <code>@fr</code>, etc.).
+        In RDF, a language-tagged literal has type <code>rdf:langString</code>, not
+        <code>xsd:string</code>; the two are incompatible. Multiple translations of
+        the same element may be represented as multiple <code>ldso:text</code> values
+        with different language tags on the same node.
+      </td></tr>
+    </table>
+    <pre class="example turtle">
+:art_2p5/para_1
+  ldso:text "Each Party shall allow the temporary admission of goods..."@en ;
+  ldso:text "Chaque Partie autorise l'admission temporaire des marchandises..."@fr .
+    </pre>
+  </section>
+
+  <section id="prop-anchorText">
+    <h3>Property: <code>ldso:anchorText</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#anchorText</code></td></tr>
+      <tr><th>Definition</th><td>The surface form of a reference as it appears in the text of the containing element — the exact phrase that constitutes the reference anchor.</td></tr>
+      <tr><th>Domain</th><td><code>ldso:Reference</code></td></tr>
+      <tr><th>Range</th><td><code>rdf:langString</code></td></tr>
+      <tr><th>Usage note</th><td>
+        Bridges the flat <code>ldso:text</code> literal and the structured
+        <code>ldso:refersTo</code> link. Records which phrase in the source
+        text triggers the reference without requiring character offsets.
+        Always assert with a language tag.
+      </td></tr>
+    </table>
+    <p>
+      The full inline reference pattern: the containing element holds the
+      full text in <code>ldso:text</code>, and
+      <code>ldso:contains</code> one or more <code>ldso:Reference</code>
+      nodes. Each Reference carries <code>ldso:anchorText</code> for the
+      surface phrase and <code>ldso:refersTo</code> for the target.
+    </p>
+    <pre class="example turtle">
+:art_2p5/para_1
+  a ldso:Paragraph ;
+  ldso:text """Each Party shall allow the temporary admission of goods
+referred to in paragraph 2 of this Article without payment of
+customs duties and taxes."""@en ;
+  ldso:contains :art_2p5/para_1/ref_1 .
+
+:art_2p5/para_1/ref_1
+  a ldso:InternalReference ;
+  ldso:anchorText "paragraph 2 of this Article"@en ;
+  ldso:refersTo   :art_2p5/para_2 .
+    </pre>
+    <p>For an external reference to another instrument:</p>
+    <pre class="example turtle">
+:art_3/para_1/ref_1
+  a ldso:ExternalReference ;
+  ldso:anchorText "the WTO Agreement on Customs Valuation"@en ;
+  ldso:refersTo   &lt;https://www.wto.org/instruments/customs-valuation&gt; .
+    </pre>
+  </section>
+
+  <section id="prop-isHeader">
+    <h3>Property: <code>ldso:isHeader</code></h3>
+    <table class="props">
+      <tr><th>IRI</th><td><code>https://w3id.org/ldso/core#isHeader</code></td></tr>
+      <tr><th>Definition</th><td>Indicates that a Row serves as a column-header row within its containing Table.</td></tr>
+      <tr><th>Domain</th><td><code>ldso:Row</code></td></tr>
+      <tr><th>Range</th><td><code>xsd:boolean</code></td></tr>
+      <tr><th>Usage note</th><td>
+        A header row is a structural role, not a distinct class — asserting
+        <code>ldso:isHeader true</code> on a <code>ldso:Row</code> records the
+        role without creating an anti-rigid subclass. Absence of the property
+        means the row is a data row. Applies equally to header rows in nested
+        tables.
+      </td></tr>
+    </table>
+    <pre class="example turtle">
+:table_1/row_1
+  a ldso:Row ;
+  ldso:isHeader true ;
+  ldso:orderIndex 1 ;
+  ldso:hasCell :table_1/row_1/cell_1 ,
+               :table_1/row_1/cell_2 .
+
+:table_1/row_2
+  a ldso:Row ;
+  ldso:orderIndex 2 ;
+  ldso:previous :table_1/row_1 ;
+  ldso:hasCell :table_1/row_2/cell_1 ,
+               :table_1/row_2/cell_2 .
+    </pre>
+    <p>SPARQL to retrieve header and data rows separately:</p>
+    <pre class="example">
+PREFIX ldso: <https://w3id.org/ldso/core#>
+
+SELECT ?row ?idx WHERE {
+  :table_1 ldso:hasRow ?row .
+  ?row ldso:orderIndex ?idx .
+  FILTER NOT EXISTS { ?row ldso:isHeader true }
+}
+ORDER BY ?idx
+    </pre>
+  </section>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 9. SHACL VALIDATION -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="shacl">
+  <h2>SHACL Validation</h2>
+
+  <p>
+    SHACL shapes for LDSO-Core are defined in <code>shapes.ttl</code>.
+    These shapes validate structural integrity and do not encode legal reasoning.
+  </p>
+
+  <section id="shacl-shapes-table">
+    <h3>Shapes Summary</h3>
+    <table class="props">
+      <thead>
+        <tr><th>Shape</th><th>Target</th><th>Validates</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ldso:LegalExpressionShape</code></td><td><code>ldso:LegalExpression</code></td><td><code>dct:language</code> present; <code>ldso:expressionOf</code> present (Warning if absent)</td></tr>
+        <tr><td><code>ldso:DocumentShape</code></td><td><code>ldso:Document</code></td><td><code>dct:title</code> (language-tagged) present</td></tr>
+        <tr><td><code>ldso:ArticleShape</code></td><td><code>ldso:Article</code></td><td>notation present</td></tr>
+        <tr><td><code>ldso:ParagraphShape</code></td><td><code>ldso:Paragraph</code></td><td>orderIndex ≥ 1</td></tr>
+        <tr><td><code>ldso:BlockListShape</code></td><td><code>ldso:BlockList</code></td><td>contains ≥ 1 Item</td></tr>
+        <tr><td><code>ldso:ItemShape</code></td><td><code>ldso:Item</code></td><td>notation and orderIndex present</td></tr>
+        <tr><td><code>ldso:TableShape</code></td><td><code>ldso:Table</code></td><td>hasRow ≥ 1</td></tr>
+        <tr><td><code>ldso:RowShape</code></td><td><code>ldso:Row</code></td><td>orderIndex and hasCell ≥ 1</td></tr>
+        <tr><td><code>ldso:CellShape</code></td><td><code>ldso:Cell</code></td><td>orderIndex present</td></tr>
+        <tr><td><code>ldso:NextRequiresOrderShape</code></td><td>subjects of ldso:next</td><td>orderIndex present</td></tr>
+        <tr><td><code>ldso:PreviousRequiresOrderShape</code></td><td>subjects of ldso:previous</td><td>orderIndex present</td></tr>
+        <tr><td><code>ldso:OrderingChainIntegrityShape</code></td><td>subjects of ldso:next</td><td>chain symmetry: A.next=B → B.previous=A</td></tr>
+        <tr><td><code>ldso:ReferenceShape</code></td><td><code>ldso:Reference</code></td><td><code>ldso:refersTo</code> present</td></tr>
+        <tr><td><code>ldso:InternalReferenceShape</code></td><td><code>ldso:InternalReference</code></td><td><code>ldso:anchorText</code> (langString) present</td></tr>
+        <tr><td><code>ldso:ExternalReferenceShape</code></td><td><code>ldso:ExternalReference</code></td><td><code>ldso:anchorText</code> (langString) present</td></tr>
+        <tr><td><code>ldso:AnnexShape</code></td><td><code>ldso:Annex</code></td><td>notation and <code>dct:title</code> present</td></tr>
+        <tr><td><code>ldso:ClauseShape</code></td><td><code>ldso:Clause</code></td><td>notation present</td></tr>
+        <tr><td><code>ldso:NoRdfCollectionsShape</code></td><td><code>ldso:LegalElement</code></td><td>no rdf:first</td></tr>
+        <tr><td><code>ldso:CitationChainShape</code></td><td>subjects of ldso:citation</td><td>child citation starts with parent citation + "."</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="shacl-example">
+    <h3>Article Shape Example</h3>
+    <pre class="example turtle">
+ldso:ArticleShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Article ;
+  sh:property [
+    sh:path ldso:notation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Article must have ldso:notation (e.g., '5', 'IV')." ;
+  ] .
+    </pre>
+  </section>
+
+  <section id="shacl-run">
+    <h3>Running Validation</h3>
+    <p>Using Apache Jena SHACL:</p>
+    <pre class="example">
+shacl validate --shapes shapes.ttl --data examples/example.ttl
+    </pre>
+    <p>Using PySHACL:</p>
+    <pre class="example">
+pyshacl -s shapes.ttl -sf turtle -df turtle examples/example.ttl
+    </pre>
+  </section>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 10. EXAMPLES -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="examples">
+  <h2>Examples</h2>
+
+  <section id="example-article">
+    <h3>Article 2.5 — Temporary Admission of Goods (Turtle)</h3>
+    <p>
+      The following example demonstrates a complete Article with numbered Paragraphs,
+      a BlockList with three Items, and a Table. Full source in
+      <code>examples/example.ttl</code>.
+    </p>
+    <pre class="example turtle">
+@prefix ldso: &lt;https://w3id.org/ldso/core#&gt; .
+@prefix xsd:  &lt;http://www.w3.org/2001/XMLSchema#&gt; .
+
+&lt;https://example.org/doc/temporary-admission/EN/body/chp_2/art_5&gt;
+  a ldso:Article ;
+  ldso:notation "5" ;
+  ldso:citation "2.5" ;
+  dct:title "Temporary Admission of Goods"@en ;
+  ldso:orderIndex 5 ;
+  ldso:contains
+    &lt;.../art_5/para_1&gt; ,
+    &lt;.../art_5/para_2&gt; ,
+    &lt;.../art_5/para_3&gt; .
+
+&lt;.../art_5/para_1&gt;
+  a ldso:Paragraph ;
+  ldso:notation "1" ;
+  ldso:citation "2.5.1" ;
+  ldso:orderIndex 1 ;
+  ldso:text "Each Party shall allow the temporary admission..."@en ;
+  ldso:next &lt;.../art_5/para_2&gt; .
+
+&lt;.../art_5/para_2&gt;
+  a ldso:Paragraph ;
+  ldso:notation "2" ;
+  ldso:citation "2.5.2" ;
+  ldso:orderIndex 2 ;
+  ldso:previous &lt;.../art_5/para_1&gt; ;
+  ldso:next &lt;.../art_5/para_3&gt; ;
+  ldso:contains &lt;.../para_2/list_1&gt; .
+
+&lt;.../para_2/list_1&gt;
+  a ldso:BlockList ;
+  ldso:contains
+    &lt;.../list_1/item_a&gt; ,
+    &lt;.../list_1/item_b&gt; ,
+    &lt;.../list_1/item_c&gt; .
+
+&lt;.../list_1/item_a&gt;
+  a ldso:Item ;
+  ldso:notation "a" ;
+  ldso:citation "2.5.2.a" ;
+  ldso:orderIndex 1 ;
+  ldso:text "goods for display at exhibitions;"@en ;
+  ldso:next &lt;.../list_1/item_b&gt; .
+    </pre>
+  </section>
+
+  <section id="example-jsonld">
+    <h3>Article 2.5 (JSON-LD)</h3>
+    <p>Full source in <code>examples/example.jsonld</code>.</p>
+    <pre class="example">
+{
+  "@context": {
+    "ldso": "https://w3id.org/ldso/core#",
+    "Article":    "ldso:Article",
+    "Paragraph":  "ldso:Paragraph",
+    "BlockList":  "ldso:BlockList",
+    "Item":       "ldso:Item",
+    "dct":        "http://purl.org/dc/terms/",
+    "title":      { "@id": "dct:title", "@container": "@language" },
+    "notation":   { "@id": "ldso:notation" },
+    "citation":   { "@id": "ldso:citation" },
+    "orderIndex": { "@id": "ldso:orderIndex", "@type": "xsd:integer" },
+    "text":       { "@id": "ldso:text",  "@container": "@language" },
+    "contains":   { "@id": "ldso:contains", "@type": "@id", "@container": "@set" },
+    "next":       { "@id": "ldso:next",  "@type": "@id" },
+    "previous":   { "@id": "ldso:previous", "@type": "@id" }
+  },
+  "@id":        "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5",
+  "@type":      "Article",
+  "notation":   "5",
+  "citation":   "2.5",
+  "title":      { "en": "Temporary Admission of Goods" },
+  "orderIndex": 5
+}
+    </pre>
+  </section>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 11. ALIGNMENT -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="alignment">
+  <h2>Alignment with Existing Standards</h2>
+
+  <table class="props">
+    <thead>
+      <tr><th>Standard</th><th>Relationship</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Akoma Ntoso [[AKN]]</td>
+        <td>Structural element hierarchy inspired by AKN element taxonomy (article, paragraph, blocklist, annex, table). LDSO-Core is not an AKN ontology and does not use AKN's FRBRuri or eId/wId identifier scheme.</td>
+      </tr>
+      <tr>
+        <td>FRBR [[FRBR]]</td>
+        <td><code>ldso:LegalResource</code> ≈ FRBR Work; <code>ldso:LegalExpression</code> ≈ FRBR Expression; <code>ldso:Document</code> ≈ FRBR Manifestation. LDSO-Core uses a simplified two-level Resource/Expression model without the full FRBR hierarchy.</td>
+      </tr>
+      <tr>
+        <td>ELI [[ELI]]</td>
+        <td>ELI IRIs can be used as <code>ldso:LegalResource</code> or <code>ldso:LegalExpression</code> identifiers. LDSO-Core is compatible with ELI metadata at the expression level.</td>
+      </tr>
+      <tr>
+        <td>Dublin Core / DCTerms</td>
+        <td><code>dct:title</code>, <code>dct:language</code>, <code>dct:issued</code>, and <code>dct:format</code> are the standard metadata properties used on <code>ldso:LegalExpression</code> and <code>ldso:Document</code> nodes. <code>ldso:expressionOf</code> is a sub-property of <code>dct:isVersionOf</code>.</td>
+      </tr>
+      <tr>
+        <td>SKOS [[SKOS]]</td>
+        <td><code>skos:definition</code> and <code>skos:scopeNote</code> are used throughout LDSO-Core for class and property documentation.</td>
+      </tr>
+      <tr>
+        <td>OWL 2 [[OWL2]]</td>
+        <td>All classes and properties are declared as OWL terms. The ontology uses a limited OWL 2 DL subset compatible with open-world reasoning for large corpora.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 12. SECURITY CONSIDERATIONS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="security">
+  <h2>Security Considerations</h2>
+  <p>
+    LDSO-Core is a descriptive ontology. It does not specify executable rules,
+    access control policies, or encryption requirements. Implementors who expose
+    LDSO-Core data via SPARQL endpoints or REST APIs MUST apply standard web
+    security controls including authentication, authorisation, input validation,
+    and rate limiting. Sensitive legal documents SHOULD be protected with
+    appropriate access controls before publication.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- 13. PRIVACY CONSIDERATIONS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="privacy">
+  <h2>Privacy Considerations</h2>
+  <p>
+    LDSO-Core does not define properties for personal data. However, instances
+    of legal documents may contain personal data (names of parties, signatories,
+    judicial case participants). Implementors MUST assess privacy obligations
+    under applicable law (e.g., GDPR) before publishing legal document graphs
+    that include personal information.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- REFERENCES -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section id="references">
+  <h2>References</h2>
+  <section id="normative-references">
+    <h3>Normative References</h3>
+    <dl>
+      <dt id="bib-OWL2">[OWL2]</dt>
+      <dd>OWL 2 Web Ontology Language Primer. W3C Recommendation 2012. <a href="https://www.w3.org/TR/owl2-primer/">https://www.w3.org/TR/owl2-primer/</a></dd>
+      <dt id="bib-SHACL">[SHACL]</dt>
+      <dd>Shapes Constraint Language (SHACL). W3C Recommendation 2017. <a href="https://www.w3.org/TR/shacl/">https://www.w3.org/TR/shacl/</a></dd>
+      <dt id="bib-TURTLE">[TURTLE]</dt>
+      <dd>RDF 1.1 Turtle. W3C Recommendation 2014. <a href="https://www.w3.org/TR/turtle/">https://www.w3.org/TR/turtle/</a></dd>
+    </dl>
+  </section>
+  <section id="informative-references">
+    <h3>Informative References</h3>
+    <dl>
+      <dt id="bib-AKN">[AKN]</dt>
+      <dd>Akoma Ntoso XML for Parliamentary, Legislative &amp; Judiciary Documents. OASIS. <a href="http://www.akomantoso.org/">http://www.akomantoso.org/</a></dd>
+      <dt id="bib-ELI">[ELI]</dt>
+      <dd>European Legislation Identifier. Publications Office of the EU. <a href="https://eur-lex.europa.eu/eli-register/about.html">https://eur-lex.europa.eu/eli-register/</a></dd>
+      <dt id="bib-FRBR">[FRBR]</dt>
+      <dd>Functional Requirements for Bibliographic Records. IFLA. <a href="https://www.ifla.org/publications/functional-requirements-for-bibliographic-records/">https://www.ifla.org/</a></dd>
+      <dt id="bib-JSON-LD11">[JSON-LD11]</dt>
+      <dd>JSON-LD 1.1. W3C Recommendation 2020. <a href="https://www.w3.org/TR/json-ld11/">https://www.w3.org/TR/json-ld11/</a></dd>
+      <dt id="bib-SKOS">[SKOS]</dt>
+      <dd>SKOS Simple Knowledge Organization System Reference. W3C Recommendation 2009. <a href="https://www.w3.org/TR/skos-reference/">https://www.w3.org/TR/skos-reference/</a></dd>
+    </dl>
+  </section>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- APPENDIX: COMPLETE ONTOLOGY -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<section class="appendix" id="appendix-ontology">
+  <h2>Appendix A: Complete Ontology (Turtle)</h2>
+  <p>
+    The complete ontology is available in <code>ontology.ttl</code>.
+    The following listing reproduces the full Turtle source for reference.
+  </p>
+  <pre class="example turtle" id="full-ontology">
+@prefix rdf:  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; .
+@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt; .
+@prefix owl:  &lt;http://www.w3.org/2002/07/owl#&gt; .
+@prefix xsd:  &lt;http://www.w3.org/2001/XMLSchema#&gt; .
+@prefix skos: &lt;http://www.w3.org/2004/02/skos/core#&gt; .
+@prefix dct:  &lt;http://purl.org/dc/terms/&gt; .
+@prefix ldso: &lt;https://w3id.org/ldso/core#&gt; .
+
+&lt;https://w3id.org/ldso/core&gt;
+  a owl:Ontology ;
+  dct:title "LDSO-Core: Legal Document Structure Ontology — Core Module"@en ;
+  owl:versionIRI &lt;https://w3id.org/ldso/core/1.0.0&gt; ;
+  owl:versionInfo "1.0.0" ;
+  vann:preferredNamespacePrefix "ldso" ;
+  vann:preferredNamespaceUri "https://w3id.org/ldso/core#" .
+
+# Classes — see ontology.ttl for complete definitions with scope notes.
+
+ldso:LegalResource    a owl:Class ; rdfs:label "Legal Resource"@en .
+ldso:LegalExpression  a owl:Class ; rdfs:label "Legal Expression"@en ;  rdfs:subClassOf ldso:LegalResource .
+ldso:LegalElement     a owl:Class ; rdfs:label "Legal Element"@en ;     rdfs:subClassOf ldso:LegalResource .
+ldso:Document         a owl:Class ; rdfs:label "Document"@en ;          rdfs:subClassOf ldso:LegalExpression .
+ldso:Preface          a owl:Class ; rdfs:label "Preface"@en ;           rdfs:subClassOf ldso:LegalElement .
+ldso:Preamble         a owl:Class ; rdfs:label "Preamble"@en ;          rdfs:subClassOf ldso:LegalElement .
+ldso:Body             a owl:Class ; rdfs:label "Body"@en ;              rdfs:subClassOf ldso:LegalElement .
+ldso:Conclusions      a owl:Class ; rdfs:label "Conclusions"@en ;       rdfs:subClassOf ldso:LegalElement .
+ldso:Part             a owl:Class ; rdfs:label "Part"@en ;              rdfs:subClassOf ldso:LegalElement .
+ldso:Title            a owl:Class ; rdfs:label "Title"@en ;             rdfs:subClassOf ldso:LegalElement .
+ldso:Chapter          a owl:Class ; rdfs:label "Chapter"@en ;           rdfs:subClassOf ldso:LegalElement .
+ldso:Section          a owl:Class ; rdfs:label "Section"@en ;           rdfs:subClassOf ldso:LegalElement .
+ldso:Article          a owl:Class ; rdfs:label "Article"@en ;           rdfs:subClassOf ldso:LegalElement .
+ldso:Paragraph        a owl:Class ; rdfs:label "Paragraph"@en ;         rdfs:subClassOf ldso:LegalElement .
+ldso:Clause           a owl:Class ; rdfs:label "Clause"@en ;            rdfs:subClassOf ldso:LegalElement .
+ldso:Point            a owl:Class ; rdfs:label "Point"@en ;             rdfs:subClassOf ldso:LegalElement .
+ldso:BlockList        a owl:Class ; rdfs:label "Block List"@en ;        rdfs:subClassOf ldso:LegalElement .
+ldso:Item             a owl:Class ; rdfs:label "Item"@en ;              rdfs:subClassOf ldso:LegalElement .
+ldso:Annex            a owl:Class ; rdfs:label "Annex"@en ;             rdfs:subClassOf ldso:LegalElement .
+ldso:Schedule         a owl:Class ; rdfs:label "Schedule"@en ;          rdfs:subClassOf ldso:LegalElement .
+ldso:Appendix         a owl:Class ; rdfs:label "Appendix"@en ;          rdfs:subClassOf ldso:LegalElement .
+ldso:Attachment       a owl:Class ; rdfs:label "Attachment"@en ;        rdfs:subClassOf ldso:LegalElement .
+ldso:Table            a owl:Class ; rdfs:label "Table"@en ;             rdfs:subClassOf ldso:LegalElement .
+ldso:Row              a owl:Class ; rdfs:label "Row"@en ;               rdfs:subClassOf ldso:LegalElement .
+ldso:Cell             a owl:Class ; rdfs:label "Cell"@en ;              rdfs:subClassOf ldso:LegalElement .
+ldso:Reference        a owl:Class ; rdfs:label "Reference"@en ;         rdfs:subClassOf ldso:LegalElement .
+ldso:InternalReference a owl:Class ; rdfs:label "Internal Reference"@en ; rdfs:subClassOf ldso:Reference .
+ldso:ExternalReference a owl:Class ; rdfs:label "External Reference"@en ; rdfs:subClassOf ldso:Reference .
+ldso:Citation         a owl:Class ; rdfs:label "Citation"@en ;          rdfs:subClassOf ldso:Reference .
+
+# Object Properties
+
+ldso:expressionOf a owl:ObjectProperty ; rdfs:label "expression of"@en ;
+  rdfs:domain ldso:LegalExpression ; rdfs:range ldso:LegalResource ;
+  rdfs:subPropertyOf dct:isVersionOf ; owl:inverseOf ldso:hasExpression .
+ldso:hasExpression a owl:ObjectProperty ; rdfs:label "has expression"@en ;
+  rdfs:domain ldso:LegalResource ; rdfs:range ldso:LegalExpression ;
+  owl:inverseOf ldso:expressionOf .
+ldso:contains a owl:ObjectProperty ; rdfs:label "contains"@en ;
+  rdfs:domain ldso:LegalElement ; rdfs:range ldso:LegalElement ; owl:inverseOf ldso:partOf .
+ldso:partOf   a owl:ObjectProperty ; rdfs:label "part of"@en ;
+  rdfs:domain ldso:LegalElement ; rdfs:range ldso:LegalElement ; owl:inverseOf ldso:contains .
+ldso:next     a owl:ObjectProperty, owl:FunctionalProperty, owl:IrreflexiveProperty ;
+  rdfs:label "next"@en ; owl:inverseOf ldso:previous .
+ldso:previous a owl:ObjectProperty, owl:FunctionalProperty, owl:IrreflexiveProperty ;
+  rdfs:label "previous"@en ; owl:inverseOf ldso:next .
+ldso:refersTo a owl:ObjectProperty ; rdfs:label "refers to"@en ;
+  rdfs:domain ldso:Reference ; rdfs:range ldso:LegalResource .
+ldso:cites    a owl:ObjectProperty ; rdfs:label "cites"@en ;
+  rdfs:domain ldso:LegalElement ; rdfs:range ldso:LegalResource .
+ldso:hasTable a owl:ObjectProperty ; rdfs:subPropertyOf ldso:contains ; rdfs:range ldso:Table .
+ldso:hasRow   a owl:ObjectProperty ; rdfs:subPropertyOf ldso:contains ;
+  rdfs:domain ldso:LegalElement ; rdfs:range ldso:Row .
+ldso:hasCell  a owl:ObjectProperty ; rdfs:subPropertyOf ldso:contains ;
+  rdfs:domain ldso:LegalElement ; rdfs:range ldso:Cell .
+
+# Datatype Properties
+
+ldso:citation   a owl:DatatypeProperty ; rdfs:label "citation"@en ;
+  rdfs:domain ldso:LegalElement ; rdfs:range xsd:string .
+ldso:orderIndex a owl:DatatypeProperty ; rdfs:label "order index"@en ;
+  rdfs:domain ldso:LegalElement ; rdfs:range xsd:integer .
+ldso:notation   a owl:DatatypeProperty ; rdfs:label "notation"@en ;
+  rdfs:domain ldso:LegalElement ; rdfs:range xsd:string .
+ldso:text       a owl:DatatypeProperty ; rdfs:label "text"@en ;
+  rdfs:domain ldso:LegalElement ; rdfs:range rdf:langString .
+ldso:anchorText a owl:DatatypeProperty ; rdfs:label "anchor text"@en ;
+  rdfs:domain ldso:Reference ; rdfs:range rdf:langString .
+ldso:isHeader   a owl:DatatypeProperty ; rdfs:label "is header"@en ;
+  rdfs:domain ldso:Row ; rdfs:range xsd:boolean .
+  </pre>
+</section>
+
+</body>
+</html>

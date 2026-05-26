@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LDSO-Annotations: Document Annotation Module</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus:    "unofficial",
+      shortName:     "ldso-annotations",
+      latestVersion: "https://w3id.org/ldso/annotations",
+      edDraftURI:    "https://w3id.org/ldso/annotations",
+      editors: [
+        { name: "Stephane Fellah", company: "Geoknoesis LLC", url: "https://www.geoknoesis.com" }
+      ],
+      publishDate: "2026-05-25",
+      license: "cc-by",
+      doJsonLd: true,
+      github: {
+        repoURL: "https://github.com/geoknoesis/ldso",
+        branch:  "main"
+      },
+      localBiblio: {
+        "LDSO-CORE": {
+          title:     "LDSO-Core: Legal Document Structure Ontology",
+          href:      "https://w3id.org/ldso/core",
+          publisher: "LDSO Project"
+        },
+        "LDSO-ENTITIES": {
+          title:     "LDSO-Entities: Named Entity Reference Module",
+          href:      "https://w3id.org/ldso/entities",
+          publisher: "LDSO Project"
+        },
+        "OWL2": {
+          title:     "OWL 2 Web Ontology Language Primer (Second Edition)",
+          href:      "https://www.w3.org/TR/owl2-primer/",
+          publisher: "W3C"
+        },
+        "SHACL": {
+          title:     "Shapes Constraint Language (SHACL)",
+          href:      "https://www.w3.org/TR/shacl/",
+          publisher: "W3C"
+        },
+        "SKOS": {
+          title:     "SKOS Simple Knowledge Organization System Reference",
+          href:      "https://www.w3.org/TR/skos-reference/",
+          publisher: "W3C"
+        },
+        "RFC2119": {
+          title:     "Key words for use in RFCs to Indicate Requirement Levels",
+          href:      "https://www.ietf.org/rfc/rfc2119.txt",
+          publisher: "IETF"
+        },
+        "NLP-LEGAL": {
+          title:     "Named Entity Recognition in Legal Documents",
+          href:      "https://aclanthology.org/",
+          publisher: "ACL Anthology"
+        },
+        "BCP47": {
+          title:     "Tags for Identifying Languages (BCP 47)",
+          href:      "https://www.rfc-editor.org/rfc/bcp/bcp47.txt",
+          publisher: "IETF"
+        }
+      }
+    };
+  </script>
+  <style>
+    .ont-term   { font-family: monospace; color: #005a9c; }
+    .ont-prefix { font-family: monospace; color: #707070; }
+    table.ont-table { border-collapse: collapse; width: 100%; }
+    table.ont-table th, table.ont-table td {
+      border: 1px solid #ccc; padding: 0.4em 0.7em; text-align: left;
+      vertical-align: top;
+    }
+    table.ont-table th { background: #f0f0f0; }
+    .disclaimer { background: #fff3cd; border-left: 4px solid #ffc107;
+      padding: 0.7em 1em; margin: 1em 0; }
+    pre.turtle { background: #f8f8f8; border: 1px solid #ddd;
+      padding: 0.8em 1em; overflow-x: auto; font-size: 0.9em; }
+    .layer-diagram { font-family: monospace; background: #f4f4f4;
+      padding: 0.8em 1em; border: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+
+<h1>LDSO-Annotations: Document Annotation Module</h1>
+
+<section id="abstract">
+  <p>
+    <strong>LDSO-Annotations</strong> is an RDF/OWL vocabulary for annotating legal
+    document elements with references to named entities. It operates at two
+    complementary granularities: a <em>coarse</em> level suitable for human-curated
+    annotation and entity indexing, and a <em>fine</em> level that captures the exact
+    surface form, character offsets, and NER confidence score for each entity occurrence
+    — the primary output unit of NLP parsing pipelines.
+  </p>
+  <p>
+    This module imports <a data-cite="LDSO-CORE">LDSO-Core</a> for document structure
+    and <a data-cite="LDSO-ENTITIES">LDSO-Entities</a> for the canonical entity
+    catalogue. It sits above both in the LDSO module stack as Layer 2c.
+  </p>
+  <p class="disclaimer">
+    This document is not an official W3C Standard or W3C Recommendation. It is a
+    community/project specification using W3C ReSpec formatting conventions.
+  </p>
+</section>
+
+<section id="sotd">
+  <p class="disclaimer">
+    This document is not an official W3C Standard or W3C Recommendation. It is a
+    community/project specification produced by Geoknoesis LLC using W3C ReSpec
+    formatting conventions.
+  </p>
+  <p>
+    This specification is part of the Legal Document Structure Ontology (LDSO) family.
+    Feedback and contributions are welcome via the
+    <a href="https://github.com/geoknoesis/ldso/issues">GitHub issue tracker</a>.
+  </p>
+  <section id="version-iri">
+    <h3>Version IRI</h3>
+    <p>
+      The version IRI for this publication is
+      <code>https://w3id.org/ldso/annotations/1.0.0</code>.
+      The canonical namespace IRI is <code>https://w3id.org/ldso/annotations#</code>
+      (preferred prefix: <code>ann</code>). All LDSO-Annotations terms carry a
+      <code>rdfs:isDefinedBy</code> assertion pointing to
+      <code>https://w3id.org/ldso/annotations</code>.
+    </p>
+  </section>
+</section>
+
+<section id="introduction">
+  <h2>Introduction</h2>
+  <p>
+    Legal documents contain numerous references to named real-world entities: international
+    organizations, geographic territories, legal concepts, administrative roles, events,
+    and processes. Two distinct use cases arise when linking document content to those
+    entities:
+  </p>
+  <ol>
+    <li>
+      <strong>Coarse annotation</strong> — A curator reads an article and marks which
+      entities it mentions, without recording which exact phrases triggered that judgment
+      or where in the text they appear. This is sufficient for entity indexing and
+      document retrieval.
+    </li>
+    <li>
+      <strong>Fine annotation</strong> — An NLP pipeline identifies each entity occurrence
+      in the text, records the exact surface form as it appears (which may differ from the
+      canonical display form — "WCO", "the Organization", "World Customs Organization" are
+      all mentions of the same entity), and optionally captures character offsets and a
+      confidence score. This is the primary output of named entity recognition (NER) systems.
+    </li>
+  </ol>
+  <p>
+    LDSO-Annotations supports both use cases through a single vocabulary. The two levels
+    are designed to be complementary: fine-grained mentions can co-exist with coarse
+    references on the same element, enabling the coarse layer to serve as a complete
+    entity index independently of whether NLP output is available.
+  </p>
+
+  <section id="design-principles">
+    <h3>Design Principles</h3>
+    <ol>
+      <li>
+        <strong>Separation of catalogue and annotation.</strong>
+        The canonical entity catalogue lives in <a data-cite="LDSO-ENTITIES">LDSO-Entities</a>.
+        LDSO-Annotations only records linkages between document locations and catalogue
+        entries — it adds no new entity types or entity properties.
+      </li>
+      <li>
+        <strong>One mention node per occurrence.</strong>
+        Each distinct occurrence of a named entity in a single document element is
+        represented as a separate <code>ann:EntityMention</code> node. The same canonical
+        entity may appear multiple times in a single paragraph under different surface
+        forms (e.g., "WCO", "the Organization", "World Customs Organization"); each
+        occurrence receives its own mention node.
+      </li>
+      <li>
+        <strong>No <code>rdfs:domain</code> on annotation properties.</strong>
+        SHACL shapes in <code>shapes.ttl</code> are the sole validation authority.
+        OWL domain declarations are omitted to prevent unintended inference from
+        polluting graphs that use annotation properties in other contexts.
+      </li>
+      <li>
+        <strong>Language-tagged surface forms.</strong>
+        <code>ann:surfaceForm</code> values MUST carry a BCP 47 language tag matching
+        the language of the containing document expression, enabling correct multilingual
+        lookup and comparison.
+      </li>
+      <li>
+        <strong>Offset semantics.</strong>
+        <code>ann:startChar</code> and <code>ann:endChar</code> are zero-based,
+        measured against the <code>ldso:text</code> literal of the containing element.
+        The slice <code>text[startChar:endChar]</code> (Python notation) produces the
+        surface form. <code>ann:endChar</code> MUST be strictly greater than
+        <code>ann:startChar</code> and MUST be present whenever <code>ann:startChar</code>
+        is asserted.
+      </li>
+    </ol>
+  </section>
+
+  <section id="conventions">
+    <h3>Conventions</h3>
+    <p>
+      The key words MUST, MUST NOT, REQUIRED, SHOULD, SHOULD NOT, RECOMMENDED, MAY,
+      and OPTIONAL in this document are to be interpreted as described in [[RFC2119]].
+    </p>
+    <p>The following namespace prefix bindings are used throughout:</p>
+    <table class="ont-table">
+      <thead>
+        <tr><th>Prefix</th><th>Namespace URI</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ann:</code></td><td><code>https://w3id.org/ldso/annotations#</code></td><td>LDSO-Annotations terms (this module)</td></tr>
+        <tr><td><code>ent:</code></td><td><code>https://w3id.org/ldso/entities#</code></td><td>LDSO-Entities — named entity catalogue</td></tr>
+        <tr><td><code>ldso:</code></td><td><code>https://w3id.org/ldso/core#</code></td><td>LDSO-Core — document structure</td></tr>
+        <tr><td><code>dct:</code></td><td><code>http://purl.org/dc/terms/</code></td><td>DC Terms metadata</td></tr>
+        <tr><td><code>xsd:</code></td><td><code>http://www.w3.org/2001/XMLSchema#</code></td><td>XML Schema datatypes</td></tr>
+        <tr><td><code>rdf:</code></td><td><code>http://www.w3.org/1999/02/22-rdf-syntax-ns#</code></td><td>RDF vocabulary</td></tr>
+        <tr><td><code>owl:</code></td><td><code>http://www.w3.org/2002/07/owl#</code></td><td>OWL 2 vocabulary</td></tr>
+        <tr><td><code>sh:</code></td><td><code>http://www.w3.org/ns/shacl#</code></td><td>SHACL vocabulary</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="module-position">
+    <h3>Module Position</h3>
+    <p>LDSO-Annotations occupies Layer 2c in the LDSO module stack:</p>
+    <pre class="layer-diagram">
+Layer 4  — LDSO-Semantics     (obligations, definitions, deontic annotations)
+Layer 3  — LDSO-Lifecycle     (amendments, versions, consolidation)
+Layer 2c — LDSO-Annotations  ← THIS MODULE (entity mentions, NLP annotation)
+Layer 2b — LDSO-Entities      (canonical named entity catalogue)
+Layer 1  — LDSO-Core          (document structure, LegalResource/LegalExpression)
+    </pre>
+    <p>
+      The ontology IRI is <code>https://w3id.org/ldso/annotations</code>. It declares
+      <code>owl:imports</code> on both <code>https://w3id.org/ldso/core</code> and
+      <code>https://w3id.org/ldso/entities</code>.
+    </p>
+  </section>
+</section>
+
+<section id="annotation-model">
+  <h2>Annotation Model</h2>
+
+  <section id="coarse-annotation">
+    <h3>Coarse Annotation</h3>
+    <p>
+      The coarse annotation pattern links a document element directly to a canonical
+      named entity via <code>ann:refersToEntity</code>. It records <em>which</em> entities
+      are mentioned in an element without recording <em>where</em> or <em>how</em>.
+    </p>
+    <pre class="turtle">
+# An article refers to three canonical entities
+ex:art_5
+  a ldso:Article ;
+  ann:refersToEntity ex:temporary_admission,
+                     ex:competent_authority,
+                     ex:customs_territory .
+    </pre>
+    <p>
+      Use <code>ann:refersToEntity</code> when mention-level granularity is not required —
+      for human-curated annotation at the article or paragraph level, or for simple
+      entity indexing across a document corpus.
+    </p>
+  </section>
+
+  <section id="fine-annotation">
+    <h3>Fine Annotation</h3>
+    <p>
+      The fine annotation pattern uses <code>ann:EntityMention</code> nodes to record
+      each individual occurrence of a named entity. Each mention node carries the exact
+      surface form, optional character offsets, and an optional NER confidence score.
+    </p>
+    <pre class="turtle">
+# A paragraph with two entity mentions
+ex:para_2
+  a ldso:Paragraph ;
+  ldso:text "The World Customs Organization (WCO) and the competent authority ..."@en ;
+  ann:hasMention ex:m_wco_para2, ex:m_authority_para2 .
+
+# First mention: full name form
+ex:m_wco_para2
+  a ann:EntityMention ;
+  ann:mentionOf   ex:wco ;
+  ann:inElement   ex:para_2 ;
+  ann:surfaceForm "World Customs Organization"@en ;
+  ann:startChar   4 ;
+  ann:endChar     32 ;
+  ann:confidence  0.98 .
+
+# Second mention: abbreviated form of the same canonical entity
+ex:m_wco_abbrev
+  a ann:EntityMention ;
+  ann:mentionOf   ex:wco ;
+  ann:inElement   ex:para_2 ;
+  ann:surfaceForm "WCO"@en ;
+  ann:startChar   34 ;
+  ann:endChar     37 ;
+  ann:confidence  0.99 .
+
+# Third mention: different canonical entity
+ex:m_authority_para2
+  a ann:EntityMention ;
+  ann:mentionOf   ex:competent_authority ;
+  ann:inElement   ex:para_2 ;
+  ann:surfaceForm "competent authority"@en ;
+  ann:confidence  0.91 .
+    </pre>
+  </section>
+
+  <section id="both-levels">
+    <h3>Using Both Levels Together</h3>
+    <p>
+      The SHACL shape <code>ann:MentionCoarseConsistencyShape</code> warns when an
+      element carries fine-grained mentions but is missing the corresponding coarse
+      <code>ann:refersToEntity</code> assertions. The recommended pattern is to assert
+      both levels: coarse references for efficient entity indexing and SPARQL lookup,
+      fine mentions for provenance, surface form variants, and span highlighting.
+    </p>
+    <pre class="turtle">
+ex:para_2
+  ann:refersToEntity ex:wco, ex:competent_authority ;  # coarse index
+  ann:hasMention ex:m_wco_para2, ex:m_wco_abbrev,     # fine provenance
+                 ex:m_authority_para2 .
+    </pre>
+  </section>
+</section>
+
+<section id="classes">
+  <h2>Classes</h2>
+
+  <section id="EntityMention">
+    <h3><span class="ont-term">ann:EntityMention</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>IRI</th>
+            <td><code>https://w3id.org/ldso/annotations#EntityMention</code></td></tr>
+        <tr><th>Label</th>
+            <td>Entity Mention</td></tr>
+        <tr><th>Definition</th>
+            <td>A single occurrence of a named entity within a specific location in a
+                legal document. Captures the exact surface form as it appears in the
+                source text, the document element in which it occurs, optional character
+                offsets for span-level highlighting, and an optional NER confidence
+                score.</td></tr>
+        <tr><th>Usage</th>
+            <td>
+              <code>ann:EntityMention</code> is the primary output unit of NLP/NER
+              parsing pipelines. Each mention node MUST be linked to its canonical
+              <code>ent:NamedEntity</code> via <code>ann:mentionOf</code> and to its
+              containing document element via <code>ann:inElement</code>.
+              <br><br>
+              Multiple mentions in the same element are represented as separate
+              <code>ann:EntityMention</code> nodes — one per distinct surface-form
+              occurrence. The same canonical entity may appear multiple times in a
+              single paragraph under different surface forms ("WCO" and "the
+              Organization") — each occurrence is a separate mention.
+              <br><br>
+              For coarse annotation without span-level detail, use
+              <code>ann:refersToEntity</code> directly on the document element.
+            </td></tr>
+        <tr><th>Required properties</th>
+            <td>
+              <code>ann:mentionOf</code> (exactly 1),
+              <code>ann:inElement</code> (exactly 1),
+              <code>ann:surfaceForm</code> (exactly 1)
+            </td></tr>
+        <tr><th>Optional properties</th>
+            <td>
+              <code>ann:startChar</code>, <code>ann:endChar</code>
+              (both together or neither),
+              <code>ann:confidence</code>
+            </td></tr>
+        <tr><th>Example</th>
+            <td><pre class="turtle">
+ex:m_wco_para2
+  a ann:EntityMention ;
+  ann:mentionOf   ex:wco ;
+  ann:inElement   ex:para_2 ;
+  ann:surfaceForm "World Customs Organization"@en ;
+  ann:startChar   23 ;
+  ann:endChar     51 ;
+  ann:confidence  0.98 .</pre></td></tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<section id="object-properties">
+  <h2>Object Properties</h2>
+
+  <section id="refersToEntity">
+    <h3><span class="ont-term">ann:refersToEntity</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>IRI</th>
+            <td><code>https://w3id.org/ldso/annotations#refersToEntity</code></td></tr>
+        <tr><th>Label</th><td>refers to entity</td></tr>
+        <tr><th>Definition</th>
+            <td>Coarse-grained link from a legal document element to a canonical named
+                entity it mentions somewhere in its text.</td></tr>
+        <tr><th>Range</th><td><code>ent:NamedEntity</code></td></tr>
+        <tr><th>OWL characteristics</th>
+            <td><code>owl:AsymmetricProperty</code></td></tr>
+        <tr><th>Usage</th>
+            <td>Use when mention-level granularity is not required. A single element
+                may carry multiple <code>ann:refersToEntity</code> assertions, one per
+                distinct canonical entity mentioned. For NLP pipeline output with surface
+                form and character offsets, use the fine-grained pattern with
+                <code>ann:EntityMention</code> instead.</td></tr>
+        <tr><th>Example</th>
+            <td><pre class="turtle">
+ex:art_5
+  ann:refersToEntity ex:temporary_admission,
+                     ex:competent_authority .</pre></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="mentionOf">
+    <h3><span class="ont-term">ann:mentionOf</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>IRI</th>
+            <td><code>https://w3id.org/ldso/annotations#mentionOf</code></td></tr>
+        <tr><th>Label</th><td>mention of</td></tr>
+        <tr><th>Definition</th>
+            <td>Links an entity mention to the canonical named entity it is an
+                occurrence of.</td></tr>
+        <tr><th>Range</th><td><code>ent:NamedEntity</code></td></tr>
+        <tr><th>OWL characteristics</th>
+            <td><code>owl:FunctionalProperty</code> — a mention is always an occurrence
+                of exactly one canonical entity.</td></tr>
+        <tr><th>Cardinality</th><td>Exactly 1 (MUST)</td></tr>
+        <tr><th>Example</th>
+            <td><pre class="turtle">
+ex:m_wco_para2  ann:mentionOf  ex:wco .</pre></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="inElement">
+    <h3><span class="ont-term">ann:inElement</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>IRI</th>
+            <td><code>https://w3id.org/ldso/annotations#inElement</code></td></tr>
+        <tr><th>Label</th><td>in element</td></tr>
+        <tr><th>Definition</th>
+            <td>Links an entity mention to the document element (paragraph, item,
+                article, etc.) in which it occurs.</td></tr>
+        <tr><th>OWL characteristics</th>
+            <td><code>owl:FunctionalProperty</code>, <code>owl:AsymmetricProperty</code>,
+                <code>owl:IrreflexiveProperty</code></td></tr>
+        <tr><th>Inverse</th><td><code>ann:hasMention</code></td></tr>
+        <tr><th>Cardinality</th><td>Exactly 1 (MUST)</td></tr>
+        <tr><th>Usage</th>
+            <td>The target is typically an <code>ldso:Paragraph</code>,
+                <code>ldso:Item</code>, or another fine-grained structural element
+                from LDSO-Core. A mention occurs in exactly one document element.</td></tr>
+        <tr><th>Example</th>
+            <td><pre class="turtle">
+ex:m_wco_para2  ann:inElement  ex:para_2 .</pre></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="hasMention">
+    <h3><span class="ont-term">ann:hasMention</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>IRI</th>
+            <td><code>https://w3id.org/ldso/annotations#hasMention</code></td></tr>
+        <tr><th>Label</th><td>has mention</td></tr>
+        <tr><th>Definition</th>
+            <td>Links a document element to an entity mention occurring within it.</td></tr>
+        <tr><th>Range</th><td><code>ann:EntityMention</code></td></tr>
+        <tr><th>OWL characteristics</th>
+            <td><code>owl:AsymmetricProperty</code>,
+                <code>owl:IrreflexiveProperty</code></td></tr>
+        <tr><th>Inverse</th><td><code>ann:inElement</code></td></tr>
+        <tr><th>Usage</th>
+            <td>Navigate from a document element to all entity mentions it contains.
+                An element may carry multiple <code>ann:hasMention</code> assertions —
+                one per distinct occurrence of any entity in its text.</td></tr>
+        <tr><th>Example</th>
+            <td><pre class="turtle">
+ex:para_2
+  ann:hasMention ex:m_wco_para2, ex:m_authority_para2 .</pre></td></tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<section id="datatype-properties">
+  <h2>Datatype Properties</h2>
+
+  <section id="surfaceForm">
+    <h3><span class="ont-term">ann:surfaceForm</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>IRI</th>
+            <td><code>https://w3id.org/ldso/annotations#surfaceForm</code></td></tr>
+        <tr><th>Label</th><td>surface form</td></tr>
+        <tr><th>Definition</th>
+            <td>The exact textual string of the entity mention as it appears in the
+                source document, with a BCP 47 language tag matching the document
+                language.</td></tr>
+        <tr><th>Range</th><td><code>rdf:langString</code></td></tr>
+        <tr><th>Cardinality</th><td>Exactly 1 (MUST)</td></tr>
+        <tr><th>Usage</th>
+            <td>Always language-tagged (e.g., <code>"WCO"@en</code>,
+                <code>"OMD"@fr</code>). Distinct from <code>ent:showAs</code>, which
+                carries the canonical preferred display form.
+                <code>ann:surfaceForm</code> records exactly what the parser found —
+                abbreviations, inflected forms, and partial names are all valid.</td></tr>
+        <tr><th>Example</th>
+            <td><pre class="turtle">
+ex:m_wco_full   ann:surfaceForm "World Customs Organization"@en .
+ex:m_wco_abbrev ann:surfaceForm "WCO"@en .
+ex:m_wco_anap   ann:surfaceForm "the Organization"@en .</pre></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="startChar">
+    <h3><span class="ont-term">ann:startChar</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>IRI</th>
+            <td><code>https://w3id.org/ldso/annotations#startChar</code></td></tr>
+        <tr><th>Label</th><td>start character</td></tr>
+        <tr><th>Definition</th>
+            <td>Zero-based character offset of the first character of the entity mention
+                span within the plain-text content of its containing element.</td></tr>
+        <tr><th>Range</th><td><code>xsd:nonNegativeInteger</code></td></tr>
+        <tr><th>OWL characteristics</th>
+            <td><code>owl:FunctionalProperty</code></td></tr>
+        <tr><th>Cardinality</th><td>At most 1. When present, <code>ann:endChar</code>
+            MUST also be present and strictly greater.</td></tr>
+        <tr><th>Usage</th>
+            <td>Offsets are relative to the string value of <code>ldso:text</code> on
+                the <code>ann:inElement</code> node (the plain-text content of that
+                structural element). Assert only when character-level span highlighting
+                is required.</td></tr>
+        <tr><th>Example</th>
+            <td><pre class="turtle">
+ex:m_wco_para2
+  ann:startChar  23 ;
+  ann:endChar    51 .</pre></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="endChar">
+    <h3><span class="ont-term">ann:endChar</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>IRI</th>
+            <td><code>https://w3id.org/ldso/annotations#endChar</code></td></tr>
+        <tr><th>Label</th><td>end character</td></tr>
+        <tr><th>Definition</th>
+            <td>Exclusive character offset of the character immediately following the
+                last character of the entity mention span.</td></tr>
+        <tr><th>Range</th><td><code>xsd:nonNegativeInteger</code></td></tr>
+        <tr><th>OWL characteristics</th>
+            <td><code>owl:FunctionalProperty</code></td></tr>
+        <tr><th>Cardinality</th><td>At most 1. MUST be present whenever
+            <code>ann:startChar</code> is asserted. MUST be strictly greater than
+            <code>ann:startChar</code>.</td></tr>
+        <tr><th>Usage</th>
+            <td>Exclusive upper bound — the mention span is
+                <code>text[startChar:endChar]</code> in Python slice notation. The
+                length of the span is <code>endChar − startChar</code> characters.</td></tr>
+        <tr><th>Example</th>
+            <td><pre class="turtle">
+# "World Customs Organization" occupies characters 23–50 (length 28)
+ex:m_wco_para2
+  ann:startChar  23 ;
+  ann:endChar    51 .</pre></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="confidence">
+    <h3><span class="ont-term">ann:confidence</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>IRI</th>
+            <td><code>https://w3id.org/ldso/annotations#confidence</code></td></tr>
+        <tr><th>Label</th><td>confidence</td></tr>
+        <tr><th>Definition</th>
+            <td>The NER model confidence score for this entity mention, expressed as a
+                decimal in the range [0.0, 1.0].</td></tr>
+        <tr><th>Range</th><td><code>xsd:decimal</code> ∈ [0.0, 1.0]</td></tr>
+        <tr><th>OWL characteristics</th>
+            <td><code>owl:FunctionalProperty</code></td></tr>
+        <tr><th>Cardinality</th><td>At most 1 (optional).</td></tr>
+        <tr><th>Usage</th>
+            <td>Populated by NLP pipelines; omit for human-curated annotations where
+                confidence is implicitly 1.0. A SHACL constraint enforces the
+                [0.0, 1.0] range.</td></tr>
+        <tr><th>Example</th>
+            <td><pre class="turtle">
+ex:m_wco_para2  ann:confidence  0.98 .</pre></td></tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<section id="shacl-shapes">
+  <h2>SHACL Validation Shapes</h2>
+  <p>
+    Validation shapes are defined in <code>shapes.ttl</code>. Run validation with:
+  </p>
+  <pre class="turtle">
+pyshacl -s shapes.ttl -sf turtle -df turtle examples/example.ttl
+  </pre>
+
+  <section id="EntityMentionShape">
+    <h3><span class="ont-term">ann:EntityMentionShape</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>Target</th><td><code>sh:targetClass ann:EntityMention</code></td></tr>
+        <tr><th>Validates</th>
+            <td>
+              <ul>
+                <li><code>ann:mentionOf</code> — exactly 1, pointing to an
+                    <code>ent:NamedEntity</code> IRI (Violation)</li>
+                <li><code>ann:inElement</code> — exactly 1 IRI (Violation)</li>
+                <li><code>ann:surfaceForm</code> — exactly 1 <code>rdf:langString</code> (Violation)</li>
+                <li><code>ann:startChar</code> — at most 1 <code>xsd:nonNegativeInteger</code> (Violation)</li>
+                <li><code>ann:endChar</code> — at most 1 <code>xsd:nonNegativeInteger</code> (Violation)</li>
+                <li><code>ann:confidence</code> — at most 1 <code>xsd:decimal</code> ∈ [0.0, 1.0] (Violation)</li>
+              </ul>
+            </td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="EntityMentionOffsetShape">
+    <h3><span class="ont-term">ann:EntityMentionOffsetShape</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>Target</th><td><code>sh:targetClass ann:EntityMention</code></td></tr>
+        <tr><th>Validates</th>
+            <td>
+              Two SPARQL constraints:
+              <ul>
+                <li><code>ann:startChar</code> present but <code>ann:endChar</code>
+                    absent — Violation</li>
+                <li><code>ann:endChar</code> ≤ <code>ann:startChar</code> — Violation</li>
+              </ul>
+            </td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="RefersToEntityShape">
+    <h3><span class="ont-term">ann:RefersToEntityShape</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>Target</th>
+            <td>SPARQL target: objects of <code>ann:refersToEntity</code></td></tr>
+        <tr><th>Validates</th>
+            <td>Each target SHOULD be typed as <code>ent:NamedEntity</code>
+                (Warning)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="MentionCoarseConsistencyShape">
+    <h3><span class="ont-term">ann:MentionCoarseConsistencyShape</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>Target</th>
+            <td>SPARQL target: elements that carry at least one
+                <code>ann:hasMention</code></td></tr>
+        <tr><th>Validates</th>
+            <td>For each entity mentioned via <code>ann:hasMention</code> /
+                <code>ann:mentionOf</code>, the element SHOULD also carry
+                <code>ann:refersToEntity</code> for the same canonical entity
+                (Warning — index completeness)</td></tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<section id="competency-questions">
+  <h2>Competency Questions</h2>
+  <p>
+    The following questions define what LDSO-Annotations is designed to answer.
+    Each is accompanied by a SPARQL query against a conformant dataset.
+  </p>
+
+  <section id="cq-a-01">
+    <h3>CQ-A-01 — Which named entities are mentioned in a given article?</h3>
+    <pre class="example" title="CQ-A-01">
+PREFIX ann:  &lt;https://w3id.org/ldso/annotations#&gt;
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+
+SELECT DISTINCT ?entity WHERE {
+  &lt;https://example.org/ata/art_5&gt; ldso:contains* ?element .
+  ?element ann:refersToEntity ?entity .
+}</pre>
+  </section>
+
+  <section id="cq-a-02">
+    <h3>CQ-A-02 — Where does a named entity appear (element, citation, offsets)?</h3>
+    <pre class="example" title="CQ-A-02">
+PREFIX ann:  &lt;https://w3id.org/ldso/annotations#&gt;
+PREFIX ent:  &lt;https://w3id.org/ldso/entities#&gt;
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+
+SELECT ?element ?citation ?surfaceForm ?start ?end WHERE {
+  ?entity ent:showAs "World Customs Organization"@en .
+  ?element ann:hasMention ?mention ;
+           ldso:citation ?citation .
+  ?mention ann:mentionOf ?entity ;
+           ann:surfaceForm ?surfaceForm .
+  OPTIONAL { ?mention ann:startChar ?start ; ann:endChar ?end . }
+}
+ORDER BY ?citation ?start</pre>
+  </section>
+
+  <section id="cq-a-03">
+    <h3>CQ-A-03 — What surface form variants appear for a given entity?</h3>
+    <pre class="example" title="CQ-A-03">
+PREFIX ann: &lt;https://w3id.org/ldso/annotations#&gt;
+PREFIX ent: &lt;https://w3id.org/ldso/entities#&gt;
+
+SELECT DISTINCT ?surfaceForm (COUNT(?m) AS ?occurrences) WHERE {
+  ?entity ent:showAs "World Customs Organization"@en .
+  ?m ann:mentionOf ?entity ;
+     ann:surfaceForm ?surfaceForm .
+}
+GROUP BY ?surfaceForm
+ORDER BY DESC(?occurrences)</pre>
+  </section>
+
+  <section id="cq-a-04">
+    <h3>CQ-A-04 — Which document elements reference a given entity concept?</h3>
+    <pre class="example" title="CQ-A-04">
+PREFIX ann:  &lt;https://w3id.org/ldso/annotations#&gt;
+PREFIX ent:  &lt;https://w3id.org/ldso/entities#&gt;
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+
+SELECT ?element ?citation WHERE {
+  ?concept ent:showAs "temporary admission"@en .
+  ?element ann:refersToEntity ?concept ;
+           ldso:citation ?citation .
+}
+ORDER BY ?citation</pre>
+  </section>
+
+  <section id="cq-a-05">
+    <h3>CQ-A-05 — How many times does each entity appear in the document?</h3>
+    <pre class="example" title="CQ-A-05">
+PREFIX ann: &lt;https://w3id.org/ldso/annotations#&gt;
+PREFIX ent: &lt;https://w3id.org/ldso/entities#&gt;
+
+SELECT ?entity ?showAs (COUNT(?mention) AS ?frequency) WHERE {
+  ?mention a ann:EntityMention ;
+           ann:mentionOf ?entity .
+  ?entity ent:showAs ?showAs .
+  FILTER(LANG(?showAs) = "en")
+}
+GROUP BY ?entity ?showAs
+ORDER BY DESC(?frequency)</pre>
+  </section>
+
+  <section id="cq-a-06">
+    <h3>CQ-A-06 — Which elements have fine-grained mentions but no coarse-level reference (data gap)?</h3>
+    <pre class="example" title="CQ-A-06">
+PREFIX ann: &lt;https://w3id.org/ldso/annotations#&gt;
+
+SELECT DISTINCT ?element ?entity WHERE {
+  ?element ann:hasMention ?m .
+  ?m ann:mentionOf ?entity .
+  FILTER NOT EXISTS { ?element ann:refersToEntity ?entity . }
+}
+# Expected result: empty set in a fully annotated corpus.</pre>
+  </section>
+</section>
+
+<section id="conformance">
+  <h2>Conformance</h2>
+  <p>
+    A dataset conforms to LDSO-Annotations if, for every <code>ann:EntityMention</code>
+    instance, all SHACL shapes in <code>shapes.ttl</code> pass without Violations.
+    Warnings MAY be present and indicate recommended but not mandatory conditions.
+  </p>
+  <p>
+    A conformant producer MUST:
+  </p>
+  <ul>
+    <li>Assert <code>ann:mentionOf</code>, <code>ann:inElement</code>, and
+        <code>ann:surfaceForm</code> on every <code>ann:EntityMention</code>.</li>
+    <li>Assert <code>ann:endChar</code> whenever <code>ann:startChar</code> is
+        present, with <code>ann:endChar</code> strictly greater.</li>
+    <li>Restrict <code>ann:confidence</code> values to the range [0.0, 1.0].</li>
+  </ul>
+  <p>
+    A conformant producer SHOULD:
+  </p>
+  <ul>
+    <li>Also assert <code>ann:refersToEntity</code> on any element that carries
+        fine-grained <code>ann:hasMention</code> assertions, for each canonical entity
+        mentioned.</li>
+    <li>Ensure that each target of <code>ann:refersToEntity</code> is typed as
+        <code>ent:NamedEntity</code>.</li>
+  </ul>
+</section>
+
+<section id="references">
+  <h2>References</h2>
+  <section id="normative-references">
+    <h3>Normative References</h3>
+    <dl>
+      <dt>[[OWL2]]</dt><dd>OWL 2 Web Ontology Language Primer (Second Edition). W3C Recommendation.</dd>
+      <dt>[[SHACL]]</dt><dd>Shapes Constraint Language (SHACL). W3C Recommendation.</dd>
+      <dt>[[RFC2119]]</dt><dd>Key words for use in RFCs to Indicate Requirement Levels. IETF.</dd>
+      <dt>[[BCP47]]</dt><dd>Tags for Identifying Languages (BCP 47). IETF.</dd>
+    </dl>
+  </section>
+  <section id="informative-references">
+    <h3>Informative References</h3>
+    <dl>
+      <dt>[[LDSO-CORE]]</dt><dd>LDSO-Core: Legal Document Structure Ontology.</dd>
+      <dt>[[LDSO-ENTITIES]]</dt><dd>LDSO-Entities: Named Entity Reference Module.</dd>
+      <dt>[[SKOS]]</dt><dd>SKOS Simple Knowledge Organization System Reference. W3C Recommendation.</dd>
+      <dt>[[NLP-LEGAL]]</dt><dd>Named Entity Recognition in Legal Documents. ACL Anthology.</dd>
+    </dl>
+  </section>
+</section>
+
+<section id="changelog">
+  <h2>Change Log</h2>
+  <dl>
+    <dt>2026-05-25 — Version 1.0.0</dt>
+    <dd>Initial publication. Defines <code>ann:EntityMention</code>, four object
+        properties (<code>refersToEntity</code>, <code>mentionOf</code>,
+        <code>inElement</code>, <code>hasMention</code>), four datatype properties
+        (<code>surfaceForm</code>, <code>startChar</code>, <code>endChar</code>,
+        <code>confidence</code>), and four SHACL shapes.</dd>
+  </dl>
+</section>
+
+</body>
+</html>

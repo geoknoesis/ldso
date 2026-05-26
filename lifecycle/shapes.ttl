@@ -1,0 +1,816 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix life: <https://w3id.org/ldso/lifecycle#> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+
+<https://w3id.org/ldso/lifecycle/shapes>
+    a owl:Ontology ;
+    dct:title "LDSO-Lifecycle SHACL Validation Shapes"@en ;
+    dct:description "SHACL node shapes for validating instances of LDSO-Lifecycle classes."@en ;
+    dct:creator "Stephane Fellah" ;
+    dct:publisher "Geoknoesis LLC" ;
+    dct:created "2026-05-24"^^xsd:date ;
+    dct:modified "2026-05-25"^^xsd:date ;
+    owl:versionInfo "1.0.0" ;
+    vann:preferredNamespacePrefix "life" ;
+    vann:preferredNamespaceUri "https://w3id.org/ldso/lifecycle#" ;
+    owl:imports <https://w3id.org/ldso/lifecycle> .
+
+
+# =============================================================================
+# Shape: life:VersionedProvisionShape
+# =============================================================================
+
+life:VersionedProvisionShape
+    a sh:NodeShape ;
+    sh:targetClass life:VersionedProvision ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Versioned Provision Shape"@en ;
+
+    sh:property [
+        sh:path     life:effectiveFrom ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "effective from" ;
+        sh:message  "Every VersionedProvision MUST have exactly one life:effectiveFrom (xsd:date)."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:versionNumber ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:name     "version number" ;
+        sh:message  "Every VersionedProvision MUST have exactly one life:versionNumber (xsd:string)."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:effectiveTo ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "effective to" ;
+        sh:message  "life:effectiveTo, when present, MUST be a single xsd:date."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     rdfs:label ;
+        sh:minCount 1 ;
+        sh:name     "label" ;
+        sh:message  "A VersionedProvision SHOULD have rdfs:label (language-tagged)."@en ;
+        sh:severity sh:Warning ;
+    ] ;
+
+    sh:sparql [
+        sh:message  "life:effectiveTo MUST be greater than or equal to life:effectiveFrom."@en ;
+        sh:severity sh:Violation ;
+        sh:select   """
+            PREFIX life: <https://w3id.org/ldso/lifecycle#>
+            SELECT $this
+            WHERE {
+                $this life:effectiveFrom ?from ;
+                      life:effectiveTo   ?to .
+                FILTER (?to < ?from)
+            }
+        """ ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:AmendmentInstructionShape
+# =============================================================================
+
+life:AmendmentInstructionShape
+    a sh:NodeShape ;
+    sh:targetClass life:AmendmentInstruction ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Amendment Instruction Shape"@en ;
+
+    sh:property [
+        sh:path     life:modifies ;
+        sh:minCount 1 ;
+        sh:name     "modifies" ;
+        sh:message  "An AmendmentInstruction MUST identify at least one target via life:modifies."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:modificationDate ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "modification date" ;
+        sh:message  "An AmendmentInstruction MUST have exactly one life:modificationDate (xsd:date)."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:changeDescription ;
+        sh:minCount 1 ;
+        sh:name     "change description" ;
+        sh:message  "An AmendmentInstruction SHOULD have a life:changeDescription."@en ;
+        sh:severity sh:Warning ;
+    ] ;
+
+    sh:property [
+        sh:path     dct:source ;
+        sh:minCount 1 ;
+        sh:name     "source instrument" ;
+        sh:message  "An AmendmentInstruction SHOULD reference its source instrument via dct:source."@en ;
+        sh:severity sh:Warning ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:LegalEffectShape
+# =============================================================================
+
+life:LegalEffectShape
+    a sh:NodeShape ;
+    sh:targetClass life:LegalEffect ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Legal Effect Shape"@en ;
+
+    sh:property [
+        sh:path     life:derivedFromInstruction ;
+        sh:minCount 1 ;
+        sh:class    life:AmendmentInstruction ;
+        sh:name     "derived from instruction" ;
+        sh:message  "A LegalEffect SHOULD be traceable to an AmendmentInstruction via life:derivedFromInstruction."@en ;
+        sh:severity sh:Warning ;
+    ] ;
+
+    sh:property [
+        sh:path     life:eventDate ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "event date" ;
+        sh:message  "A LegalEffect MUST have exactly one life:eventDate."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:SubstitutionShape
+# =============================================================================
+
+life:SubstitutionShape
+    a sh:NodeShape ;
+    sh:targetClass life:Substitution ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Substitution Shape"@en ;
+
+    sh:property [
+        sh:path     life:replaces ;
+        sh:minCount 1 ;
+        sh:class    life:VersionedProvision ;
+        sh:name     "replaces" ;
+        sh:message  "A Substitution MUST identify the replaced provision via life:replaces."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:createsVersion ;
+        sh:minCount 1 ;
+        sh:class    life:VersionedProvision ;
+        sh:name     "creates version" ;
+        sh:message  "A Substitution MUST create a new version via life:createsVersion."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:InsertionShape
+# =============================================================================
+
+life:InsertionShape
+    a sh:NodeShape ;
+    sh:targetClass life:Insertion ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Insertion Shape"@en ;
+
+    sh:property [
+        sh:path     life:inserts ;
+        sh:minCount 1 ;
+        sh:class    life:VersionedProvision ;
+        sh:name     "inserts" ;
+        sh:message  "An Insertion MUST identify the inserted provision via life:inserts."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:DeletionShape
+# =============================================================================
+
+life:DeletionShape
+    a sh:NodeShape ;
+    sh:targetClass life:Deletion ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Deletion Shape"@en ;
+
+    sh:property [
+        sh:path     life:deletes ;
+        sh:minCount 1 ;
+        sh:class    life:VersionedProvision ;
+        sh:name     "deletes" ;
+        sh:message  "A Deletion MUST identify the deleted provision via life:deletes."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:RepealShape
+# =============================================================================
+
+life:RepealShape
+    a sh:NodeShape ;
+    sh:targetClass life:Repeal ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Repeal Shape"@en ;
+
+    sh:property [
+        sh:path     life:repeals ;
+        sh:minCount 1 ;
+        sh:name     "repeals" ;
+        sh:message  "A Repeal MUST identify the abrogated resource via life:repeals."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:ConsolidationShape
+# =============================================================================
+
+life:ConsolidationShape
+    a sh:NodeShape ;
+    sh:targetClass life:Consolidation ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Consolidation Shape"@en ;
+
+    sh:property [
+        sh:path     life:consolidates ;
+        sh:minCount 2 ;
+        sh:name     "consolidates" ;
+        sh:message  "A Consolidation MUST consolidate at least two instruments (original + at least one amendment)."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:consolidationDate ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "consolidation date" ;
+        sh:message  "A Consolidation MUST have exactly one life:consolidationDate (xsd:date)."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:ConsolidatedProvisionShape
+# =============================================================================
+
+life:ConsolidatedProvisionShape
+    a sh:NodeShape ;
+    sh:targetClass life:ConsolidatedProvision ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Consolidated Provision Shape"@en ;
+
+    sh:property [
+        sh:path     life:derivedFromConsolidation ;
+        sh:minCount 1 ;
+        sh:class    life:Consolidation ;
+        sh:name     "derived from consolidation" ;
+        sh:message  "A ConsolidatedProvision MUST be linked to its source Consolidation."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:derivedFromProvision ;
+        sh:minCount 1 ;
+        sh:class    life:VersionedProvision ;
+        sh:name     "derived from provision" ;
+        sh:message  "A ConsolidatedProvision MUST reference at least one source VersionedProvision."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:LegalStateTransitionShape
+# =============================================================================
+
+life:LegalStateTransitionShape
+    a sh:NodeShape ;
+    sh:targetClass life:LegalStateTransition ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Legal State Transition Shape"@en ;
+
+    sh:property [
+        sh:path     life:transitionsFrom ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class    skos:Concept ;
+        sh:name     "transitions from" ;
+        sh:message  "A LegalStateTransition MUST have exactly one life:transitionsFrom state."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:transitionsTo ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class    skos:Concept ;
+        sh:name     "transitions to" ;
+        sh:message  "A LegalStateTransition MUST have exactly one life:transitionsTo state."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:eventDate ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "event date" ;
+        sh:message  "A LegalStateTransition MUST have exactly one life:eventDate."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:affects ;
+        sh:minCount 1 ;
+        sh:name     "affects" ;
+        sh:message  "A LegalStateTransition MUST identify the resource it affects via life:affects."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:ValidityIntervalShape
+# =============================================================================
+
+life:ValidityIntervalShape
+    a sh:NodeShape ;
+    sh:targetClass life:ValidityInterval ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Validity Interval Shape"@en ;
+
+    sh:property [
+        sh:path     life:effectiveFrom ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "effective from" ;
+        sh:message  "A ValidityInterval MUST have exactly one life:effectiveFrom date."@en ;
+    ] ;
+
+    sh:sparql [
+        sh:message  "ValidityInterval: life:effectiveTo MUST be >= life:effectiveFrom when both are present."@en ;
+        sh:severity sh:Violation ;
+        sh:select   """
+            PREFIX life: <https://w3id.org/ldso/lifecycle#>
+            SELECT $this
+            WHERE {
+                $this life:effectiveFrom ?from ;
+                      life:effectiveTo   ?to .
+                FILTER (?to < ?from)
+            }
+        """ ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:TemporalApplicabilityShape
+# =============================================================================
+
+life:TemporalApplicabilityShape
+    a sh:NodeShape ;
+    sh:targetClass life:TemporalApplicability ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Temporal Applicability Shape"@en ;
+
+    sh:property [
+        sh:path     rdfs:label ;
+        sh:minCount 1 ;
+        sh:datatype rdf:langString ;
+        sh:name     "label" ;
+        sh:message  "A TemporalApplicability SHOULD have rdfs:label."@en ;
+        sh:severity sh:Warning ;
+    ] ;
+
+    sh:property [
+        sh:path     life:effectiveFrom ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "effective from" ;
+        sh:message  "A TemporalApplicability MUST have exactly one life:effectiveFrom date."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:PendingModificationShape
+# =============================================================================
+
+life:PendingModificationShape
+    a sh:NodeShape ;
+    sh:targetClass life:PendingModification ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Pending Modification Shape"@en ;
+
+    sh:property [
+        sh:path     life:effectiveFrom ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "effective from" ;
+        sh:message  "A PendingModification MUST declare its future effective date via life:effectiveFrom."@en ;
+    ] ;
+
+    sh:sparql [
+        sh:message  "A PendingModification effectiveFrom MUST be in the future relative to modificationDate."@en ;
+        sh:severity sh:Warning ;
+        sh:select   """
+            PREFIX life: <https://w3id.org/ldso/lifecycle#>
+            SELECT $this WHERE {
+                $this life:modificationDate ?enacted ;
+                      life:effectiveFrom    ?future .
+                FILTER (?future <= ?enacted)
+            }
+        """ ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:EffectiveModificationShape
+# =============================================================================
+
+life:EffectiveModificationShape
+    a sh:NodeShape ;
+    sh:targetClass life:EffectiveModification ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Effective Modification Shape"@en ;
+
+    sh:property [
+        sh:path     life:effectiveFrom ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "effective from" ;
+        sh:message  "An EffectiveModification MUST have an effectiveFrom date."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:modifies ;
+        sh:minCount 1 ;
+        sh:name     "modifies" ;
+        sh:message  "An EffectiveModification MUST identify at least one modified resource via life:modifies."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:LifecycleEventShape
+# Note: life:eventDate is a superProperty; life:modificationDate and
+# life:consolidationDate are subPropertyOf life:eventDate. Validators that
+# honour rdfs:subPropertyOf will satisfy this shape via those sub-properties.
+# The constraint is therefore a Warning so property-path-only validators do
+# not generate false Violations on properly typed AmendmentInstruction nodes.
+# =============================================================================
+
+life:LifecycleEventShape
+    a sh:NodeShape ;
+    sh:targetClass life:LifecycleEvent ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Lifecycle Event Shape"@en ;
+
+    sh:property [
+        sh:path     life:eventDate ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "event date" ;
+        sh:severity sh:Warning ;
+        sh:message  "A LifecycleEvent SHOULD have exactly one life:eventDate (or a sub-property thereof such as life:modificationDate or life:consolidationDate)."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     rdfs:label ;
+        sh:minCount 1 ;
+        sh:name     "label" ;
+        sh:message  "A LifecycleEvent SHOULD have rdfs:label (language-tagged)."@en ;
+        sh:severity sh:Warning ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Constraint: No self-supersession
+# =============================================================================
+
+life:NoSelfSupersessionShape
+    a sh:NodeShape ;
+    sh:targetClass life:VersionedProvision ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "No Self-Supersession Shape"@en ;
+
+    sh:sparql [
+        sh:message  "A VersionedProvision MUST NOT supersede itself (cyclic supersession is forbidden)."@en ;
+        sh:severity sh:Violation ;
+        sh:select   """
+            PREFIX life: <https://w3id.org/ldso/lifecycle#>
+            SELECT $this
+            WHERE {
+                $this life:supersedes $this .
+            }
+        """ ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Constraint: Version lineage integrity
+# =============================================================================
+
+life:VersionLineageShape
+    a sh:NodeShape ;
+    sh:targetClass life:VersionedProvision ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Version Lineage Shape"@en ;
+
+    sh:sparql [
+        sh:message  "If :A life:nextVersion :B, then :B SHOULD life:supersedes :A (version chain integrity)."@en ;
+        sh:severity sh:Warning ;
+        sh:select   """
+            PREFIX life: <https://w3id.org/ldso/lifecycle#>
+            SELECT $this
+            WHERE {
+                $this life:nextVersion ?next .
+                FILTER NOT EXISTS {
+                    ?next life:supersedes $this .
+                }
+            }
+        """ ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shapes: Lifecycle Event Subtypes
+# Provide explicit validation for key LifecycleEvent subclasses beyond the
+# generic LifecycleEventShape, enforcing subtype-specific required properties.
+# =============================================================================
+
+life:EntryIntoForceShape
+    a sh:NodeShape ;
+    sh:targetClass life:EntryIntoForce ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Entry into Force Shape"@en ;
+
+    sh:property [
+        sh:path     life:eventDate ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "event date" ;
+        sh:message  "An EntryIntoForce event MUST have exactly one life:eventDate."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:affects ;
+        sh:minCount 1 ;
+        sh:name     "affects" ;
+        sh:message  "An EntryIntoForce event MUST identify the instrument it brings into force via life:affects."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+life:CommencementShape
+    a sh:NodeShape ;
+    sh:targetClass life:Commencement ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Commencement Shape"@en ;
+
+    sh:property [
+        sh:path     life:eventDate ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "event date" ;
+        sh:message  "A Commencement event MUST have exactly one life:eventDate."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:affects ;
+        sh:minCount 1 ;
+        sh:name     "affects" ;
+        sh:message  "A Commencement event MUST identify the instrument it commences via life:affects."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+life:SuspensionShape
+    a sh:NodeShape ;
+    sh:targetClass life:Suspension ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Suspension Shape"@en ;
+
+    sh:property [
+        sh:path     life:eventDate ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "event date" ;
+        sh:message  "A Suspension event MUST have exactly one life:eventDate marking when suspension begins."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:affects ;
+        sh:minCount 1 ;
+        sh:name     "affects" ;
+        sh:message  "A Suspension event MUST identify the instrument or provision suspended via life:affects."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+life:TerminationShape
+    a sh:NodeShape ;
+    sh:targetClass life:Termination ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Termination Shape"@en ;
+
+    sh:property [
+        sh:path     life:eventDate ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "event date" ;
+        sh:message  "A Termination event MUST have exactly one life:eventDate."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:affects ;
+        sh:minCount 1 ;
+        sh:name     "affects" ;
+        sh:message  "A Termination event MUST identify the terminated instrument or provision via life:affects."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+life:ExpirationShape
+    a sh:NodeShape ;
+    sh:targetClass life:Expiration ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Expiration Shape"@en ;
+
+    sh:property [
+        sh:path     life:eventDate ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "event date" ;
+        sh:message  "An Expiration event MUST have exactly one life:eventDate (the sunset date)."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:affects ;
+        sh:minCount 1 ;
+        sh:name     "affects" ;
+        sh:message  "An Expiration event MUST identify the expired instrument or provision via life:affects."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+life:RenumberingShape
+    a sh:NodeShape ;
+    sh:targetClass life:Renumbering ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Renumbering Shape"@en ;
+
+    sh:property [
+        sh:path     life:createsVersion ;
+        sh:minCount 1 ;
+        sh:class    life:VersionedProvision ;
+        sh:name     "creates version" ;
+        sh:message  "A Renumbering MUST create a new VersionedProvision via life:createsVersion."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     life:changeDescription ;
+        sh:minCount 1 ;
+        sh:datatype rdf:langString ;
+        sh:name     "change description" ;
+        sh:severity sh:Warning ;
+        sh:message  "A Renumbering SHOULD carry life:changeDescription describing the numbering change."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Constraint: DeprecatedProvision must have effectiveTo
+# =============================================================================
+
+life:DeprecatedProvisionShape
+    a sh:NodeShape ;
+    sh:targetClass life:DeprecatedProvision ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Deprecated Provision Shape"@en ;
+
+    sh:property [
+        sh:path     life:effectiveTo ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:name     "effective to" ;
+        sh:message  "A DeprecatedProvision MUST have a life:effectiveTo date recording when it ceased to be operative."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Shape: life:VersionedResourceShape
+# =============================================================================
+
+life:VersionedResourceShape
+    a sh:NodeShape ;
+    sh:targetClass life:VersionedResource ;
+    sh:nodeKind sh:IRI ;
+    rdfs:label "Versioned Resource Shape"@en ;
+
+    sh:property [
+        sh:path     rdfs:label ;
+        sh:minCount 1 ;
+        sh:datatype rdf:langString ;
+        sh:name     "label" ;
+        sh:severity sh:Warning ;
+        sh:message  "A VersionedResource SHOULD have at least one rdfs:label (language-tagged)."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .
+
+
+# =============================================================================
+# Constraint: LegalState concepts must have label and inScheme
+# =============================================================================
+
+life:LegalStateConceptShape
+    a sh:NodeShape ;
+    sh:name "Legal State Concept" ;
+    sh:description "Every SKOS concept used as a legal state should have a label and scheme membership." ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX life: <https://w3id.org/ldso/lifecycle#>
+            SELECT ?this WHERE {
+                { ?trans life:transitionsFrom ?this }
+                UNION
+                { ?trans life:transitionsTo ?this }
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        sh:path     rdfs:label ;
+        sh:minCount 1 ;
+        sh:datatype rdf:langString ;
+        sh:severity sh:Warning ;
+        sh:message  "Legal state concept SHOULD have rdfs:label (language-tagged)."@en ;
+    ] ;
+
+    sh:property [
+        sh:path     skos:inScheme ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:severity sh:Warning ;
+        sh:message  "Legal state concept SHOULD declare skos:inScheme pointing to life:LegalStateScheme."@en ;
+    ] ;
+
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle/shapes> .

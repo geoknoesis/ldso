@@ -1,0 +1,222 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Entities SHACL Validation Shapes
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/entities/shapes>
+  a owl:Ontology ;
+  dct:title "LDSO-Entities SHACL Shapes"@en ;
+  dct:description "SHACL validation shapes for named entity references in LDSO."@en ;
+  dct:creator "Stephane Fellah" ;
+  dct:publisher "Geoknoesis LLC" ;
+  dct:created "2026-05-24"^^xsd:date ;
+  dct:modified "2026-05-25"^^xsd:date ;
+  owl:versionInfo "1.1.0" ;
+  vann:preferredNamespacePrefix "ent" ;
+  vann:preferredNamespaceUri "https://w3id.org/ldso/entities#" ;
+  owl:imports <https://w3id.org/ldso/entities> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# NAMED ENTITY SHAPE
+# Every declared named entity must have href, showAs, label, and entityType.
+# ═════════════════════════════════════════════════════════════════════════════
+
+ent:NamedEntityShape
+  a sh:NodeShape ;
+  sh:targetClass ent:NamedEntity ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Named Entity" ;
+  sh:description "Every named entity must have a canonical href, a display form, and at least one entity type classification." ;
+
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Warning ;
+    sh:message "NamedEntity SHOULD have at least one rdfs:label (language-tagged)." ;
+  ] ;
+
+  sh:property [
+    sh:path ent:href ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:anyURI ;
+    sh:severity sh:Violation ;
+    sh:message "NamedEntity MUST have exactly one ent:href (canonical URI, xsd:anyURI)." ;
+  ] ;
+
+  sh:property [
+    sh:path ent:showAs ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "NamedEntity MUST have at least one ent:showAs (language-tagged display form)." ;
+  ] ;
+
+  sh:property [
+    sh:path ent:entityType ;
+    sh:minCount 1 ;
+    sh:class skos:Concept ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Warning ;
+    sh:message "NamedEntity SHOULD carry at least one ent:entityType pointing to a skos:Concept." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ENTITY TYPE IN CORE SCHEME
+# At least one ent:entityType value should belong to ent:EntityTypeScheme,
+# providing the primary category. Domain extensions are permitted alongside it.
+# ═════════════════════════════════════════════════════════════════════════════
+
+ent:EntityTypePrimaryCategoryShape
+  a sh:NodeShape ;
+  sh:targetClass ent:NamedEntity ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Entity Primary Category" ;
+  sh:description "At least one ent:entityType value should come from ent:EntityTypeScheme." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Warning ;
+    sh:message "NamedEntity SHOULD have at least one ent:entityType from ent:EntityTypeScheme (Person, Organization, Location, Concept, Role, Event, or Process)." ;
+    sh:select """
+      PREFIX ent:  <https://w3id.org/ldso/entities#>
+      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+      SELECT $this WHERE {
+        FILTER NOT EXISTS {
+          $this ent:entityType ?t .
+          ?t skos:inScheme ent:EntityTypeScheme .
+        }
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SINGLE PRIMARY CATEGORY CONSTRAINT
+# An entity should have at most one top-level concept from ent:EntityTypeScheme.
+# Multiple domain extension types (narrower concepts) are permitted.
+# ═════════════════════════════════════════════════════════════════════════════
+
+ent:EntityTypeSinglePrimaryShape
+  a sh:NodeShape ;
+  sh:targetClass ent:NamedEntity ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Single Primary Entity Type" ;
+  sh:description "A NamedEntity should carry at most one top-level concept from ent:EntityTypeScheme." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Warning ;
+    sh:message "NamedEntity has more than one top-level entity type from ent:EntityTypeScheme. Assign one primary category; use domain-scheme narrower concepts for additional dimensions." ;
+    sh:select """
+      PREFIX ent:  <https://w3id.org/ldso/entities#>
+      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+      SELECT $this (COUNT(DISTINCT ?t) AS ?count) WHERE {
+        $this ent:entityType ?t .
+        ?t skos:topConceptOf ent:EntityTypeScheme .
+      }
+      GROUP BY $this
+      HAVING (?count > 1)
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CONCEPT TYPE — SHOW-AS REQUIRED
+# Entities typed as ent:Concept or ent:Role carry their textual surface form
+# in the source document — ent:showAs is strictly required (minCount 1 already
+# enforced by NamedEntityShape, but this shape adds a Violation-level check
+# for those two types specifically, since their showAs is legal evidence).
+# ═════════════════════════════════════════════════════════════════════════════
+
+ent:ConceptShowAsShape
+  a sh:NodeShape ;
+  sh:name "Concept/Role showAs Required" ;
+  sh:description "Entities typed as ent:Concept or ent:Role MUST carry ent:showAs — it is the textual surface form that constitutes legal evidence." ;
+  sh:target [
+    a sh:SPARQLTarget ;
+    sh:select """
+      PREFIX ent: <https://w3id.org/ldso/entities#>
+      SELECT ?this WHERE {
+        ?this ent:entityType ?t .
+        VALUES ?t { ent:Concept ent:Role }
+      }
+    """ ;
+  ] ;
+  sh:property [
+    sh:path ent:showAs ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "Entities of type Concept or Role MUST carry ent:showAs — the textual form as it appears in the source document." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ENTITY TYPE CONCEPT SCHEME SHAPE
+# Validates that the EntityTypeScheme itself is well-formed.
+# ═════════════════════════════════════════════════════════════════════════════
+
+ent:EntityTypeSchemeShape
+  a sh:NodeShape ;
+  sh:targetNode ent:EntityTypeScheme ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Entity Type Scheme" ;
+  sh:description "The EntityTypeScheme must carry a label and have at least one top concept." ;
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:message "EntityTypeScheme must have rdfs:label." ;
+  ] ;
+  sh:property [
+    sh:path skos:hasTopConcept ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Warning ;
+    sh:message "EntityTypeScheme SHOULD declare at least one skos:hasTopConcept." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ENTITY TYPE CONCEPT SHAPE
+# Every concept used as an ent:entityType value should have a label and scheme.
+# ═════════════════════════════════════════════════════════════════════════════
+
+ent:EntityTypeConceptShape
+  a sh:NodeShape ;
+  sh:name "Entity Type Concept" ;
+  sh:description "Every skos:Concept used as an ent:entityType value should have a label and belong to a ConceptScheme." ;
+  sh:target [
+    a sh:SPARQLTarget ;
+    sh:select """
+      PREFIX ent: <https://w3id.org/ldso/entities#>
+      SELECT ?this WHERE {
+        [] ent:entityType ?this .
+      }
+    """ ;
+  ] ;
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:severity sh:Warning ;
+    sh:message "Entity type concept SHOULD have rdfs:label." ;
+  ] ;
+  sh:property [
+    sh:path skos:inScheme ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Warning ;
+    sh:message "Entity type concept SHOULD belong to a skos:ConceptScheme via skos:inScheme." ;
+  ] .

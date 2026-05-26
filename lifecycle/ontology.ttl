@@ -1,0 +1,1032 @@
+# =============================================================================
+# LDSO-Lifecycle: Legal Document Lifecycle and Amendment Ontology
+# Version: 1.0.0
+# IRI: https://w3id.org/ldso/lifecycle
+#
+# DISCLAIMER: This ontology is not an official W3C or OASIS specification.
+# It is a community/project specification produced for legal knowledge graph
+# engineering purposes.
+# =============================================================================
+
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix life: <https://w3id.org/ldso/lifecycle#> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+
+# =============================================================================
+# Ontology Declaration
+# =============================================================================
+
+<https://w3id.org/ldso/lifecycle>
+    a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/ldso/lifecycle/1.0.0> ;
+    owl:imports <https://w3id.org/ldso/core> ;
+    dct:title "LDSO-Lifecycle: Legal Document Lifecycle and Amendment Ontology"@en ;
+    dct:description """LDSO-Lifecycle models the temporal and amendment lifecycle of legal
+documents and provisions. It covers amendment instructions, legal effects
+(insertions, deletions, substitutions, repeals), consolidation, versioned
+provisions, temporal validity intervals, and legal state transitions.
+This module is part of the Legal Document Structure Ontology (LDSO) family."""@en ;
+    dct:creator "Stephane Fellah" ;
+    dct:publisher "Geoknoesis LLC" ;
+    dct:created "2026-05-24"^^xsd:date ;
+    dct:modified "2026-05-25"^^xsd:date ;
+    owl:versionInfo "1.0.0" ;
+    dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+    vann:preferredNamespacePrefix "life" ;
+    vann:preferredNamespaceUri "https://w3id.org/ldso/lifecycle#" ;
+    rdfs:seeAlso <https://w3id.org/ldso/lifecycle/index.html> ;
+    rdfs:comment """DISCLAIMER: This ontology is not an official W3C or OASIS specification.
+It is a community/project specification using W3C ReSpec formatting conventions."""@en .
+
+
+# =============================================================================
+# CLASSES — Lifecycle Events
+# =============================================================================
+
+life:LifecycleEvent
+    a owl:Class ;
+    rdfs:label "Lifecycle Event"@en ;
+    skos:definition """An event that affects the legal status, validity, or content of a legal
+document or provision. Lifecycle events include modifications, commencements,
+entries into force, suspensions, expirations, and terminations."""@en ;
+    skos:scopeNote """Use this class as the common supertype for all events that mark a
+transition or change in the lifecycle of a legal instrument. Do not use it
+to model substantive legal obligations or permissions — those belong to
+LDSO-Semantics."""@en ;
+    skos:example """
+ex:EIF_USMCA_2020
+  a life:EntryIntoForce ;
+  life:eventDate "2020-07-01"^^xsd:date ;
+  rdfs:label "USMCA Entry into Force"@en ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:Modification
+    a owl:Class ;
+    rdfs:subClassOf life:LifecycleEvent ;
+    rdfs:label "Modification"@en ;
+    skos:definition """A lifecycle event that changes the text, structure, or legal effect of a
+provision or document. Modifications encompass both the amendment instruction
+(the textual direction to modify) and the resulting legal effect."""@en ;
+    skos:scopeNote """Modification is the abstract parent for LegalEffect subclasses.
+Use Insertion, Deletion, Substitution, or Repeal to represent the type of
+change. Use AmendmentInstruction (a sibling class, direct subclass of
+LifecycleEvent) for the textual mandate that gives rise to the effect."""@en ;
+    skos:example """
+ex:Mod_USMCA_Art2_5
+  a life:EffectiveModification ;
+  life:modifies ex:USMCA_Art2_5 ;
+  life:eventDate "2028-01-01"^^xsd:date ;
+  rdfs:label "2028 Amendment to USMCA Art 2.5"@en ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:AmendmentInstruction
+    a owl:Class ;
+    rdfs:subClassOf life:LifecycleEvent ;
+    rdfs:label "Amendment Instruction"@en ;
+    skos:definition """The textual or formal direction, found within an amending legal
+instrument, that specifies what change is to be made to the target provision.
+An AmendmentInstruction does not itself constitute the legal effect; it is
+the mandate that gives rise to a LegalEffect."""@en ;
+    skos:scopeNote """Distinguish this from LegalEffect subclasses. An AmendmentInstruction
+is the linguistic act recorded in the amending document (e.g., 'Article 2.5,
+paragraph 3 is hereby replaced by the following…'). The corresponding
+Substitution is the resulting legal effect."""@en ;
+    skos:example """
+ex:Instr_2028_Art2_5
+  a life:AmendmentInstruction ;
+  life:modifies ex:USMCA_Art2_5_Para3 ;
+  life:changeDescription "Replace paragraph 3 with new tariff schedule."@en ;
+  life:modificationDate "2028-01-15"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:LegalEffect
+    a owl:Class ;
+    rdfs:subClassOf life:LifecycleEvent ;
+    rdfs:label "Legal Effect"@en ;
+    skos:definition """The actual legal consequence of an amendment instruction on the state
+of the legal corpus. A LegalEffect results in a change to the effective text
+of a provision or document, creating new versions and invalidating prior ones."""@en ;
+    skos:scopeNote """LegalEffect is distinct from AmendmentInstruction. The instruction is
+a performative speech act; the effect is the resulting change in legal state.
+Every LegalEffect SHOULD be traceable to an AmendmentInstruction via
+life:derivedFromInstruction."""@en ;
+    skos:example """
+ex:Sub_Art2_5_Para3_2028
+  a life:Substitution ;
+  life:derivedFromInstruction ex:Instr_2028_Art2_5 ;
+  life:replaces ex:USMCA_Art2_5_Para3_v1 ;
+  life:createsVersion ex:USMCA_Art2_5_Para3_v2 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:Insertion
+    a owl:Class ;
+    rdfs:subClassOf life:LegalEffect ;
+    rdfs:label "Insertion"@en ;
+    skos:definition """A legal effect whereby new text, provisions, or structural elements are
+added to an existing legal instrument without removing existing content."""@en ;
+    skos:scopeNote """Insertions result in new VersionedProvision instances with appropriate
+effectiveFrom dates. The parent document's version number SHOULD be
+incremented."""@en ;
+    skos:example """
+ex:Ins_NewArt2_6
+  a life:Insertion ;
+  life:inserts ex:USMCA_Art2_6_v1 ;
+  life:eventDate "2028-03-01"^^xsd:date ;
+  life:changeDescription "New Article 2.6 on digital trade services"@en ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:Deletion
+    a owl:Class ;
+    rdfs:subClassOf life:LegalEffect ;
+    rdfs:label "Deletion"@en ;
+    skos:definition """A legal effect whereby text, provisions, or structural elements are
+removed from an existing legal instrument."""@en ;
+    skos:scopeNote """When a Deletion takes effect, the affected VersionedProvision MUST
+receive an effectiveTo date. The provision is not physically removed from
+the graph but is classified as life:DeprecatedProvision."""@en ;
+    skos:example """
+ex:Del_Art5_3_Para2
+  a life:Deletion ;
+  life:deletes ex:USMCA_Art5_3_Para2_v1 ;
+  life:eventDate "2028-03-01"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:Substitution
+    a owl:Class ;
+    rdfs:subClassOf life:LegalEffect ;
+    rdfs:label "Substitution"@en ;
+    skos:definition """A legal effect whereby existing text, provisions, or structural elements
+are replaced by new content. A substitution simultaneously closes the
+validity interval of the replaced provision and opens a new interval for
+the replacement."""@en ;
+    skos:scopeNote """Model substitutions as: (1) closing the old VersionedProvision with an
+effectiveTo, (2) creating a new VersionedProvision linked via life:supersedes,
+and (3) linking both to this Substitution instance via life:replaces and
+life:createsVersion."""@en ;
+    skos:example """
+ex:Sub_Art2_5_Para3_2028
+  a life:Substitution ;
+  life:derivedFromInstruction ex:Instr_2028_Art2_5 ;
+  life:replaces ex:USMCA_Art2_5_Para3_v1 ;
+  life:createsVersion ex:USMCA_Art2_5_Para3_v2 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:Repeal
+    a owl:Class ;
+    rdfs:subClassOf life:LegalEffect ;
+    rdfs:label "Repeal"@en ;
+    skos:definition """A legal effect whereby an entire legal instrument or provision is
+abrogated and ceases to have any legal force or effect. Unlike a deletion,
+a repeal typically acts on entire instruments or major structural units."""@en ;
+    skos:scopeNote """Distinguish express repeals (explicitly stated in the amending
+instrument) from implied repeals (arising from incompatibility). Model
+express repeals using life:repeals. The repealed resource MUST receive an
+effectiveTo and SHOULD be classified as life:DeprecatedProvision."""@en ;
+    skos:example """
+ex:Repeal_OldChapter3
+  a life:Repeal ;
+  life:repeals ex:USMCA_Chapter3_v1 ;
+  life:eventDate "2030-01-01"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:Renumbering
+    a owl:Class ;
+    rdfs:subClassOf life:LegalEffect ;
+    rdfs:label "Renumbering"@en ;
+    skos:definition """A legal effect whereby provisions are assigned new identifiers or
+numbering within the structure of a legal instrument, without changing their
+substantive content."""@en ;
+    skos:scopeNote """Renumberings affect structural identity but not substantive legal content.
+The renumbered provision SHOULD be represented as a new VersionedProvision
+linked to the original via life:supersedes, preserving the provenance chain."""@en ;
+    skos:example """
+ex:Renum_Art4_becomes_Art5
+  a life:Renumbering ;
+  life:createsVersion ex:USMCA_Art5_v1 ;
+  life:eventDate "2028-01-01"^^xsd:date ;
+  life:changeDescription "Former Article 4 renumbered as Article 5"@en ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:Consolidation
+    a owl:Class ;
+    rdfs:subClassOf life:LifecycleEvent ;
+    rdfs:label "Consolidation"@en ;
+    skos:definition """An editorial process that assembles the current state of a legal instrument
+by integrating all amendments and modifications into a single coherent text.
+A consolidated text reflects the law as it stands at a given point in time."""@en ;
+    skos:scopeNote """Consolidations are editorial, not amending — they do not change the law
+but present it in integrated form. Consolidation is a direct subclass of
+LifecycleEvent rather than LegalEffect, because it does not itself produce a
+legal change; it records the accumulated result of prior changes at a given date.
+Model consolidated provisions as life:ConsolidatedProvision instances derived
+from their source provisions. Each consolidation MUST have a
+life:consolidationDate."""@en ;
+    skos:example """
+ex:Cons_USMCA_2028
+  a life:Consolidation ;
+  life:consolidationDate "2028-12-31"^^xsd:date ;
+  life:consolidates ex:USMCA_Original, ex:USMCA_2028_Amendment ;
+  rdfs:label "USMCA Consolidated Text 2028"@en ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+# =============================================================================
+# CLASSES — Temporal Events
+# =============================================================================
+
+life:Commencement
+    a owl:Class ;
+    rdfs:subClassOf life:LifecycleEvent ;
+    rdfs:label "Commencement"@en ;
+    skos:definition """A lifecycle event marking the date on which a legal instrument or
+provision formally begins its legal existence or is officially promulgated."""@en ;
+    skos:scopeNote """Commencement is distinct from EntryIntoForce. A document may commence
+(be promulgated, signed, or tabled) before it enters into force."""@en ;
+    skos:example """
+ex:Comm_USMCA
+  a life:Commencement ;
+  life:eventDate "2018-11-30"^^xsd:date ;
+  rdfs:label "USMCA Signing Ceremony"@en ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:EntryIntoForce
+    a owl:Class ;
+    rdfs:subClassOf life:LifecycleEvent ;
+    rdfs:label "Entry into Force"@en ;
+    skos:definition """A lifecycle event marking the date on which a legal instrument becomes
+legally operative and binding upon its subjects."""@en ;
+    skos:scopeNote """Entry into force may be conditional on ratification, publication, or
+a specified period after promulgation. Record the triggering condition in
+life:changeDescription and the resulting date in life:eventDate."""@en ;
+    skos:example """
+ex:EIF_USMCA_2020
+  a life:EntryIntoForce ;
+  life:eventDate "2020-07-01"^^xsd:date ;
+  rdfs:label "USMCA Entry into Force"@en ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:Termination
+    a owl:Class ;
+    rdfs:subClassOf life:LifecycleEvent ;
+    rdfs:label "Termination"@en ;
+    skos:definition """A lifecycle event marking the end of the legal effectiveness of an
+instrument or provision, whether by withdrawal, denunciation, or other act
+of will."""@en ;
+    skos:scopeNote """Use Termination for acts of will (withdrawal, denunciation, mutual
+agreement). Use Expiration for events that occur automatically by passage of
+time or satisfaction of a condition."""@en ;
+    skos:example """
+ex:Term_NAFTA
+  a life:Termination ;
+  life:eventDate "2020-06-30"^^xsd:date ;
+  life:changeDescription "NAFTA terminated upon USMCA entry into force"@en ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:Suspension
+    a owl:Class ;
+    rdfs:subClassOf life:LifecycleEvent ;
+    rdfs:label "Suspension"@en ;
+    skos:definition """A lifecycle event whereby the legal effectiveness of an instrument or
+provision is temporarily halted without abrogating it. The instrument or
+provision remains in existence but its obligations and rights are not
+operative during suspension."""@en ;
+    skos:scopeNote """Record suspension start in life:effectiveFrom and expected or actual
+end in life:effectiveTo on the associated ValidityInterval. Suspended
+resources SHOULD be marked with life:stateLabel "Suspended"."""@en ;
+    skos:example """
+ex:Susp_Art32_2022
+  a life:Suspension ;
+  life:affects ex:USMCA_Art32 ;
+  life:effectiveFrom "2022-03-01"^^xsd:date ;
+  life:effectiveTo   "2022-09-30"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:Expiration
+    a owl:Class ;
+    rdfs:subClassOf life:LifecycleEvent ;
+    rdfs:label "Expiration"@en ;
+    skos:definition """A lifecycle event marking the automatic end of a legal instrument's or
+provision's validity, occurring when a sunset clause or fixed validity
+period is reached."""@en ;
+    skos:scopeNote """Expiration differs from Termination in that it requires no external act —
+it occurs automatically on the date or condition specified in the instrument."""@en ;
+    skos:example """
+ex:Exp_TransitionalTariff
+  a life:Expiration ;
+  life:affects ex:USMCA_Annex_TransitionalTariffs ;
+  life:eventDate "2030-01-01"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+# =============================================================================
+# CLASSES — Versioned Resources
+# =============================================================================
+
+life:VersionedResource
+    a owl:Class ;
+    rdfs:subClassOf ldso:LegalResource ;
+    rdfs:label "Versioned Resource"@en ;
+    skos:definition """Any legal resource that is subject to versioning across time. A versioned
+resource maintains a stable identity (IRI) while accumulating a chain of
+time-bounded versions representing its evolution."""@en ;
+    skos:scopeNote """Sub-class of ldso:LegalResource, making versioned resources full
+participants in the Core graph — they can be the target of ldso:refersTo,
+ldso:cites, and ent:refersToEntity, and can be retrieved by joint queries
+across the Core and Lifecycle layers.
+Use this class as the supertype for any entity that can be modified by
+amendment, including entire instruments, articles, paragraphs, annexes, and
+schedules."""@en ;
+    skos:example """
+ex:USMCA_Art2_5
+  a life:VersionedResource ;
+  dct:title "Article 2.5 — National Treatment"@en ;
+  life:nextVersion ex:USMCA_Art2_5_v1 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:VersionedProvision
+    a owl:Class ;
+    rdfs:subClassOf life:VersionedResource ;
+    rdfs:subClassOf ldso:LegalElement ;
+    rdfs:label "Versioned Provision"@en ;
+    skos:definition """A version-specific representation of a legal provision (article,
+paragraph, section, clause, or schedule) that is valid during a defined
+temporal interval. Each amendment to a provision creates a new
+VersionedProvision rather than overwriting the existing one."""@en ;
+    skos:scopeNote """Declared as both a life:VersionedResource and a ldso:LegalElement:
+a versioned provision IS a legal structural element, carrying additionally the
+temporal metadata (life:effectiveFrom, life:effectiveTo) that identifies which
+point-in-time snapshot it represents. This dual classification allows
+VersionedProvision instances to participate in structural queries (ldso:partOf,
+ldso:citation) and lifecycle queries (life:supersedes, life:effectiveFrom)
+without inference conflicts.
+Always assign life:effectiveFrom. Assign life:effectiveTo when the provision is
+replaced or deleted. Link versions via life:supersedes and
+life:previousVersion / life:nextVersion. Never delete old VersionedProvision
+instances — they are required for point-in-time queries."""@en ;
+    skos:example """
+ex:Art_2_5_v1
+  a life:VersionedProvision ;
+  life:effectiveFrom "2020-07-01"^^xsd:date ;
+  life:effectiveTo   "2027-12-31"^^xsd:date .
+
+ex:Art_2_5_v2
+  a life:VersionedProvision ;
+  life:supersedes    ex:Art_2_5_v1 ;
+  life:effectiveFrom "2028-01-01"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:ConsolidatedProvision
+    a owl:Class ;
+    rdfs:subClassOf life:VersionedProvision ;
+    rdfs:label "Consolidated Provision"@en ;
+    skos:definition """A provision that appears in a consolidated legal text. It integrates the
+current state of an original provision with all amendments that have taken
+effect up to the consolidation date."""@en ;
+    skos:scopeNote """ConsolidatedProvision instances SHOULD carry life:derivedFromConsolidation
+linking back to the Consolidation event, and life:derivedFromProvision
+linking to the source VersionedProvision(s)."""@en ;
+    skos:example """
+ex:Art_2_5_Cons_2028
+  a life:ConsolidatedProvision ;
+  life:derivedFromConsolidation ex:Cons_USMCA_2028 ;
+  life:derivedFromProvision ex:Art_2_5_v2 ;
+  life:effectiveFrom "2028-01-01"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:DeprecatedProvision
+    a owl:Class ;
+    rdfs:subClassOf life:VersionedProvision ;
+    rdfs:label "Deprecated Provision"@en ;
+    skos:definition """A provision that has been superseded, deleted, or repealed and is no
+longer operative, but is retained in the knowledge graph for historical and
+provenance purposes."""@en ;
+    skos:scopeNote """Do not delete DeprecatedProvision instances. They are essential for
+point-in-time queries and amendment provenance tracking."""@en ;
+    skos:example """
+ex:Art_2_5_v1
+  a life:DeprecatedProvision ;
+  life:effectiveFrom "2020-07-01"^^xsd:date ;
+  life:effectiveTo   "2027-12-31"^^xsd:date ;
+  life:stateLabel    "Deprecated" ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+# =============================================================================
+# CLASSES — Temporal and State
+# =============================================================================
+
+life:ValidityInterval
+    a owl:Class ;
+    rdfs:label "Validity Interval"@en ;
+    skos:definition """A time interval during which a legal instrument, provision, or rule is
+legally operative. A ValidityInterval is bounded by a start date
+(life:effectiveFrom) and optionally an end date (life:effectiveTo). An
+open-ended interval (no effectiveTo) denotes indefinite validity."""@en ;
+    skos:scopeNote """ValidityInterval may be modeled as a first-class resource when the
+interval itself requires annotations (e.g., source references, uncertainty
+flags). For simpler cases, use life:effectiveFrom and life:effectiveTo
+directly on the VersionedProvision."""@en ;
+    skos:example """
+ex:VI_Art2_5_v1
+  a life:ValidityInterval ;
+  life:effectiveFrom "2020-07-01"^^xsd:date ;
+  life:effectiveTo   "2027-12-31"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:TemporalApplicability
+    a owl:Class ;
+    rdfs:label "Temporal Applicability"@en ;
+    skos:definition """A specification of when a legal rule, obligation, or provision applies in
+time — potentially distinct from its validity interval. Temporal applicability
+captures the operational time frame during which a rule has effect on its
+subjects, including retroactive, transitional, and prospective application."""@en ;
+    skos:scopeNote """Temporal applicability differs from validity. A provision may be valid
+from 2020 but apply retroactively to transactions from 2018, or may apply
+only to future transactions. Use TemporalApplicability to record these
+distinctions explicitly."""@en ;
+    skos:example """
+ex:TA_Retroactive
+  a life:TemporalApplicability ;
+  rdfs:label "Retroactive applicability to 2018 transactions"@en ;
+  life:effectiveFrom "2018-01-01"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:LegalStateTransition
+    a owl:Class ;
+    rdfs:label "Legal State Transition"@en ;
+    skos:definition """A transition between two legal states of a provision or instrument,
+triggered by a lifecycle event. Captures the change from one named legal
+state (e.g., Pending) to another (e.g., Effective)."""@en ;
+    skos:scopeNote """Use life:transitionsFrom and life:transitionsTo to record the before and
+after states (as SKOS concepts from life:LegalStateScheme). Link to the
+triggering lifecycle event via life:affects."""@en ;
+    skos:example """
+ex:Trans_Pending_to_Effective
+  a life:LegalStateTransition ;
+  life:transitionsFrom life:StatePending ;
+  life:transitionsTo   life:StateEffective ;
+  life:affects ex:Art_2_5_v2 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:PendingModification
+    a owl:Class ;
+    rdfs:subClassOf life:Modification ;
+    rdfs:label "Pending Modification"@en ;
+    skos:definition """A modification that has been enacted or instructed but whose legal effect
+has not yet commenced — for example, an amendment with a future
+entry-into-force date."""@en ;
+    skos:scopeNote """Model pending modifications when the amending instrument has been adopted
+but the effectiveFrom date is in the future. Transition to
+EffectiveModification upon the effective date via a LegalStateTransition."""@en ;
+    skos:example """
+ex:PendMod_2028_Art2_5
+  a life:PendingModification ;
+  life:modifies ex:USMCA_Art2_5 ;
+  life:eventDate "2028-01-01"^^xsd:date ;
+  rdfs:label "Pending 2028 tariff rate amendment"@en ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:EffectiveModification
+    a owl:Class ;
+    rdfs:subClassOf life:Modification ;
+    rdfs:label "Effective Modification"@en ;
+    skos:definition """A modification whose legal effects are currently operative — the amendment
+has entered into force and the new or modified provisions are the applicable
+law."""@en ;
+    skos:scopeNote """When a PendingModification's effectiveFrom date is reached, it transitions
+to EffectiveModification via a LegalStateTransition. Record this transition
+to maintain audit trail."""@en ;
+    skos:example """
+ex:EffMod_2028_Art2_5
+  a life:EffectiveModification ;
+  life:modifies ex:USMCA_Art2_5 ;
+  life:eventDate "2028-03-01"^^xsd:date ;
+  rdfs:label "2028 tariff rate amendment now in force"@en ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+# =============================================================================
+# OBJECT PROPERTIES
+# =============================================================================
+
+life:amends
+    a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+    rdfs:label "amends"@en ;
+    skos:definition """Relates an amending legal instrument to the instrument it amends. The
+subject formally amends the object."""@en ;
+    rdfs:range  ldso:Document ;
+    skos:scopeNote """Use at the document level to indicate that one legal instrument formally
+amends another. For provision-level modifications, use life:modifies."""@en ;
+    skos:example """
+ex:USMCA_2028_Protocol  life:amends  ex:USMCA_Original ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:modifies
+    a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+    rdfs:label "modifies"@en ;
+    skos:definition """Relates an AmendmentInstruction or Modification to the specific provision
+or resource being modified."""@en ;
+    rdfs:range  ldso:LegalResource ;
+    skos:scopeNote """The primary property linking an AmendmentInstruction to its target. The
+range is any identified legal resource (provision, article, schedule)."""@en ;
+    skos:example """
+ex:Instr_2028_Art2_5  life:modifies  ex:USMCA_Art2_5_Para3 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:resultsIn
+    a owl:ObjectProperty ;
+    rdfs:label "results in"@en ;
+    skos:definition """Relates an AmendmentInstruction to the LegalEffect it produces."""@en ;
+    rdfs:range  life:LegalEffect ;
+    rdfs:subPropertyOf life:hasLegalEffect ;
+    owl:inverseOf life:derivedFromInstruction ;
+    skos:scopeNote """The bridge between a directive (AmendmentInstruction) and its consequence
+(Substitution, Insertion, Deletion, Repeal). An instruction may result in
+multiple legal effects. Inverse of life:derivedFromInstruction."""@en ;
+    skos:example """
+ex:Instr_2028_Art2_5  life:resultsIn  ex:Sub_Art2_5_Para3_2028 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:affects
+    a owl:ObjectProperty ;
+    rdfs:label "affects"@en ;
+    skos:definition """Relates a lifecycle event to any legal resource affected by it, whether
+directly or indirectly."""@en ;
+    rdfs:range  ldso:LegalResource ;
+    skos:scopeNote """Use when a lifecycle event has effects beyond a direct modification — for
+example, when a repeal of one provision affects the interpretation of
+another, or when an EntryIntoForce event makes a version operative.
+The range ldso:LegalResource covers both ldso:LegalElement (provisions,
+articles, paragraphs) and ldso:LegalExpression (documents), as well as
+life:VersionedProvision and life:VersionedResource through their subclass
+chains."""@en ;
+    skos:example """
+ex:EIF_USMCA_2020  life:affects  ex:USMCA_Art2_5_v1 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:replaces
+    a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+    rdfs:label "replaces"@en ;
+    skos:definition """Relates a Substitution legal effect to the specific provision version
+that it substantively replaces."""@en ;
+    rdfs:range  life:VersionedProvision ;
+    skos:scopeNote """The old provision MUST receive a life:effectiveTo date equal to one day
+before the effectiveFrom of the replacement."""@en ;
+    skos:example """
+ex:Sub_Art2_5_Para3_2028  life:replaces  ex:USMCA_Art2_5_Para3_v1 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:repeals
+    a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+    rdfs:label "repeals"@en ;
+    skos:definition """Relates a Repeal legal effect to the instrument or provision being
+abrogated."""@en ;
+    rdfs:range  ldso:LegalResource ;
+    skos:scopeNote """The repealed resource MUST receive a life:effectiveTo and SHOULD be
+classified as life:DeprecatedProvision."""@en ;
+    skos:example """
+ex:Repeal_OldChapter3  life:repeals  ex:USMCA_Chapter3_v1 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:inserts
+    a owl:ObjectProperty ;
+    rdfs:label "inserts"@en ;
+    skos:definition """Relates an Insertion legal effect to the new provision or content being
+added."""@en ;
+    rdfs:range  life:VersionedProvision ;
+    skos:example """
+ex:Ins_NewArt2_6  life:inserts  ex:USMCA_Art2_6_v1 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:deletes
+    a owl:ObjectProperty ;
+    rdfs:label "deletes"@en ;
+    skos:definition """Relates a Deletion legal effect to the provision or content being
+removed."""@en ;
+    rdfs:range  life:VersionedProvision ;
+    skos:scopeNote """The deleted provision MUST be marked with life:effectiveTo and SHOULD
+be typed as life:DeprecatedProvision."""@en ;
+    skos:example """
+ex:Del_Art5_3_Para2  life:deletes  ex:USMCA_Art5_3_Para2_v1 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:createsVersion
+    a owl:ObjectProperty ;
+    rdfs:label "creates version"@en ;
+    skos:definition """Relates a legal effect to the new VersionedProvision created as a result
+of that effect."""@en ;
+    rdfs:range  life:VersionedProvision ;
+    skos:scopeNote """Every Substitution, Insertion, and Renumbering SHOULD use this property
+to link to the resulting new provision version."""@en ;
+    skos:example """
+ex:Sub_Art2_5_Para3_2028  life:createsVersion  ex:USMCA_Art2_5_Para3_v2 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:supersedes
+    a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+    rdfs:label "supersedes"@en ;
+    skos:definition """Relates a newer VersionedProvision to an older one it replaces in the
+version chain. The subject supersedes the object."""@en ;
+    rdfs:range  life:VersionedProvision ;
+    owl:inverseOf life:supersededBy ;
+    skos:scopeNote """Declared asymmetric and irreflexive to prevent cyclic supersession
+chains, which are logically impossible."""@en ;
+    skos:example """
+ex:USMCA_Art2_5_Para3_v2  life:supersedes  ex:USMCA_Art2_5_Para3_v1 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:supersededBy
+    a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+    rdfs:label "superseded by"@en ;
+    skos:definition """Inverse of life:supersedes. The subject has been superseded by the
+object."""@en ;
+    owl:inverseOf life:supersedes ;
+    skos:example """
+ex:USMCA_Art2_5_Para3_v1  life:supersededBy  ex:USMCA_Art2_5_Para3_v2 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:previousVersion
+    a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:subPropertyOf life:supersededBy ;
+    rdfs:label "previous version"@en ;
+    skos:definition """Links a VersionedProvision to its immediately preceding version in the
+version chain."""@en ;
+    owl:inverseOf life:nextVersion ;
+    skos:example """
+ex:Art_2_5_v2  life:previousVersion  ex:Art_2_5_v1 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:nextVersion
+    a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:subPropertyOf life:supersedes ;
+    rdfs:label "next version"@en ;
+    skos:definition """Links a VersionedProvision to its immediately succeeding version."""@en ;
+    owl:inverseOf life:previousVersion ;
+    skos:example """
+ex:Art_2_5_v1  life:nextVersion  ex:Art_2_5_v2 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:hasLegalEffect
+    a owl:ObjectProperty ;
+    rdfs:label "has legal effect"@en ;
+    skos:definition """Relates an AmendmentInstruction or LifecycleEvent to the LegalEffect it
+produces."""@en ;
+    rdfs:range  life:LegalEffect ;
+    skos:scopeNote """A single instruction may produce multiple effects. Use this property
+to link cause (instruction) to consequence (effect)."""@en ;
+    skos:example """
+ex:Instr_2028_Art2_5  life:hasLegalEffect  ex:Sub_Art2_5_Para3_2028 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:derivedFromInstruction
+    a owl:ObjectProperty ;
+    rdfs:label "derived from instruction"@en ;
+    skos:definition """Relates a LegalEffect to the AmendmentInstruction from which it is
+derived. Provides provenance traceability from effect to mandate."""@en ;
+    rdfs:range  life:AmendmentInstruction ;
+    owl:inverseOf life:resultsIn ;
+    skos:scopeNote """SHOULD be present on every LegalEffect to ensure amendment provenance.
+Inverse of life:resultsIn."""@en ;
+    skos:example """
+ex:Sub_Art2_5_Para3_2028  life:derivedFromInstruction  ex:Instr_2028_Art2_5 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:derivedFromProvision
+    a owl:ObjectProperty ;
+    rdfs:label "derived from provision"@en ;
+    skos:definition """Relates a ConsolidatedProvision to one or more source VersionedProvisions
+from which it is derived."""@en ;
+    rdfs:range  life:VersionedProvision ;
+    skos:example """
+ex:Art_2_5_Cons_2028  life:derivedFromProvision  ex:Art_2_5_v2 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:consolidates
+    a owl:ObjectProperty ;
+    rdfs:label "consolidates"@en ;
+    skos:definition """Relates a Consolidation event to a legal instrument or version that is
+incorporated into the consolidated text."""@en ;
+    rdfs:range  ldso:LegalResource ;
+    skos:scopeNote """A Consolidation SHOULD consolidate at least two instruments or versions:
+the original and at least one amendment."""@en ;
+    skos:example """
+ex:Cons_USMCA_2028  life:consolidates  ex:USMCA_Original, ex:USMCA_2028_Amendment ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:derivedFromConsolidation
+    a owl:ObjectProperty ;
+    rdfs:label "derived from consolidation"@en ;
+    skos:definition """Relates a ConsolidatedProvision to the Consolidation event that produced
+it."""@en ;
+    rdfs:range  life:Consolidation ;
+    skos:example """
+ex:Art_2_5_Cons_2028  life:derivedFromConsolidation  ex:Cons_USMCA_2028 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:hasValidityInterval
+    a owl:ObjectProperty ;
+    rdfs:label "has validity interval"@en ;
+    skos:definition """Relates a legal resource to a ValidityInterval describing when it is
+operative."""@en ;
+    rdfs:range  life:ValidityInterval ;
+    skos:example """
+ex:Art_2_5_v1  life:hasValidityInterval  ex:VI_Art2_5_v1 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:hasTemporalApplicability
+    a owl:ObjectProperty ;
+    rdfs:label "has temporal applicability"@en ;
+    skos:definition """Relates a legal rule or provision to its TemporalApplicability
+specification."""@en ;
+    rdfs:range  life:TemporalApplicability ;
+    skos:example """
+ex:Art_2_5_v2  life:hasTemporalApplicability  ex:TA_Retroactive ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:effectiveFromEvent
+    a owl:ObjectProperty ;
+    rdfs:label "effective from event"@en ;
+    skos:definition """Relates a legal resource to the LifecycleEvent (typically
+EntryIntoForce) that marks the start of its operative period."""@en ;
+    rdfs:range  life:LifecycleEvent ;
+    skos:example """
+ex:Art_2_5_v1  life:effectiveFromEvent  ex:EIF_USMCA_2020 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:effectiveUntilEvent
+    a owl:ObjectProperty ;
+    rdfs:label "effective until event"@en ;
+    skos:definition """Relates a legal resource to the LifecycleEvent (Termination, Expiration,
+or Repeal) that marks the end of its operative period."""@en ;
+    rdfs:range  life:LifecycleEvent ;
+    skos:example """
+ex:Art_2_5_v1  life:effectiveUntilEvent  ex:Sub_Art2_5_Para3_2028 ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:transitionsFrom
+    a owl:ObjectProperty ;
+    rdfs:label "transitions from"@en ;
+    skos:definition """Relates a LegalStateTransition to the legal state (SKOS concept) from
+which it departs."""@en ;
+    rdfs:range  skos:Concept ;
+    skos:example """
+ex:Trans_Pending_to_Effective  life:transitionsFrom  life:StatePending ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:transitionsTo
+    a owl:ObjectProperty ;
+    rdfs:label "transitions to"@en ;
+    skos:definition """Relates a LegalStateTransition to the legal state (SKOS concept) into
+which it arrives."""@en ;
+    rdfs:range  skos:Concept ;
+    skos:example """
+ex:Trans_Pending_to_Effective  life:transitionsTo  life:StateEffective ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+# =============================================================================
+# DATATYPE PROPERTIES
+# =============================================================================
+
+life:effectiveFrom
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "effective from"@en ;
+    skos:definition "The date on which a legal provision or instrument becomes operative."@en ;
+    rdfs:range xsd:date ;
+    skos:scopeNote "MUST be present on every VersionedProvision."@en ;
+    skos:example """
+ex:Art_2_5_v1  life:effectiveFrom  "2020-07-01"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:effectiveTo
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "effective to"@en ;
+    skos:definition """The date on which a legal provision or instrument ceases to be
+operative. An absent effectiveTo denotes indefinite validity."""@en ;
+    rdfs:range xsd:date ;
+    skos:example """
+ex:Art_2_5_v1  life:effectiveTo  "2027-12-31"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:versionNumber
+    a owl:DatatypeProperty ;
+    rdfs:label "version number"@en ;
+    skos:definition """A string or integer identifying the ordinal position of a
+VersionedProvision in its version chain."""@en ;
+    rdfs:range xsd:string ;
+    skos:example """
+ex:Art_2_5_v1  life:versionNumber  "1" .
+ex:Art_2_5_v2  life:versionNumber  "2" ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:consolidationDate
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:subPropertyOf life:eventDate ;
+    rdfs:label "consolidation date"@en ;
+    skos:definition """The date on which a consolidated text is prepared, representing the
+point-in-time state of the law captured by the consolidation."""@en ;
+    skos:scopeNote """A sub-property of life:eventDate, representing the event date of the
+Consolidation lifecycle event itself. Satisfies the LifecycleEventShape
+eventDate requirement automatically."""@en ;
+    rdfs:range xsd:date ;
+    skos:example """
+ex:Cons_USMCA_2028  life:consolidationDate  "2028-12-31"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:modificationDate
+    a owl:DatatypeProperty ;
+    rdfs:subPropertyOf life:eventDate ;
+    rdfs:label "modification date"@en ;
+    skos:definition "The date on which an AmendmentInstruction was formally issued or enacted."@en ;
+    skos:scopeNote """A sub-property of life:eventDate, representing the event date of the
+AmendmentInstruction itself (the date the amending act was signed or adopted).
+This satisfies the life:eventDate requirement imposed by LifecycleEventShape
+without needing a separate assertion. Distinct from the eventDate on the
+resulting LegalEffect: an amendment may be signed on 2028-01-15 (its
+modificationDate / eventDate) but the resulting Substitution may take effect
+on 2028-03-01 (the LegalEffect's eventDate)."""@en ;
+    rdfs:range xsd:date ;
+    skos:example """
+ex:Instr_2028_Art2_5  life:modificationDate  "2028-01-15"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:eventDate
+    a owl:DatatypeProperty ;
+    rdfs:label "event date"@en ;
+    skos:definition "The date on which a lifecycle event occurred."@en ;
+    rdfs:range xsd:date ;
+    skos:example """
+ex:EIF_USMCA_2020  life:eventDate  "2020-07-01"^^xsd:date ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:stateLabel
+    a owl:DatatypeProperty ;
+    rdfs:label "state label"@en ;
+    skos:definition """A human-readable label for the legal state of a provision or instrument.
+Recommended values: Pending, Effective, Suspended, Expired, Repealed,
+Deprecated, Consolidated."""@en ;
+    rdfs:range xsd:string ;
+    skos:example """
+ex:Art_2_5_v1  life:stateLabel  "Deprecated" ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:changeDescription
+    a owl:DatatypeProperty ;
+    rdfs:label "change description"@en ;
+    skos:definition """A natural-language description of the nature and scope of a modification,
+event, or legal effect, providing human-readable context."""@en ;
+    rdfs:range rdf:langString ;
+    skos:example """
+ex:Instr_2028_Art2_5
+  life:changeDescription  "Replace paragraph 3 with new tariff schedule."@en ."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+# =============================================================================
+# SKOS CONCEPT SCHEME — Legal States
+# =============================================================================
+
+life:LegalStateScheme
+    a skos:ConceptScheme ;
+    rdfs:label "Legal State Vocabulary"@en ;
+    skos:definition """A controlled vocabulary of named legal states for provisions and
+instruments in the LDSO-Lifecycle model."""@en ;
+    skos:hasTopConcept life:StatePending, life:StateEffective, life:StateSuspended,
+                       life:StateExpired, life:StateRepealed, life:StateDeprecated,
+                       life:StateConsolidated ;
+    rdfs:isDefinedBy <https://w3id.org/ldso/lifecycle> .
+
+
+life:StatePending
+    a skos:Concept ;
+    rdfs:label "Pending"@en ;
+    skos:definition "The instrument or provision is enacted but not yet operative."@en ;
+    skos:topConceptOf life:LegalStateScheme ;
+    skos:inScheme life:LegalStateScheme .
+
+life:StateEffective
+    a skos:Concept ;
+    rdfs:label "Effective"@en ;
+    skos:definition "The instrument or provision is currently operative and legally binding."@en ;
+    skos:topConceptOf life:LegalStateScheme ;
+    skos:inScheme life:LegalStateScheme .
+
+life:StateSuspended
+    a skos:Concept ;
+    rdfs:label "Suspended"@en ;
+    skos:definition "The instrument or provision is temporarily not operative."@en ;
+    skos:topConceptOf life:LegalStateScheme ;
+    skos:inScheme life:LegalStateScheme .
+
+life:StateExpired
+    a skos:Concept ;
+    rdfs:label "Expired"@en ;
+    skos:definition "The instrument or provision has naturally reached the end of its validity period."@en ;
+    skos:topConceptOf life:LegalStateScheme ;
+    skos:inScheme life:LegalStateScheme .
+
+life:StateRepealed
+    a skos:Concept ;
+    rdfs:label "Repealed"@en ;
+    skos:definition "The instrument or provision has been formally abrogated."@en ;
+    skos:topConceptOf life:LegalStateScheme ;
+    skos:inScheme life:LegalStateScheme .
+
+life:StateDeprecated
+    a skos:Concept ;
+    rdfs:label "Deprecated"@en ;
+    skos:definition """The provision is superseded or deleted and no longer operative, but
+retained for historical reference."""@en ;
+    skos:topConceptOf life:LegalStateScheme ;
+    skos:inScheme life:LegalStateScheme .
+
+life:StateConsolidated
+    a skos:Concept ;
+    rdfs:label "Consolidated"@en ;
+    skos:definition """The provision exists in a consolidated text integrating all amendments
+to a given date."""@en ;
+    skos:topConceptOf life:LegalStateScheme ;
+    skos:inScheme life:LegalStateScheme .
+
+
+# =============================================================================
+# DISJOINTNESS AXIOMS
+# =============================================================================
+
+# All direct subclasses of life:LifecycleEvent are mutually exclusive.
+# A single event node cannot simultaneously be an amendment instruction,
+# a legal effect, a commencement, and an entry into force.
+[ a owl:AllDisjointClasses ;
+  owl:members ( life:Modification life:LegalEffect life:Consolidation
+                life:AmendmentInstruction life:Commencement
+                life:EntryIntoForce life:Termination
+                life:Suspension life:Expiration ) ] .
+
+# Legal effect subtypes are mutually exclusive.
+# A single legal effect cannot be both an insertion and a deletion.
+[ a owl:AllDisjointClasses ;
+  owl:members ( life:Insertion life:Deletion life:Substitution
+                life:Repeal life:Renumbering ) ] .
+
+# Modification state subtypes are mutually exclusive.
+life:PendingModification owl:disjointWith life:EffectiveModification .
+
+# Provision classification subtypes are mutually exclusive.
+life:ConsolidatedProvision owl:disjointWith life:DeprecatedProvision .

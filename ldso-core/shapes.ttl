@@ -1,0 +1,734 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Core SHACL Validation Shapes
+# Validates structural integrity. Does NOT encode legal reasoning.
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/core/shapes>
+  a owl:Ontology ;
+  dct:title "LDSO-Core SHACL Shapes"@en ;
+  dct:description "SHACL validation shapes for structural integrity of LDSO-Core instances."@en ;
+  dct:creator "Stephane Fellah" ;
+  dct:publisher "Geoknoesis LLC" ;
+  dct:created "2026-05-24"^^xsd:date ;
+  dct:modified "2026-05-25"^^xsd:date ;
+  owl:imports <https://w3id.org/ldso/core> .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# LEGAL EXPRESSION SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:LegalExpressionShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:LegalExpression ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Legal Expression" ;
+  sh:description "A LegalExpression must carry a language code and should link to its parent LegalResource." ;
+  sh:property [
+    sh:path dct:language ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "LegalExpression must have dct:language (BCP 47 / ISO 639-3 code, e.g., 'en', 'fra')." ;
+  ] ;
+  sh:property [
+    sh:path ldso:expressionOf ;
+    sh:minCount 1 ;
+    sh:class ldso:LegalResource ;
+    sh:severity sh:Warning ;
+    sh:message "LegalExpression SHOULD be linked to a LegalResource via ldso:expressionOf." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DOCUMENT SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:DocumentShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Document ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Document" ;
+  sh:description "A Document must have a language-tagged title (dct:title)." ;
+  sh:property [
+    sh:path dct:title ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:message "Document must have at least one dct:title (language-tagged literal)." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ARTICLE SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:ArticleShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Article ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Article" ;
+  sh:description "An Article must have a notation (article number or letter)." ;
+  sh:property [
+    sh:path ldso:notation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Article must have ldso:notation (e.g., '5', 'IV', '3bis')." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# PARAGRAPH SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:ParagraphShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Paragraph ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Paragraph" ;
+  sh:description "A Paragraph must have an orderIndex." ;
+  sh:property [
+    sh:path ldso:orderIndex ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:message "Paragraph must have ldso:orderIndex >= 1." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# BLOCK LIST SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:BlockListShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:BlockList ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Block List" ;
+  sh:description "A BlockList must contain at least one Item." ;
+  sh:property [
+    sh:path ldso:contains ;
+    sh:minCount 1 ;
+    sh:class ldso:Item ;
+    sh:message "BlockList must contain at least one ldso:Item via ldso:contains." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ITEM SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:ItemShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Item ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Item" ;
+  sh:description "An Item must have a notation and an orderIndex." ;
+  sh:property [
+    sh:path ldso:notation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Item must have ldso:notation (label such as a, b, c, i, ii)." ;
+  ] ;
+  sh:property [
+    sh:path ldso:orderIndex ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:message "Item must have ldso:orderIndex >= 1." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# TABLE SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:TableShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Table ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Table" ;
+  sh:description "A Table must contain at least one Row. Nested tables appear inside Cells via ldso:hasTable." ;
+  sh:property [
+    sh:path ldso:hasRow ;
+    sh:minCount 1 ;
+    sh:class ldso:Row ;
+    sh:message "Table must have at least one ldso:Row via ldso:hasRow." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ROW SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:RowShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Row ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Row" ;
+  sh:description "A Row must have an orderIndex and contain either Cells or sub-Rows." ;
+  sh:property [
+    sh:path ldso:orderIndex ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:message "Row must have ldso:orderIndex >= 1." ;
+  ] ;
+  sh:or (
+    [
+      sh:property [
+        sh:path ldso:hasCell ;
+        sh:minCount 1 ;
+        sh:class ldso:Cell ;
+      ]
+    ]
+    [
+      sh:property [
+        sh:path ldso:hasRow ;
+        sh:minCount 1 ;
+        sh:class ldso:Row ;
+      ]
+    ]
+  ) ;
+  sh:message "Row must contain at least one Cell (ldso:hasCell) or at least one sub-Row (ldso:hasRow)." .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CELL SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:CellShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Cell ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Cell" ;
+  sh:description "A Cell must have an orderIndex for column position." ;
+  sh:property [
+    sh:path ldso:orderIndex ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:message "Cell must have ldso:orderIndex >= 1 for column position." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DOCUMENT CONTAINER SHAPES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:BodyShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Body ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Body" ;
+  sh:description "A Body must be part of a Document and contain at least one element." ;
+  sh:property [
+    sh:path ldso:partOf ;
+    sh:minCount 1 ;
+    sh:class ldso:Document ;
+    sh:severity sh:Warning ;
+    sh:message "Body SHOULD declare ldso:partOf pointing to its Document." ;
+  ] ;
+  sh:property [
+    sh:path ldso:contains ;
+    sh:minCount 1 ;
+    sh:message "Body must contain at least one structural element." ;
+  ] .
+
+ldso:PreambleShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Preamble ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Preamble" ;
+  sh:description "A Preamble must be part of a Document." ;
+  sh:property [
+    sh:path ldso:partOf ;
+    sh:minCount 1 ;
+    sh:severity sh:Warning ;
+    sh:message "Preamble SHOULD declare ldso:partOf pointing to its Document." ;
+  ] .
+
+ldso:PrefaceShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Preface ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Preface" ;
+  sh:description "A Preface must be part of a Document." ;
+  sh:property [
+    sh:path ldso:partOf ;
+    sh:minCount 1 ;
+    sh:severity sh:Warning ;
+    sh:message "Preface SHOULD declare ldso:partOf pointing to its Document." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# HIERARCHICAL DIVISION SHAPES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:PartShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Part ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Part" ;
+  sh:description "A Part must have a notation and an orderIndex." ;
+  sh:property [
+    sh:path ldso:notation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Part must have ldso:notation (e.g., 'I', 'II', 'A')." ;
+  ] ;
+  sh:property [
+    sh:path ldso:orderIndex ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:message "Part must have ldso:orderIndex >= 1." ;
+  ] .
+
+ldso:TitleShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Title ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Title" ;
+  sh:description "A Title division must have a notation and an orderIndex." ;
+  sh:property [
+    sh:path ldso:notation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Title must have ldso:notation (e.g., 'I', 'II', 'III')." ;
+  ] ;
+  sh:property [
+    sh:path ldso:orderIndex ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:message "Title must have ldso:orderIndex >= 1." ;
+  ] .
+
+ldso:ChapterShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Chapter ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Chapter" ;
+  sh:description "A Chapter must have a notation and an orderIndex." ;
+  sh:property [
+    sh:path ldso:notation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Chapter must have ldso:notation (e.g., '1', '2', 'I')." ;
+  ] ;
+  sh:property [
+    sh:path ldso:orderIndex ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:message "Chapter must have ldso:orderIndex >= 1." ;
+  ] .
+
+ldso:SectionShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Section ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Section" ;
+  sh:description "A Section must have an orderIndex." ;
+  sh:property [
+    sh:path ldso:orderIndex ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:message "Section must have ldso:orderIndex >= 1." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ORDERING CONSISTENCY SHAPES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:NextRequiresOrderShape
+  a sh:NodeShape ;
+  sh:targetSubjectsOf ldso:next ;
+  sh:name "Next Requires Order Index" ;
+  sh:description "An element with ldso:next must have ldso:orderIndex." ;
+  sh:property [
+    sh:path ldso:orderIndex ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:message "Element with ldso:next must also declare ldso:orderIndex." ;
+  ] .
+
+ldso:PreviousRequiresOrderShape
+  a sh:NodeShape ;
+  sh:targetSubjectsOf ldso:previous ;
+  sh:name "Previous Requires Order Index" ;
+  sh:description "An element with ldso:previous must have ldso:orderIndex." ;
+  sh:property [
+    sh:path ldso:orderIndex ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:message "Element with ldso:previous must also declare ldso:orderIndex." ;
+  ] .
+
+ldso:OrderingChainIntegrityShape
+  a sh:NodeShape ;
+  sh:targetSubjectsOf ldso:next ;
+  sh:name "Ordering Chain Integrity" ;
+  sh:description "If A ldso:next B, then B ldso:previous A." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:message "Ordering chain is broken: if A ldso:next B, then B must have ldso:previous A." ;
+    sh:select """
+      PREFIX ldso: <https://w3id.org/ldso/core#>
+      SELECT $this ?next WHERE {
+        $this ldso:next ?next .
+        FILTER NOT EXISTS { ?next ldso:previous $this }
+      }
+    """ ;
+  ] .
+
+ldso:OrderIndexUniquenessShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:LegalElement ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Order Index Uniqueness" ;
+  sh:description "No two sibling elements under the same parent may share an ldso:orderIndex value." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Violation ;
+    sh:message "ldso:orderIndex must be unique among siblings under the same ldso:contains parent." ;
+    sh:select """
+      PREFIX ldso: <https://w3id.org/ldso/core#>
+      SELECT $this WHERE {
+        ?parent ldso:contains $this ;
+                ldso:contains ?sibling .
+        $this ldso:orderIndex ?idx .
+        ?sibling ldso:orderIndex ?idx .
+        FILTER ($this != ?sibling)
+      }
+    """ ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# REFERENCE SHAPES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:ReferenceShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Reference ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Reference" ;
+  sh:description "Every Reference must point to a target via ldso:refersTo." ;
+  sh:property [
+    sh:path ldso:refersTo ;
+    sh:minCount 1 ;
+    sh:message "Reference must have at least one ldso:refersTo target." ;
+  ] .
+
+ldso:InternalReferenceShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:InternalReference ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Internal Reference" ;
+  sh:description "An InternalReference must have an anchorText (the inline phrase in the source text)." ;
+  sh:property [
+    sh:path ldso:anchorText ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:message "InternalReference must have ldso:anchorText (language-tagged surface phrase in the source text)." ;
+  ] .
+
+ldso:ExternalReferenceShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:ExternalReference ;
+  sh:nodeKind sh:IRI ;
+  sh:name "External Reference" ;
+  sh:description "An ExternalReference must have an anchorText (the inline phrase in the source text)." ;
+  sh:property [
+    sh:path ldso:anchorText ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:message "ExternalReference must have ldso:anchorText (language-tagged surface phrase in the source text)." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ANNEX SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:AnnexShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Annex ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Annex" ;
+  sh:description "An Annex must have a notation and a title." ;
+  sh:property [
+    sh:path ldso:notation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Annex must have ldso:notation (e.g., 'I', 'II', 'A')." ;
+  ] ;
+  sh:property [
+    sh:path dct:title ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:message "Annex must have dct:title (language-tagged)." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CLAUSE SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:ClauseShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Clause ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Clause" ;
+  sh:description "A Clause must have a notation." ;
+  sh:property [
+    sh:path ldso:notation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Clause must have ldso:notation." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# NO RDF COLLECTIONS CONSTRAINT
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:NoRdfCollectionsShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:LegalElement ;
+  sh:nodeKind sh:IRI ;
+  sh:name "No RDF Collections" ;
+  sh:description "LegalElements must not use rdf:List ordering." ;
+  sh:property [
+    sh:path rdf:first ;
+    sh:maxCount 0 ;
+    sh:message "Use ldso:next/ldso:previous/ldso:orderIndex for ordering, not rdf:List." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CITATION CHAIN CONSISTENCY
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ═════════════════════════════════════════════════════════════════════════════
+# LEGAL RESOURCE SHAPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:LegalResourceShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:LegalResource ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Legal Resource" ;
+  sh:description "A LegalResource should carry a language-tagged title." ;
+  sh:property [
+    sh:path dct:title ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Warning ;
+    sh:message "LegalResource SHOULD have at least one dct:title (language-tagged)." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# MISSING CONTAINER / ATTACHMENT SHAPES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:PointShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Point ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Point" ;
+  sh:description "A Point must have an orderIndex." ;
+  sh:property [
+    sh:path ldso:orderIndex ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:message "Point must have ldso:orderIndex >= 1." ;
+  ] .
+
+ldso:ConclusionsShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Conclusions ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Conclusions" ;
+  sh:description "Conclusions must be part of a Document." ;
+  sh:property [
+    sh:path ldso:partOf ;
+    sh:minCount 1 ;
+    sh:severity sh:Warning ;
+    sh:message "Conclusions SHOULD declare ldso:partOf pointing to its Document." ;
+  ] .
+
+ldso:ScheduleShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Schedule ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Schedule" ;
+  sh:description "A Schedule must have a notation and a title." ;
+  sh:property [
+    sh:path ldso:notation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Schedule must have ldso:notation (e.g., 'I', 'II', 'A')." ;
+  ] ;
+  sh:property [
+    sh:path dct:title ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:message "Schedule must have dct:title (language-tagged)." ;
+  ] .
+
+ldso:AppendixShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Appendix ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Appendix" ;
+  sh:description "An Appendix must have a notation." ;
+  sh:property [
+    sh:path ldso:notation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Appendix must have ldso:notation (e.g., 'A', '1', 'I')." ;
+  ] .
+
+ldso:AttachmentShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Attachment ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Attachment" ;
+  sh:description "An Attachment should carry a title." ;
+  sh:property [
+    sh:path dct:title ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Warning ;
+    sh:message "Attachment SHOULD have dct:title (language-tagged)." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CLAUSE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:ClauseShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Clause ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Clause" ;
+  sh:description "A Clause must have a notation." ;
+  sh:property [
+    sh:path ldso:notation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Clause must have ldso:notation (e.g., '3', '4.1')." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ANNEX
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:AnnexShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Annex ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Annex" ;
+  sh:description "An Annex must have a notation and a title." ;
+  sh:property [
+    sh:path ldso:notation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Annex must have ldso:notation (e.g., 'I', 'II', 'A')." ;
+  ] ;
+  sh:property [
+    sh:path dct:title ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:message "Annex must have dct:title (language-tagged)." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# REFERENCES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:ReferenceShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Reference ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Reference" ;
+  sh:description "A Reference must point to a target resource via ldso:refersTo or ldso:cites." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Violation ;
+    sh:message "Reference MUST have either ldso:refersTo or ldso:cites." ;
+    sh:select """
+      PREFIX ldso: <https://w3id.org/ldso/core#>
+      SELECT $this WHERE {
+        FILTER NOT EXISTS { $this ldso:refersTo ?target }
+        FILTER NOT EXISTS { $this ldso:cites ?cited }
+      }
+    """ ;
+  ] .
+
+ldso:InternalReferenceShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:InternalReference ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Internal Reference" ;
+  sh:description "An InternalReference must point to a target within the same document via ldso:refersTo." ;
+  sh:property [
+    sh:path ldso:refersTo ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "InternalReference MUST have ldso:refersTo pointing to its target element." ;
+  ] .
+
+ldso:ExternalReferenceShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:ExternalReference ;
+  sh:nodeKind sh:IRI ;
+  sh:name "External Reference" ;
+  sh:description "An ExternalReference must point to a target resource via ldso:refersTo." ;
+  sh:property [
+    sh:path ldso:refersTo ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "ExternalReference MUST have ldso:refersTo pointing to the referenced external resource." ;
+  ] .
+
+ldso:CitationShape
+  a sh:NodeShape ;
+  sh:targetClass ldso:Citation ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Citation" ;
+  sh:description "A Citation must point to the cited legal resource via ldso:cites." ;
+  sh:property [
+    sh:path ldso:cites ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "Citation MUST have ldso:cites pointing to the cited legal authority or instrument." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CITATION CHAIN CONSISTENCY
+# ═════════════════════════════════════════════════════════════════════════════
+
+ldso:CitationChainShape
+  a sh:NodeShape ;
+  sh:targetSubjectsOf ldso:citation ;
+  sh:name "Citation Chain Consistency" ;
+  sh:description "A child's ldso:citation must begin with its parent's ldso:citation followed by '.' when both are present." ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:message "Citation chain broken: child ldso:citation does not begin with parent ldso:citation followed by '.'." ;
+    sh:select """
+      PREFIX ldso: <https://w3id.org/ldso/core#>
+      SELECT $this ?childCitation ?parentCitation WHERE {
+        $this ldso:citation ?childCitation ;
+              ldso:partOf ?parent .
+        ?parent ldso:citation ?parentCitation .
+        FILTER NOT EXISTS {
+          FILTER(STRSTARTS(?childCitation, CONCAT(?parentCitation, ".")))
+        }
+      }
+    """ ;
+  ] .

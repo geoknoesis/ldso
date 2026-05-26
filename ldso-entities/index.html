@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LDSO-Entities: Named Entity Reference Module</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus:    "unofficial",
+      shortName:     "ldso-entities",
+      latestVersion: "https://w3id.org/ldso/entities",
+      edDraftURI:    "https://w3id.org/ldso/entities",
+      editors: [
+        { name: "Stephane Fellah", company: "Geoknoesis LLC", url: "https://www.geoknoesis.com" }
+      ],
+      publishDate: "2026-05-25",
+      license: "cc-by",
+      doJsonLd: true,
+      github: {
+        repoURL: "https://github.com/geoknoesis/ldso",
+        branch:  "main"
+      },
+      localBiblio: {
+        "LDSO-CORE": {
+          title:     "LDSO-Core: Legal Document Structure Ontology",
+          href:      "https://w3id.org/ldso/core",
+          publisher: "LDSO Project"
+        },
+        "LDSO-ANNOTATIONS": {
+          title:     "LDSO-Annotations: Legal Document Annotation Module",
+          href:      "https://w3id.org/ldso/annotations",
+          publisher: "LDSO Project"
+        },
+        "LDSO-SEMANTICS": {
+          title:     "LDSO-Semantics: Legal Semantic Annotation Ontology",
+          href:      "https://w3id.org/ldso/semantics",
+          publisher: "LDSO Project"
+        },
+        "OWL2": {
+          title:     "OWL 2 Web Ontology Language Primer (Second Edition)",
+          href:      "https://www.w3.org/TR/owl2-primer/",
+          publisher: "W3C"
+        },
+        "SHACL": {
+          title:     "Shapes Constraint Language (SHACL)",
+          href:      "https://www.w3.org/TR/shacl/",
+          publisher: "W3C"
+        },
+        "SKOS": {
+          title:     "SKOS Simple Knowledge Organization System Reference",
+          href:      "https://www.w3.org/TR/skos-reference/",
+          publisher: "W3C"
+        },
+        "RFC2119": {
+          title:     "Key words for use in RFCs to Indicate Requirement Levels",
+          href:      "https://www.ietf.org/rfc/rfc2119.txt",
+          publisher: "IETF"
+        }
+      }
+    };
+  </script>
+  <style>
+    .ont-term   { font-family: monospace; color: #005a9c; }
+    .ont-prefix { font-family: monospace; color: #707070; }
+    table.ont-table { border-collapse: collapse; width: 100%; }
+    table.ont-table th, table.ont-table td {
+      border: 1px solid #ccc; padding: 0.4em 0.7em; text-align: left;
+      vertical-align: top;
+    }
+    table.ont-table th { background: #f0f0f0; }
+    .disclaimer { background: #fff3cd; border-left: 4px solid #ffc107;
+      padding: 0.7em 1em; margin: 1em 0; }
+  </style>
+</head>
+<body>
+
+<h1>LDSO-Entities: Named Entity Reference Module</h1>
+
+<section id="abstract">
+  <p>
+    <strong>LDSO-Entities</strong> (v1.0.0) is a lightweight RDF/OWL vocabulary for
+    classifying and linking named real-world entities referenced within legal documents —
+    persons, organizations, locations, legal concepts, roles, events, and processes.
+    Entity types are expressed as <strong>SKOS concepts</strong> in a controlled vocabulary
+    (<code>ent:EntityTypeScheme</code>), not as OWL subclasses, enabling flat, open-ended,
+    multi-dimensional classification that domain verticals can extend without modifying this
+    ontology.
+  </p>
+  <p>
+    Document-level annotation (entity mentions, surface forms, character offsets, NER confidence)
+    is defined in <a data-cite="LDSO-ANNOTATIONS">LDSO-Annotations</a>.
+    Definitional content (what a concept <em>means</em>) belongs to
+    <a data-cite="LDSO-SEMANTICS">LDSO-Semantics</a>.
+  </p>
+  <p class="disclaimer">
+    This document is not an official W3C Standard or W3C Recommendation. It is a
+    community/project specification using W3C ReSpec formatting conventions.
+  </p>
+</section>
+
+<section id="sotd">
+  <p class="disclaimer">
+    This document is not an official W3C Standard or W3C Recommendation. It is a
+    community/project specification produced by Geoknoesis LLC using W3C ReSpec
+    formatting conventions.
+  </p>
+  <p>
+    This specification is part of the Legal Document Structure Ontology (LDSO) family.
+    Comments and contributions are welcome via the
+    <a href="https://github.com/geoknoesis/ldso/issues">GitHub issue tracker</a>.
+  </p>
+  <section id="version-iri">
+    <h3>Version IRI</h3>
+    <p>
+      The version IRI for this publication is
+      <code>https://w3id.org/ldso/entities/1.0.0</code>.
+      The canonical namespace IRI is <code>https://w3id.org/ldso/entities#</code>
+      (preferred prefix: <code>ent</code>). All LDSO-Entities terms carry a
+      <code>rdfs:isDefinedBy</code> assertion pointing to
+      <code>https://w3id.org/ldso/entities</code>.
+    </p>
+  </section>
+</section>
+
+<section id="introduction">
+  <h2>Introduction</h2>
+  <p>
+    Legal documents are rich in references to named real-world entities: the World Customs
+    Organization, a contracting party, a geographic territory, a legal concept such as
+    "temporary admission", or an administrative event such as "entry into force".
+    These entities are structural anchors — they appear repeatedly across provisions, across
+    documents, and across jurisdictions.
+  </p>
+  <p>
+    LDSO-Entities provides a thin but precisely typed catalogue layer. Its design
+    principles are:
+  </p>
+  <ol>
+    <li><strong>Single OWL class, open SKOS taxonomy.</strong> All entities are instances
+        of <code>ent:NamedEntity</code>. Entity type is expressed via
+        <code>ent:entityType</code> pointing to SKOS concepts, not via OWL subclasses.
+        This allows multi-dimensional classification (an entity is both an Organization
+        and a trade:IGO) and open-ended extension without subclassing.</li>
+    <li><strong>IRI-first identity.</strong> Every entity carries a canonical
+        <code>ent:href</code> URI pointing to an authoritative external register
+        (GeoNames, Wikidata, national registers) or a project-internal IRI scheme.</li>
+    <li><strong>Multilingual display.</strong> Every entity carries one or more
+        <code>ent:showAs</code> values, language-tagged, as the entity appears in the
+        source text.</li>
+    <li><strong>Layer separation.</strong> LDSO-Entities contains only the entity catalogue —
+        that the entity exists and what URI identifies it. Document annotation (linking elements
+        to entities) belongs to <a data-cite="LDSO-ANNOTATIONS">LDSO-Annotations</a>.
+        Definitional content belongs to <a data-cite="LDSO-SEMANTICS">LDSO-Semantics</a>.</li>
+  </ol>
+
+  <section id="conventions">
+    <h3>Conventions</h3>
+    <p>
+      The key words MUST, MUST NOT, REQUIRED, SHOULD, SHOULD NOT, RECOMMENDED, MAY,
+      and OPTIONAL in this document are to be interpreted as described in [[RFC2119]].
+    </p>
+    <p>The following namespace prefix bindings are used throughout:</p>
+    <table class="ont-table">
+      <thead><tr><th>Prefix</th><th>Namespace URI</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>ent:</code></td><td><code>https://w3id.org/ldso/entities#</code></td><td>LDSO-Entities terms</td></tr>
+        <tr><td><code>ann:</code></td><td><code>https://w3id.org/ldso/annotations#</code></td><td>LDSO-Annotations terms</td></tr>
+        <tr><td><code>ldso:</code></td><td><code>https://w3id.org/ldso/core#</code></td><td>LDSO-Core terms</td></tr>
+        <tr><td><code>skos:</code></td><td><code>http://www.w3.org/2004/02/skos/core#</code></td><td>SKOS vocabulary</td></tr>
+        <tr><td><code>dct:</code></td><td><code>http://purl.org/dc/terms/</code></td><td>DC Terms metadata</td></tr>
+        <tr><td><code>xsd:</code></td><td><code>http://www.w3.org/2001/XMLSchema#</code></td><td>XML Schema datatypes</td></tr>
+        <tr><td><code>owl:</code></td><td><code>http://www.w3.org/2002/07/owl#</code></td><td>OWL 2 vocabulary</td></tr>
+        <tr><td><code>sh:</code></td><td><code>http://www.w3.org/ns/shacl#</code></td><td>SHACL vocabulary</td></tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<section id="classes">
+  <h2>Classes</h2>
+
+  <section id="NamedEntity">
+    <h3><span class="ont-term">ent:NamedEntity</span></h3>
+    <table class="ont-table">
+      <tbody>
+        <tr><th>IRI</th><td><code>https://w3id.org/ldso/entities#NamedEntity</code></td></tr>
+        <tr><th>Label</th><td>Named Entity</td></tr>
+        <tr><th>Definition</th><td>A named, referenceable real-world entity that is mentioned or
+          invoked within a legal document — a person, organization, place, concept, role,
+          event, or process. Named entities are identified by a canonical URI
+          (<code>ent:href</code>) and carry a display form (<code>ent:showAs</code>) as
+          they appear in the source text.</td></tr>
+        <tr><th>Usage</th><td>Every instance MUST carry <code>ent:href</code>,
+          <code>ent:showAs</code>, and at least one <code>ent:entityType</code>
+          pointing to a concept from <code>ent:EntityTypeScheme</code>.
+          Do NOT use OWL subclasses to type entities — always use
+          <code>a ent:NamedEntity ; ent:entityType ent:Organization</code>
+          rather than <code>a ent:Organization</code>.</td></tr>
+        <tr><th>Entity types</th><td>Expressed via <code>ent:entityType</code> pointing to
+          SKOS concepts in <code>ent:EntityTypeScheme</code> — see below.</td></tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<section id="conformance">
+  <h2>Conformance</h2>
+  <p>
+    A conforming LDSO-Entities implementation MUST:
+  </p>
+  <ol>
+    <li>Type every entity catalogue node as <code>ent:NamedEntity</code>.</li>
+    <li>Express entity type classification via <code>ent:entityType</code> pointing to one
+        or more <code>skos:Concept</code> instances in <code>ent:EntityTypeScheme</code> or a
+        compatible extension scheme. OWL subclassing of <code>ent:NamedEntity</code> MUST NOT
+        be used to express entity type.</li>
+    <li>Assign each <code>ent:NamedEntity</code> at least one <code>ent:showAs</code>
+        value (language-tagged) and one <code>ent:href</code> value (absolute URI pointing
+        to an authoritative external register or project IRI).</li>
+    <li>Use only IRIs for entity identity — blank nodes MUST NOT be used as
+        <code>ent:NamedEntity</code> instances.</li>
+    <li>Pass all SHACL shapes defined in <code>shapes.ttl</code> without violations.</li>
+  </ol>
+  <p>
+    A conforming implementation SHOULD:
+  </p>
+  <ul>
+    <li>Link <code>ent:NamedEntity</code> IRIs to authoritative external registers
+        (Wikidata, GeoNames, national authority files) via <code>ent:href</code>.</li>
+    <li>Assign entity type concepts that are <code>skos:topConceptOf ent:EntityTypeScheme</code>
+        or <code>skos:narrower</code> descendants thereof.</li>
+  </ul>
+</section>
+
+<section id="entity-type-vocabulary">
+  <h2>Entity Type Vocabulary (SKOS)</h2>
+  <p>
+    <code>ent:EntityTypeScheme</code> is a [[SKOS]] <code>ConceptScheme</code> defining
+    seven top-level entity type concepts. Entity types are assigned via
+    <code>ent:entityType</code> on a <code>ent:NamedEntity</code> instance —
+    not by OWL subclassing. Multiple <code>ent:entityType</code> assertions are permitted
+    and expected for multi-dimensional classification.
+  </p>
+
+  <table class="ont-table">
+    <thead>
+      <tr><th>Concept IRI</th><th>Label</th><th>Definition</th><th>Examples</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ent:Person</code></td>
+        <td>Person</td>
+        <td>A named natural person referenced in a legal document.</td>
+        <td>Signatories, individual parties, authors</td>
+      </tr>
+      <tr>
+        <td><code>ent:Organization</code></td>
+        <td>Organization</td>
+        <td>A named legal person, governmental body, intergovernmental organization, or collective body.</td>
+        <td>Governments, international organizations, courts, standards bodies, treaty parties</td>
+      </tr>
+      <tr>
+        <td><code>ent:Location</code></td>
+        <td>Location</td>
+        <td>A named geographic or jurisdictional location referenced in a legal document.</td>
+        <td>Countries, territories, customs zones, ports, designated areas</td>
+      </tr>
+      <tr>
+        <td><code>ent:Concept</code></td>
+        <td>Concept</td>
+        <td>A named legal concept or term of art referenced in a legal document.</td>
+        <td>"originating goods", "temporary admission", "customs duty", "ATA carnet"</td>
+      </tr>
+      <tr>
+        <td><code>ent:Role</code></td>
+        <td>Role</td>
+        <td>A named legal or institutional role referenced in a legal document.</td>
+        <td>"customs officer", "competent authority", "importer of record"</td>
+      </tr>
+      <tr>
+        <td><code>ent:Event</code></td>
+        <td>Event</td>
+        <td>A named legal or historical event referenced in a legal document.</td>
+        <td>"entry into force", "ratification", "signing ceremony", "accession"</td>
+      </tr>
+      <tr>
+        <td><code>ent:Process</code></td>
+        <td>Process</td>
+        <td>A named legal or administrative process referenced in a legal document.</td>
+        <td>"customs clearance", "dispute settlement", "legislative procedure"</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    Domain verticals extend the vocabulary by declaring <code>skos:Concept</code> instances
+    with <code>skos:broader</code> pointing to one of these seven primaries — no subclassing required:
+  </p>
+  <pre class="example" title="Turtle — domain extension via SKOS">
+trade:CustomsAdministration
+  a skos:Concept ;
+  skos:broader ent:Organization ;
+  skos:inScheme trade:TradeEntityTypeScheme ;
+  rdfs:label "Customs Administration"@en .
+
+# Assign multi-dimensional type to an entity
+ex:canada_cbsa
+  a ent:NamedEntity ;
+  ent:entityType ent:Organization ;           # primary: from core scheme
+  ent:entityType trade:CustomsAdministration ; # secondary: from trade scheme
+  ent:href "https://www.cbsa-asfc.gc.ca"^^xsd:anyURI ;
+  ent:showAs "Canada Border Services Agency"@en ;
+  rdfs:label "Canada Border Services Agency"@en .</pre>
+</section>
+
+<section id="properties">
+  <h2>Properties</h2>
+
+  <section id="object-properties">
+    <h3>Object Properties</h3>
+
+    <section id="entityType">
+      <h4><span class="ont-term">ent:entityType</span></h4>
+      <table class="ont-table">
+        <tbody>
+          <tr><th>IRI</th><td><code>https://w3id.org/ldso/entities#entityType</code></td></tr>
+          <tr><th>Label</th><td>entity type</td></tr>
+          <tr><th>Definition</th><td>Classifies a NamedEntity along one or more dimensions using
+            SKOS concepts. At least one concept from <code>ent:EntityTypeScheme</code>
+            SHOULD be present to identify the primary category.</td></tr>
+          <tr><th>Range</th><td><code>skos:Concept</code></td></tr>
+          <tr><th>Usage</th><td>Multiple <code>ent:entityType</code> assertions are permitted
+            and expected for multi-dimensional classification. One assertion MUST reference
+            a top-level concept from <code>ent:EntityTypeScheme</code> (primary category);
+            additional assertions may reference narrower concepts from domain-specific
+            ConceptSchemes (secondary dimensions).</td></tr>
+        </tbody>
+      </table>
+      <pre class="example" title="Turtle — entity type assignment">
+ex:wco
+  a ent:NamedEntity ;
+  ent:entityType ent:Organization ;           # primary category (core scheme)
+  ent:entityType trade:IntergoverOrg .        # secondary category (trade scheme)</pre>
+    </section>
+  </section>
+
+  <section id="datatype-properties">
+    <h3>Datatype Properties</h3>
+    <table class="ont-table">
+      <thead>
+        <tr><th>Property</th><th>Label</th><th>Range</th><th>Cardinality</th><th>Definition</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ent:href</code></td>
+          <td>href</td>
+          <td><code>xsd:anyURI</code></td>
+          <td>exactly 1</td>
+          <td>The canonical URI identifying a named entity. Use a persistent, resolvable URI
+            from an authoritative register (GeoNames, Wikidata, national registers).</td>
+        </tr>
+        <tr>
+          <td><code>ent:showAs</code></td>
+          <td>show as</td>
+          <td><code>rdf:langString</code></td>
+          <td>at least 1</td>
+          <td>The human-readable display form of a named entity, as it appears in the source
+            legal text. Assert with a BCP 47 language tag. Multiple values for different
+            language versions are permitted.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<section id="annotation-layer">
+  <h2>Entity Annotation (LDSO-Annotations)</h2>
+  <p>
+    Linking document elements to named entities, and recording surface forms with character
+    offsets, is handled by the <a data-cite="LDSO-ANNOTATIONS">LDSO-Annotations module</a>,
+    not by LDSO-Entities. The two relevant patterns are:
+  </p>
+  <pre class="example" title="Turtle — coarse annotation (element refers to entity)">
+@prefix ann: &lt;https://w3id.org/ldso/annotations#&gt; .
+
+ex:art_5
+  ann:refersToEntity ex:temporary_admission ;
+  ann:refersToEntity ex:competent_authority .</pre>
+  <pre class="example" title="Turtle — fine-grained annotation (EntityMention)">
+ex:mention_1
+  a ann:EntityMention ;
+  ann:inElement ex:para_2 ;
+  ann:refersToEntity ex:wco ;
+  ann:surfaceForm "World Customs Organization"@en ;
+  ann:charStart 42 ;
+  ann:charEnd 68 ;
+  ann:nerConfidence "0.98"^^xsd:decimal .</pre>
+</section>
+
+<section id="shacl-shapes">
+  <h2>SHACL Shapes</h2>
+  <p>
+    Validation shapes are defined in
+    <a href="shapes.ttl"><code>shapes.ttl</code></a>.
+  </p>
+  <table class="ont-table">
+    <thead>
+      <tr><th>Shape</th><th>Target</th><th>Constraints</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ent:NamedEntityShape</code></td>
+        <td><code>ent:NamedEntity</code></td>
+        <td>
+          <code>sh:nodeKind sh:IRI</code>;<br>
+          <code>rdfs:label</code> minCount 1 (Warning);<br>
+          <code>ent:href</code> minCount 1, datatype <code>xsd:anyURI</code> (Violation);<br>
+          <code>ent:showAs</code> minCount 1, datatype <code>rdf:langString</code> (Violation);<br>
+          <code>ent:entityType</code> minCount 1, class <code>skos:Concept</code> (Violation)
+        </td>
+      </tr>
+      <tr>
+        <td><code>ent:EntityTypePrimaryCategoryShape</code></td>
+        <td><code>ent:NamedEntity</code> (SPARQL target)</td>
+        <td>SPARQL: at least one <code>ent:entityType</code> concept exists in
+          <code>ent:EntityTypeScheme</code> (primary category required)</td>
+      </tr>
+      <tr>
+        <td><code>ent:EntityTypeSinglePrimaryShape</code></td>
+        <td><code>ent:NamedEntity</code> (SPARQL target)</td>
+        <td>SPARQL: at most one top-level concept from <code>ent:EntityTypeScheme</code>
+          (prevents dual primary classification)</td>
+      </tr>
+      <tr>
+        <td><code>ent:ConceptShowAsShape</code></td>
+        <td>Entities with <code>ent:entityType ent:Concept</code> (SPARQLTarget)</td>
+        <td><code>ent:showAs</code> minCount 1, datatype <code>rdf:langString</code> (Violation)</td>
+      </tr>
+      <tr>
+        <td><code>ent:EntityTypeSchemeShape</code></td>
+        <td><code>ent:EntityTypeScheme</code> (targetNode)</td>
+        <td>Seven <code>skos:hasTopConcept</code> assertions: Person, Organization, Location,
+          Concept, Role, Event, Process</td>
+      </tr>
+      <tr>
+        <td><code>ent:EntityTypeConceptShape</code></td>
+        <td>Concepts in <code>ent:EntityTypeScheme</code> (SPARQLTarget)</td>
+        <td><code>skos:inScheme</code> required; <code>rdfs:label</code> required (Violation)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="usage-patterns">
+  <h2>Usage Patterns</h2>
+
+  <section id="entity-catalogue">
+    <h3>Shared Entity Catalogue</h3>
+    <p>
+      Named entities SHOULD be declared in a shared catalogue graph, separate from
+      individual document graphs. This allows the same entity node (e.g., the World
+      Customs Organization) to be referenced from multiple documents without duplication.
+      Always use <code>a ent:NamedEntity ; ent:entityType ent:Organization</code> —
+      never <code>a ent:Organization</code>.
+    </p>
+    <pre class="example" title="Turtle — entity catalogue (shared graph)">
+@prefix ent:  &lt;https://w3id.org/ldso/entities#&gt; .
+@prefix xsd:  &lt;http://www.w3.org/2001/XMLSchema#&gt; .
+@prefix ex:   &lt;https://example.org/ata/&gt; .
+
+ex:wco
+  a ent:NamedEntity ;
+  ent:entityType ent:Organization ;
+  ent:href "https://www.wcoomd.org"^^xsd:anyURI ;
+  ent:showAs "World Customs Organization"@en ;
+  ent:showAs "Organisation mondiale des douanes"@fr ;
+  rdfs:label "World Customs Organization"@en .
+
+ex:temporary_admission
+  a ent:NamedEntity ;
+  ent:entityType ent:Concept ;
+  ent:href "https://example.org/legal/concepts/temporary-admission"^^xsd:anyURI ;
+  ent:showAs "temporary admission"@en ;
+  ent:showAs "admission temporaire"@fr ;
+  rdfs:label "temporary admission"@en .
+
+ex:competent_authority
+  a ent:NamedEntity ;
+  ent:entityType ent:Role ;
+  ent:href "https://example.org/roles/competent-authority"^^xsd:anyURI ;
+  ent:showAs "competent authority"@en ;
+  ent:showAs "autorité compétente"@fr ;
+  rdfs:label "competent authority"@en .</pre>
+  </section>
+
+  <section id="jsonld-example">
+    <h3>JSON-LD Representation</h3>
+    <p>
+      A complete JSON-LD example is available at
+      <a href="examples/example.jsonld"><code>examples/example.jsonld</code></a>.
+    </p>
+    <pre class="example" title="JSON-LD — named entity declaration (v1.0.0 SKOS pattern)">
+{
+  "@context": {
+    "ent":        "https://w3id.org/ldso/entities#",
+    "skos":       "http://www.w3.org/2004/02/skos/core#",
+    "xsd":        "http://www.w3.org/2001/XMLSchema#",
+    "entityType": { "@id": "ent:entityType", "@type": "@id" },
+    "showAs":     { "@id": "ent:showAs", "@container": "@language" },
+    "href":       { "@id": "ent:href",   "@type": "xsd:anyURI" }
+  },
+  "@id": "https://example.org/ata/wco",
+  "@type": "ent:NamedEntity",
+  "entityType": "ent:Organization",
+  "href": "https://www.wcoomd.org",
+  "showAs": {
+    "en": "World Customs Organization",
+    "fr": "Organisation mondiale des douanes"
+  }
+}</pre>
+  </section>
+</section>
+
+<section id="competency-questions">
+  <h2>Competency Questions</h2>
+  <p>
+    The following questions define what LDSO-Entities is designed to answer.
+    Each is accompanied by a SPARQL query against a conformant dataset.
+  </p>
+
+  <section id="cq-e-01">
+    <h3>CQ-E-01 — Which named entities in the catalogue are Organizations?</h3>
+    <pre class="example" title="CQ-E-01">
+PREFIX ent:  &lt;https://w3id.org/ldso/entities#&gt;
+PREFIX skos: &lt;http://www.w3.org/2004/02/skos/core#&gt;
+
+SELECT ?entity ?showAs ?href WHERE {
+  ?entity a ent:NamedEntity ;
+          ent:entityType ?type ;
+          ent:showAs ?showAs ;
+          ent:href ?href .
+  { ?type skos:broader* ent:Organization }
+  FILTER(LANG(?showAs) = "en")
+}
+ORDER BY ?showAs</pre>
+  </section>
+
+  <section id="cq-e-02">
+    <h3>CQ-E-02 — What is the authoritative URI of a given named entity?</h3>
+    <pre class="example" title="CQ-E-02">
+PREFIX ent:  &lt;https://w3id.org/ldso/entities#&gt;
+
+SELECT ?href WHERE {
+  ?entity ent:showAs "World Customs Organization"@en ;
+          ent:href   ?href .
+}</pre>
+  </section>
+
+  <section id="cq-e-03">
+    <h3>CQ-E-03 — Which entities belong to more than one type category?</h3>
+    <pre class="example" title="CQ-E-03">
+PREFIX ent:  &lt;https://w3id.org/ldso/entities#&gt;
+PREFIX skos: &lt;http://www.w3.org/2004/02/skos/core#&gt;
+
+SELECT ?entity ?showAs (COUNT(DISTINCT ?type) AS ?typeCount) WHERE {
+  ?entity a ent:NamedEntity ;
+          ent:entityType ?type ;
+          ent:showAs ?showAs .
+  ?type skos:topConceptOf ent:EntityTypeScheme .
+  FILTER(LANG(?showAs) = "en")
+}
+GROUP BY ?entity ?showAs
+HAVING(?typeCount &gt; 1)
+ORDER BY DESC(?typeCount)</pre>
+  </section>
+
+  <section id="cq-e-04">
+    <h3>CQ-E-04 — What display forms are known for a given entity?</h3>
+    <pre class="example" title="CQ-E-04">
+PREFIX ent: &lt;https://w3id.org/ldso/entities#&gt;
+
+SELECT ?showAs (LANG(?showAs) AS ?language) WHERE {
+  &lt;https://example.org/entity/wco&gt; ent:showAs ?showAs .
+}
+ORDER BY ?language ?showAs</pre>
+  </section>
+
+  <section id="cq-e-05">
+    <h3>CQ-E-05 — Which provisions reference a given entity (via LDSO-Annotations)?</h3>
+    <pre class="example" title="CQ-E-05">
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+PREFIX ent:  &lt;https://w3id.org/ldso/entities#&gt;
+PREFIX ann:  &lt;https://w3id.org/ldso/annotations#&gt;
+
+SELECT DISTINCT ?element ?citation WHERE {
+  ?entity ent:showAs "World Customs Organization"@en .
+  ?element ann:refersToEntity ?entity ;
+           ldso:citation ?citation .
+}
+ORDER BY ?citation</pre>
+  </section>
+
+  <section id="cq-e-06">
+    <h3>CQ-E-06 — Which entities of a given type appear across a chapter?</h3>
+    <pre class="example" title="CQ-E-06">
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+PREFIX ent:  &lt;https://w3id.org/ldso/entities#&gt;
+PREFIX ann:  &lt;https://w3id.org/ldso/annotations#&gt;
+PREFIX skos: &lt;http://www.w3.org/2004/02/skos/core#&gt;
+
+SELECT DISTINCT ?entity ?typeConcept ?showAs WHERE {
+  ?chapter a ldso:Chapter ;
+           ldso:notation "2" ;
+           ldso:contains+ ?element .
+  ?element ann:refersToEntity ?entity .
+  ?entity  ent:entityType ?typeConcept ;
+           ent:showAs ?showAs .
+  ?typeConcept skos:inScheme ent:EntityTypeScheme .
+  FILTER(LANG(?showAs) = "en")
+}
+ORDER BY ?typeConcept ?showAs</pre>
+  </section>
+</section>
+
+<section id="alignment">
+  <h2>Alignment with Related Vocabularies</h2>
+  <table class="ont-table">
+    <thead>
+      <tr><th>LDSO-Entities</th><th>Related term</th><th>Vocabulary</th><th>Relationship</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ent:NamedEntity</code></td>
+        <td><code>foaf:Agent</code></td>
+        <td>FOAF</td>
+        <td>Broader — ent:NamedEntity covers non-agent entities (Location, Concept, Event)</td>
+      </tr>
+      <tr>
+        <td><code>ent:Organization</code> (SKOS)</td>
+        <td><code>org:Organization</code></td>
+        <td>W3C Org</td>
+        <td>Similar — ent:Organization covers IGOs not in scope of org:; expressed as SKOS concept, not OWL class</td>
+      </tr>
+      <tr>
+        <td><code>ent:Location</code> (SKOS)</td>
+        <td><code>schema:Place</code></td>
+        <td>Schema.org</td>
+        <td>Broader — <code>ent:Location</code> is restricted to jurisdictional contexts</td>
+      </tr>
+      <tr>
+        <td><code>ent:entityType</code></td>
+        <td><code>rdf:type</code></td>
+        <td>RDF</td>
+        <td>Functional substitute — replaces OWL subclassing to enable multi-dimensional typing</td>
+      </tr>
+      <tr>
+        <td><code>ent:href</code></td>
+        <td><code>schema:url</code></td>
+        <td>Schema.org</td>
+        <td>Functional equivalent with stricter <code>xsd:anyURI</code> typing</td>
+      </tr>
+      <tr>
+        <td><code>ent:showAs</code></td>
+        <td><code>skos:altLabel</code></td>
+        <td>SKOS</td>
+        <td>Specialization — <code>ent:showAs</code> carries the surface form as it appears in the source text, may differ from the canonical rdfs:label</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="ontology-metadata">
+  <h2>Ontology Metadata</h2>
+  <table class="ont-table">
+    <tbody>
+      <tr><th>Ontology IRI</th><td><code>https://w3id.org/ldso/entities</code></td></tr>
+      <tr><th>Version IRI</th><td><code>https://w3id.org/ldso/entities/1.0.0</code></td></tr>
+      <tr><th>Version</th><td>1.0.0</td></tr>
+      <tr><th>Preferred prefix</th><td><code>ent:</code></td></tr>
+      <tr><th>Namespace URI</th><td><code>https://w3id.org/ldso/entities#</code></td></tr>
+      <tr><th>Imports</th><td><code>https://w3id.org/ldso/core</code></td></tr>
+      <tr><th>Creator</th><td>Stephane Fellah</td></tr>
+      <tr><th>Publisher</th><td>Geoknoesis LLC</td></tr>
+      <tr><th>License</th><td><a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></td></tr>
+      <tr><th>Turtle</th><td><a href="ontology.ttl">ontology.ttl</a></td></tr>
+      <tr><th>SHACL Shapes</th><td><a href="shapes.ttl">shapes.ttl</a></td></tr>
+      <tr><th>Example (Turtle)</th><td><a href="examples/example.ttl">examples/example.ttl</a></td></tr>
+      <tr><th>Example (JSON-LD)</th><td><a href="examples/example.jsonld">examples/example.jsonld</a></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="references">
+  <h2>References</h2>
+  <section id="normative-references">
+    <h3>Normative References</h3>
+    <dl>
+      <dt>[[OWL2]]</dt><dd>OWL 2 Web Ontology Language Primer (Second Edition). W3C Recommendation.</dd>
+      <dt>[[SHACL]]</dt><dd>Shapes Constraint Language (SHACL). W3C Recommendation.</dd>
+      <dt>[[SKOS]]</dt><dd>SKOS Simple Knowledge Organization System Reference. W3C Recommendation.</dd>
+      <dt>[[RFC2119]]</dt><dd>Key words for use in RFCs to Indicate Requirement Levels. IETF.</dd>
+    </dl>
+  </section>
+  <section id="informative-references">
+    <h3>Informative References</h3>
+    <dl>
+      <dt>[[LDSO-CORE]]</dt><dd>LDSO-Core: Legal Document Structure Ontology.</dd>
+      <dt>[[LDSO-ANNOTATIONS]]</dt><dd>LDSO-Annotations: Document Annotation Module.</dd>
+      <dt>[[LDSO-SEMANTICS]]</dt><dd>LDSO-Semantics: Legal Semantic Annotation Ontology.</dd>
+    </dl>
+  </section>
+</section>
+
+<section id="changelog">
+  <h2>Changelog</h2>
+  <table class="ont-table">
+    <thead><tr><th>Version</th><th>Date</th><th>Changes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>1.0.0</td>
+        <td>2026-05-25</td>
+        <td>Initial publication. Single <code>ent:NamedEntity</code> OWL class with open
+          SKOS entity type vocabulary (<code>ent:EntityTypeScheme</code>) replacing a fixed
+          OWL subclass hierarchy. Seven top-level type concepts: Person, Organization,
+          Location, Concept, Role, Event, Process. Properties: <code>ent:entityType</code>,
+          <code>ent:showAs</code>, <code>ent:href</code>. Six SHACL validation shapes.
+          Fine-grained annotation (entity mentions, surface forms, offsets) moved to
+          <a data-cite="LDSO-ANNOTATIONS">LDSO-Annotations</a>.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,244 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+@prefix leg:  <https://w3id.org/ldso/semantics#> .
+@prefix ex:   <https://example.org/ata/> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Semantics Example: Agreement on Temporary Admission — Article 2.5
+#
+# Demonstrates:
+#   - leg:Obligation, leg:Discretion, leg:Definition, leg:Condition,
+#     leg:Exception, leg:Scope
+#   - leg:annotates linking annotations to ldso-core structural elements
+#   - leg:normativeSubject and leg:normativeObject
+#   - leg:conditionedBy / leg:conditionOf inverse pair
+#   - leg:exceptedBy / leg:exceptionOf inverse pair
+#   - leg:definesEntity linking a Definition to an ent:Concept
+#
+# Structural nodes (ex:art_5, ex:para_1 …) are abbreviated here;
+# see ldso-core/examples/example.ttl for the full structural graph.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NAMED ENTITY CATALOGUE (abbreviated from ldso-entities/examples/example.ttl)
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:contracting_party
+  a ent:Role ;
+  ent:href "https://example.org/roles/contracting-party"^^xsd:anyURI ;
+  ent:showAs "Contracting Party"@en ;
+  ent:showAs "Partie contractante"@fr .
+
+ex:applicant
+  a ent:Role ;
+  ent:href "https://example.org/roles/applicant"^^xsd:anyURI ;
+  ent:showAs "applicant"@en ;
+  ent:showAs "demandeur"@fr .
+
+ex:competent_authority
+  a ent:Role ;
+  ent:href "https://example.org/roles/competent-authority"^^xsd:anyURI ;
+  ent:showAs "competent authority"@en ;
+  ent:showAs "autorité compétente"@fr .
+
+ex:temporary_admission
+  a ent:Concept ;
+  ent:href "https://example.org/legal/concepts/temporary-admission"^^xsd:anyURI ;
+  ent:showAs "temporary admission"@en ;
+  ent:showAs "admission temporaire"@fr .
+
+ex:goods
+  a ent:Concept ;
+  ent:href "https://example.org/legal/concepts/goods"^^xsd:anyURI ;
+  ent:showAs "goods"@en ;
+  ent:showAs "marchandises"@fr .
+
+ex:ata_carnet
+  a ent:Concept ;
+  ent:href "https://example.org/legal/concepts/ata-carnet"^^xsd:anyURI ;
+  ent:showAs "ATA carnet"@en ;
+  ent:showAs "carnet ATA"@fr .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STRUCTURAL ELEMENT STUBS
+# (IRIs match ldso-core/examples/example.ttl)
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:art_1
+  a ldso:Article ;
+  ldso:notation "1" ;
+  ldso:citation "1" .
+
+ex:art_5
+  a ldso:Article ;
+  ldso:notation "5" ;
+  ldso:citation "2.5" .
+
+ex:para_1
+  a ldso:Paragraph ;
+  ldso:notation "1" ;
+  ldso:citation "2.5.1" .
+
+ex:para_2
+  a ldso:Paragraph ;
+  ldso:notation "2" ;
+  ldso:citation "2.5.2" .
+
+ex:para_3
+  a ldso:Paragraph ;
+  ldso:notation "3" ;
+  ldso:citation "2.5.3" .
+
+ex:item_a  a ldso:Item ; ldso:notation "a" ; ldso:citation "2.5.2.a" .
+ex:item_b  a ldso:Item ; ldso:notation "b" ; ldso:citation "2.5.2.b" .
+ex:item_c  a ldso:Item ; ldso:notation "c" ; ldso:citation "2.5.2.c" .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DEFINITION — Article 1 defines "temporary admission"
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Def_TemporaryAdmission
+  a leg:Definition ;
+  rdfs:label "Definition of temporary admission"@en ;
+  leg:annotates ex:art_1 ;
+  leg:definedTerm "temporary admission"@en ;
+  leg:definedTerm "admission temporaire"@fr ;
+  leg:definitionText """The customs procedure under which certain goods can be
+brought into a customs territory conditionally relieved from payment of
+import duties and taxes, provided such goods are imported for a specific
+purpose and are intended for re-exportation within a specified period
+without having undergone any change except normal depreciation due to the
+use made of them."""@en ;
+  leg:definesEntity ex:temporary_admission .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SCOPE — Article 2.5 applies to Contracting Parties importing goods
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Scope_Art2_5
+  a leg:Scope ;
+  rdfs:label "Scope of Article 2.5 — Admission Procedures"@en ;
+  leg:annotates ex:art_5 ;
+  leg:scopeText """Applies to each Contracting Party with respect to the temporary
+admission of goods into its customs territory."""@en ;
+  leg:scopeOf ex:Oblig_Para1_Admit ;
+  leg:scopeOf ex:Oblig_Para2_Present .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONDITION — goods must be intended for re-exportation
+# Shared across Obligation para_1 and Discretion para_3.
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Cond_ReExport
+  a leg:Condition ;
+  rdfs:label "Condition: goods intended for re-exportation"@en ;
+  leg:conditionText """The goods are intended for re-exportation within the period
+specified in Article 7 without having undergone any change except normal
+depreciation due to use."""@en ;
+  leg:statedIn ex:para_1 .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# OBLIGATION — Para 1: Contracting Party SHALL admit goods temporarily
+# (conditional on re-exportation intent)
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Oblig_Para1_Admit
+  a leg:Obligation ;
+  rdfs:label "Obligation: admit goods temporarily (para 1)"@en ;
+  leg:annotates ex:para_1 ;
+  leg:normativeSubject ex:contracting_party ;
+  leg:normativeObject ex:goods ;
+  leg:deonticModal "shall" ;
+  leg:normativeText """Goods shall be admitted temporarily into the customs territory of
+a Contracting Party without payment of import duties and taxes, provided that
+they are intended for re-exportation within the period specified in Article 7."""@en ;
+  leg:conditionedBy ex:Cond_ReExport ;
+  leg:hasScopeAnnotation ex:Scope_Art2_5 .
+
+# Condition inverse
+ex:Cond_ReExport leg:conditionOf ex:Oblig_Para1_Admit .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# OBLIGATION — Para 2: Applicant SHALL present a document
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Oblig_Para2_Present
+  a leg:Obligation ;
+  rdfs:label "Obligation: present admission document (para 2)"@en ;
+  leg:annotates ex:para_2 ;
+  leg:normativeSubject ex:applicant ;
+  leg:normativeObject ex:ata_carnet ;
+  leg:deonticModal "shall" ;
+  leg:normativeText """The applicant for temporary admission shall present to the competent
+authority one of the following documents: (a) an ATA carnet; (b) a national
+customs document; (c) a declaration in accordance with Article 6."""@en ;
+  leg:hasScopeAnnotation ex:Scope_Art2_5 .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# OBLIGATION (conditioned) — Para 3: Competent authority SHALL grant admission
+# if satisfied that conditions are met
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Cond_SatisfiedConditions
+  a leg:Condition ;
+  rdfs:label "Condition: authority satisfied that conditions are fulfilled"@en ;
+  leg:conditionText """The competent authority is satisfied that the conditions set out
+in paragraphs 1 and 2 are fulfilled."""@en ;
+  leg:statedIn ex:para_3 .
+
+ex:Oblig_Para3_Grant
+  a leg:Obligation ;
+  rdfs:label "Obligation: grant temporary admission (para 3)"@en ;
+  leg:annotates ex:para_3 ;
+  leg:normativeSubject ex:competent_authority ;
+  leg:normativeObject ex:temporary_admission ;
+  leg:deonticModal "shall" ;
+  leg:normativeText """Where the competent authority is satisfied that the conditions set
+out in paragraphs 1 and 2 are fulfilled, it shall grant temporary admission
+by endorsing the presented document and retaining a copy for its records."""@en ;
+  leg:conditionedBy ex:Cond_SatisfiedConditions .
+
+ex:Cond_SatisfiedConditions leg:conditionOf ex:Oblig_Para3_Grant .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DISCRETION — Competent authority MAY extend the admission period
+# (hypothetical para 4, illustrating leg:Discretion)
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Discr_ExtendPeriod
+  a leg:Discretion ;
+  rdfs:label "Discretion: extend temporary admission period"@en ;
+  leg:annotates ex:art_5 ;
+  leg:normativeSubject ex:competent_authority ;
+  leg:normativeObject ex:temporary_admission ;
+  leg:deonticModal "may" ;
+  leg:normativeText """The competent authority may extend the period of temporary
+admission beyond the period initially fixed."""@en .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EXCEPTION — Transit goods are excepted from document obligation
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:Exc_TransitGoods
+  a leg:Exception ;
+  rdfs:label "Exception: transit goods exempt from documentation requirement"@en ;
+  leg:annotates ex:para_2 ;
+  leg:exceptionOf ex:Oblig_Para2_Present ;
+  leg:exceptionText """Goods in transit through a customs territory under customs
+supervision are not subject to the presentation requirement of paragraph 2."""@en .
+
+# Inverse
+ex:Oblig_Para2_Present leg:exceptedBy ex:Exc_TransitGoods .

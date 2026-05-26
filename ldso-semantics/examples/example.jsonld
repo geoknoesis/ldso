@@ -1,0 +1,129 @@
+{
+  "@context": {
+    "rdf":       "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs":      "http://www.w3.org/2000/01/rdf-schema#",
+    "owl":       "http://www.w3.org/2002/07/owl#",
+    "xsd":       "http://www.w3.org/2001/XMLSchema#",
+    "dct":       "http://purl.org/dc/terms/",
+    "ldso":      "https://w3id.org/ldso/core#",
+    "ent":       "https://w3id.org/ldso/entities#",
+    "leg":       "https://w3id.org/ldso/semantics#",
+
+    "LegalAnnotation":    "leg:LegalAnnotation",
+    "NormativeStatement": "leg:NormativeStatement",
+    "Obligation":         "leg:Obligation",
+    "Permission":         "leg:Permission",
+    "Prohibition":        "leg:Prohibition",
+    "Right":              "leg:Right",
+    "Discretion":         "leg:Discretion",
+    "Definition":         "leg:Definition",
+    "Exception":          "leg:Exception",
+    "Exemption":          "leg:Exemption",
+    "Condition":          "leg:Condition",
+    "Scope":              "leg:Scope",
+
+    "annotates":          { "@id": "leg:annotates",          "@type": "@id" },
+    "normativeSubject":   { "@id": "leg:normativeSubject",   "@type": "@id" },
+    "normativeObject":    { "@id": "leg:normativeObject",    "@type": "@id" },
+    "conditionedBy":      { "@id": "leg:conditionedBy",      "@type": "@id" },
+    "conditionOf":        { "@id": "leg:conditionOf",        "@type": "@id", "@container": "@set" },
+    "exceptedBy":         { "@id": "leg:exceptedBy",         "@type": "@id", "@container": "@set" },
+    "exceptionOf":        { "@id": "leg:exceptionOf",        "@type": "@id" },
+    "scopeOf":            { "@id": "leg:scopeOf",            "@type": "@id", "@container": "@set" },
+    "hasScopeAnnotation": { "@id": "leg:hasScopeAnnotation", "@type": "@id" },
+    "statedIn":           { "@id": "leg:statedIn",           "@type": "@id" },
+    "correlatesTo":       { "@id": "leg:correlatesTo",       "@type": "@id" },
+    "definesEntity":      { "@id": "leg:definesEntity",      "@type": "@id" },
+
+    "deonticModal":       { "@id": "leg:deonticModal" },
+    "normativeText":      { "@id": "leg:normativeText",    "@container": "@language" },
+    "definedTerm":        { "@id": "leg:definedTerm",      "@container": "@language" },
+    "definitionText":     { "@id": "leg:definitionText",   "@container": "@language" },
+    "conditionText":      { "@id": "leg:conditionText",    "@container": "@language" },
+    "scopeText":          { "@id": "leg:scopeText",        "@container": "@language" },
+    "exceptionText":      { "@id": "leg:exceptionText",    "@container": "@language" },
+
+    "label":              { "@id": "rdfs:label",           "@container": "@language" },
+    "title":              { "@id": "dct:title",            "@container": "@language" }
+  },
+  "@graph": [
+    {
+      "@id": "https://example.org/ata/Def_TemporaryAdmission",
+      "@type": "Definition",
+      "label": { "en": "Definition of temporary admission" },
+      "annotates": "https://example.org/ata/art_1",
+      "definedTerm": {
+        "en": "temporary admission",
+        "fr": "admission temporaire"
+      },
+      "definitionText": {
+        "en": "The customs procedure under which certain goods can be brought into a customs territory conditionally relieved from payment of import duties and taxes, provided such goods are imported for a specific purpose and are intended for re-exportation within a specified period without having undergone any change except normal depreciation due to the use made of them."
+      },
+      "definesEntity": "https://example.org/ata/temporary_admission"
+    },
+    {
+      "@id": "https://example.org/ata/Cond_ReExport",
+      "@type": "Condition",
+      "label": { "en": "Condition: goods intended for re-exportation" },
+      "conditionText": {
+        "en": "The goods are intended for re-exportation within the period specified in Article 7 without having undergone any change except normal depreciation due to use."
+      },
+      "statedIn": "https://example.org/ata/para_1",
+      "conditionOf": ["https://example.org/ata/Oblig_Para1_Admit"]
+    },
+    {
+      "@id": "https://example.org/ata/Oblig_Para1_Admit",
+      "@type": "Obligation",
+      "label": { "en": "Obligation: admit goods temporarily (para 1)" },
+      "annotates": "https://example.org/ata/para_1",
+      "normativeSubject": "https://example.org/ata/contracting_party",
+      "normativeObject": "https://example.org/ata/goods",
+      "deonticModal": "shall",
+      "normativeText": {
+        "en": "Goods shall be admitted temporarily into the customs territory of a Contracting Party without payment of import duties and taxes, provided that they are intended for re-exportation within the period specified in Article 7."
+      },
+      "conditionedBy": "https://example.org/ata/Cond_ReExport",
+      "hasScopeAnnotation": "https://example.org/ata/Scope_Art2_5"
+    },
+    {
+      "@id": "https://example.org/ata/Oblig_Para2_Present",
+      "@type": "Obligation",
+      "label": { "en": "Obligation: present admission document (para 2)" },
+      "annotates": "https://example.org/ata/para_2",
+      "normativeSubject": "https://example.org/ata/applicant",
+      "normativeObject": "https://example.org/ata/ata_carnet",
+      "deonticModal": "shall",
+      "exceptedBy": ["https://example.org/ata/Exc_TransitGoods"],
+      "hasScopeAnnotation": "https://example.org/ata/Scope_Art2_5"
+    },
+    {
+      "@id": "https://example.org/ata/Exc_TransitGoods",
+      "@type": "Exception",
+      "label": { "en": "Exception: transit goods exempt from documentation requirement" },
+      "annotates": "https://example.org/ata/para_2",
+      "exceptionOf": "https://example.org/ata/Oblig_Para2_Present",
+      "exceptionText": {
+        "en": "Goods in transit through a customs territory under customs supervision are not subject to the presentation requirement of paragraph 2."
+      }
+    },
+    {
+      "@id": "https://example.org/ata/Oblig_Para3_Grant",
+      "@type": "Obligation",
+      "label": { "en": "Obligation: grant temporary admission (para 3)" },
+      "annotates": "https://example.org/ata/para_3",
+      "normativeSubject": "https://example.org/ata/competent_authority",
+      "normativeObject": "https://example.org/ata/temporary_admission",
+      "deonticModal": "shall",
+      "conditionedBy": "https://example.org/ata/Cond_SatisfiedConditions"
+    },
+    {
+      "@id": "https://example.org/ata/Scope_Art2_5",
+      "@type": "Scope",
+      "label": { "en": "Scope of Article 2.5 — Admission Procedures" },
+      "annotates": "https://example.org/ata/art_5",
+      "scopeText": {
+        "en": "Applies to each Contracting Party with respect to the temporary admission of goods into its customs territory."
+      }
+    }
+  ]
+}

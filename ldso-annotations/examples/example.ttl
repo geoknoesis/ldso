@@ -1,0 +1,238 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+@prefix ann:  <https://w3id.org/ldso/annotations#> .
+@prefix ex:   <https://example.org/ata/> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Annotations Example: Agreement on Temporary Admission — Article 5
+#
+# Demonstrates both annotation granularities side by side:
+#
+#   Coarse — ann:refersToEntity on document elements (human-curated index)
+#   Fine   — ann:EntityMention nodes (NLP pipeline output) linked via ann:hasMention
+#
+# The canonical entity catalogue is imported from ldso-entities/examples/example.ttl.
+# Only annotation triples are added here.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CANONICAL ENTITY CATALOGUE (from ldso-entities — shown inline for clarity)
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:wco
+  a ent:NamedEntity ;
+  ent:entityType ent:Organization ;
+  ent:href "https://www.wcoomd.org"^^xsd:anyURI ;
+  ent:showAs "World Customs Organization"@en ;
+  rdfs:label "World Customs Organization"@en .
+
+ex:temporary_admission
+  a ent:NamedEntity ;
+  ent:entityType ent:Concept ;
+  ent:href "https://example.org/legal/concepts/temporary-admission"^^xsd:anyURI ;
+  ent:showAs "temporary admission"@en ;
+  rdfs:label "temporary admission"@en .
+
+ex:competent_authority
+  a ent:NamedEntity ;
+  ent:entityType ent:Role ;
+  ent:href "https://example.org/roles/competent-authority"^^xsd:anyURI ;
+  ent:showAs "competent authority"@en ;
+  rdfs:label "competent authority"@en .
+
+ex:customs_territory
+  a ent:NamedEntity ;
+  ent:entityType ent:Location ;
+  ent:href "https://example.org/locations/customs-territory"^^xsd:anyURI ;
+  ent:showAs "customs territory"@en ;
+  rdfs:label "customs territory"@en .
+
+ex:ata_carnet
+  a ent:NamedEntity ;
+  ent:entityType ent:Concept ;
+  ent:href "https://example.org/legal/concepts/ata-carnet"^^xsd:anyURI ;
+  ent:showAs "ATA carnet"@en ;
+  rdfs:label "ATA carnet"@en .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FINE-GRAINED ANNOTATIONS — ann:EntityMention (NLP pipeline output)
+# One node per occurrence. surfaceForm records what the parser saw.
+# startChar/endChar are offsets into the ldso:text of ann:inElement.
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:m_tempAdm_p1
+  a ann:EntityMention ;
+  ann:mentionOf   ex:temporary_admission ;
+  ann:inElement   ex:para_1 ;
+  ann:surfaceForm "admitted temporarily"@en ;
+  ann:startChar   17 ;
+  ann:endChar     36 ;
+  ann:confidence  0.91 .
+
+ex:m_custTerritory_p1
+  a ann:EntityMention ;
+  ann:mentionOf   ex:customs_territory ;
+  ann:inElement   ex:para_1 ;
+  ann:surfaceForm "customs territory"@en ;
+  ann:startChar   44 ;
+  ann:endChar     61 ;
+  ann:confidence  0.97 .
+
+ex:m_tempAdm_p2
+  a ann:EntityMention ;
+  ann:mentionOf   ex:temporary_admission ;
+  ann:inElement   ex:para_2 ;
+  ann:surfaceForm "temporary admission"@en ;
+  ann:startChar   23 ;
+  ann:endChar     42 ;
+  ann:confidence  0.99 .
+
+ex:m_compAuth_p2
+  a ann:EntityMention ;
+  ann:mentionOf   ex:competent_authority ;
+  ann:inElement   ex:para_2 ;
+  ann:surfaceForm "competent authority"@en ;
+  ann:startChar   62 ;
+  ann:endChar     81 ;
+  ann:confidence  0.96 .
+
+ex:m_compAuth_p3
+  a ann:EntityMention ;
+  ann:mentionOf   ex:competent_authority ;
+  ann:inElement   ex:para_3 ;
+  ann:surfaceForm "competent authority"@en ;
+  ann:startChar   6 ;
+  ann:endChar     25 ;
+  ann:confidence  0.97 .
+
+ex:m_ataCarnet_ia
+  a ann:EntityMention ;
+  ann:mentionOf   ex:ata_carnet ;
+  ann:inElement   ex:item_a ;
+  ann:surfaceForm "ATA carnet"@en ;
+  ann:startChar   3 ;
+  ann:endChar     13 ;
+  ann:confidence  0.99 .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DOCUMENT STRUCTURE (abbreviated — see ldso-core/examples for full structure)
+# Elements carry both fine-grained (ann:hasMention) and coarse (ann:refersToEntity)
+# annotations. The coarse annotations double as an index for lightweight querying.
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:resource_ata
+  a ldso:LegalResource ;
+  dct:title "Agreement on Temporary Admission of Goods"@en ;
+  ldso:hasExpression ex:doc_ata_en .
+
+ex:doc_ata_en
+  a ldso:Document ;
+  dct:title "Agreement on Temporary Admission of Goods"@en ;
+  dct:language "en" ;
+  dct:issued "2026-01-15"^^xsd:date ;
+  ldso:expressionOf ex:resource_ata ;
+  ldso:contains ex:body_ata .
+
+ex:body_ata
+  a ldso:Body ;
+  ldso:partOf ex:doc_ata_en ;
+  ldso:contains ex:chp_2 .
+
+ex:chp_2
+  a ldso:Chapter ;
+  ldso:notation "2" ;
+  dct:title "Conditions of Temporary Admission"@en ;
+  ldso:partOf ex:body_ata ;
+  ldso:orderIndex 2 ;
+  ldso:contains ex:art_5 .
+
+ex:art_5
+  a ldso:Article ;
+  ldso:notation "5" ;
+  ldso:citation "2.5" ;
+  dct:title "Admission Procedures"@en ;
+  ldso:partOf ex:chp_2 ;
+  ldso:orderIndex 5 ;
+  ann:refersToEntity ex:temporary_admission, ex:competent_authority ;
+  ldso:contains ex:para_1, ex:para_2, ex:para_3 .
+
+ex:para_1
+  a ldso:Paragraph ;
+  ldso:notation "1" ;
+  ldso:citation "2.5.1" ;
+  ldso:orderIndex 1 ;
+  ldso:text """Goods shall be admitted temporarily into the customs territory of
+a Contracting Party without payment of import duties and taxes, provided that
+they are intended for re-exportation within the period specified in Article 7."""@en ;
+  ldso:partOf ex:art_5 ;
+  ann:refersToEntity ex:temporary_admission, ex:customs_territory ;
+  ann:hasMention ex:m_tempAdm_p1, ex:m_custTerritory_p1 ;
+  ldso:next ex:para_2 .
+
+ex:para_2
+  a ldso:Paragraph ;
+  ldso:notation "2" ;
+  ldso:citation "2.5.2" ;
+  ldso:orderIndex 2 ;
+  ldso:text "The applicant for temporary admission shall present to the competent authority one of the following documents:"@en ;
+  ldso:partOf ex:art_5 ;
+  ann:refersToEntity ex:temporary_admission, ex:competent_authority ;
+  ann:hasMention ex:m_tempAdm_p2, ex:m_compAuth_p2 ;
+  ldso:previous ex:para_1 ;
+  ldso:next ex:para_3 ;
+  ldso:contains ex:list_1 .
+
+ex:para_3
+  a ldso:Paragraph ;
+  ldso:notation "3" ;
+  ldso:citation "2.5.3" ;
+  ldso:orderIndex 3 ;
+  ldso:text """Where the competent authority is satisfied that the conditions
+set out in paragraphs 1 and 2 are fulfilled, it shall grant temporary admission
+by endorsing the presented document and retaining a copy for its records."""@en ;
+  ldso:partOf ex:art_5 ;
+  ann:refersToEntity ex:competent_authority ;
+  ann:hasMention ex:m_compAuth_p3 ;
+  ldso:previous ex:para_2 .
+
+ex:list_1
+  a ldso:BlockList ;
+  ldso:partOf ex:para_2 ;
+  ldso:contains ex:item_a, ex:item_b, ex:item_c .
+
+ex:item_a
+  a ldso:Item ;
+  ldso:notation "a" ;
+  ldso:citation "2.5.2.a" ;
+  ldso:orderIndex 1 ;
+  ldso:text "an ATA carnet issued under the terms of this Agreement;"@en ;
+  ldso:partOf ex:list_1 ;
+  ann:refersToEntity ex:ata_carnet ;
+  ann:hasMention ex:m_ataCarnet_ia ;
+  ldso:next ex:item_b .
+
+ex:item_b
+  a ldso:Item ;
+  ldso:notation "b" ;
+  ldso:citation "2.5.2.b" ;
+  ldso:orderIndex 2 ;
+  ldso:text "a national customs document accepted by the competent authority;"@en ;
+  ldso:partOf ex:list_1 ;
+  ldso:previous ex:item_a ;
+  ldso:next ex:item_c .
+
+ex:item_c
+  a ldso:Item ;
+  ldso:notation "c" ;
+  ldso:citation "2.5.2.c" ;
+  ldso:orderIndex 3 ;
+  ldso:text "a declaration accepted in accordance with Article 6."@en ;
+  ldso:partOf ex:list_1 ;
+  ldso:previous ex:item_b .

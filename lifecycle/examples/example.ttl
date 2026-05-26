@@ -1,0 +1,328 @@
+# =============================================================================
+# LDSO-Lifecycle Example Data
+# Scenario A: USMCA Article 2.5 Amendment Protocol (2028)
+# Scenario B: Temporary Admission Insurance Policy Endorsement
+# Scenario C: Treaty Repeal Protocol
+#
+# All IRIs use the example namespace ex: <https://w3id.org/ldso/lifecycle/example#>
+# =============================================================================
+
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix life: <https://w3id.org/ldso/lifecycle#> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ex:   <https://w3id.org/ldso/lifecycle/example#> .
+
+
+# =============================================================================
+# SCENARIO A — USMCA Article 2.5, Paragraph 3 Amendment
+#
+# Timeline:
+#   2020-07-01  USMCA enters into force (original text)
+#   2028-01-15  Amendment Protocol signed
+#   2028-03-01  Amendment Protocol enters into force;
+#               Art. 2.5 Para. 3 v1 expires; Art. 2.5 Para. 3 v2 becomes effective
+# =============================================================================
+
+# --- Legal Instruments ---
+
+ex:USMCA_Original
+    a ldso:Document, life:VersionedResource ;
+    rdfs:label "United States–Mexico–Canada Agreement (Original, 2020)"@en ;
+    dct:title "United States–Mexico–Canada Agreement (Original, 2020)"@en ;
+    dct:language "en" ;
+    dct:issued "2020-07-01"^^xsd:date ;
+    life:effectiveFrom "2020-07-01"^^xsd:date ;
+    life:stateLabel "Effective" ;
+    life:effectiveFromEvent ex:EIF_USMCA_2020 .
+
+ex:USMCA_AmendmentProtocol_2028
+    a ldso:Document, life:VersionedResource ;
+    rdfs:label "USMCA Amendment Protocol 2028"@en ;
+    dct:title "USMCA Amendment Protocol 2028"@en ;
+    dct:language "en" ;
+    dct:issued "2028-01-15"^^xsd:date ;
+    life:amends ex:USMCA_Original ;
+    life:effectiveFrom "2028-03-01"^^xsd:date ;
+    life:stateLabel "Effective" ;
+    life:effectiveFromEvent ex:EIF_Amendment_2028 .
+
+
+# --- Lifecycle Events: Original USMCA ---
+
+ex:EIF_USMCA_2020
+    a life:EntryIntoForce ;
+    rdfs:label "USMCA Entry into Force — 2020-07-01"@en ;
+    life:eventDate "2020-07-01"^^xsd:date ;
+    life:affects ex:USMCA_Original ;
+    life:changeDescription "USMCA enters into force upon completion of domestic ratification by all three parties."@en .
+
+
+# --- Document Structure ---
+
+ex:USMCA_Chapter2
+    a ldso:Chapter ;
+    rdfs:label "USMCA Chapter 2 — National Treatment and Market Access for Goods"@en ;
+    ldso:partOf ex:USMCA_Original .
+
+ex:USMCA_Art2_5
+    a ldso:Article, life:VersionedResource ;
+    rdfs:label "USMCA Article 2.5 — Tariff Elimination"@en ;
+    ldso:partOf ex:USMCA_Chapter2 .
+
+
+# --- Original Provision: Art. 2.5, Para. 3 (Version 1) ---
+
+ex:USMCA_Art2_5_Para3_v1
+    a life:VersionedProvision ;
+    rdfs:label "USMCA Art. 2.5, Para. 3 — Original Tariff Schedule (v1)"@en ;
+    dct:description """Original tariff elimination schedule for automotive parts under
+Annex 2-B, providing for staged reduction over ten years from entry into
+force."""@en ;
+    ldso:partOf ex:USMCA_Art2_5 ;
+    life:effectiveFrom "2020-07-01"^^xsd:date ;
+    life:effectiveTo   "2028-02-28"^^xsd:date ;
+    life:versionNumber "1" ;
+    life:stateLabel "Deprecated" ;
+    prov:wasDerivedFrom ex:USMCA_Original .
+
+
+# --- Amendment Instruction ---
+
+ex:Instr_2028_Art2_5_Para3
+    a life:AmendmentInstruction ;
+    rdfs:label "Amendment Instruction 2028 — Art. 2.5, Para. 3"@en ;
+    life:modifies ex:USMCA_Art2_5_Para3_v1 ;
+    life:modificationDate "2028-01-15"^^xsd:date ;
+    life:changeDescription """Article 2.5, paragraph 3 is hereby replaced in its entirety with
+a revised tariff reduction schedule reflecting accelerated elimination for
+steel and aluminium products, effective 1 March 2028."""@en ;
+    dct:source ex:USMCA_AmendmentProtocol_2028 ;
+    prov:wasAttributedTo ex:USMCA_AmendmentProtocol_2028 .
+
+
+# --- Legal Effect: Substitution ---
+
+ex:Sub_2028_Art2_5_Para3
+    a life:Substitution, life:EffectiveModification ;
+    rdfs:label "Substitution — Art. 2.5 Para. 3 (2028 Amendment Protocol)"@en ;
+    life:derivedFromInstruction ex:Instr_2028_Art2_5_Para3 ;
+    life:replaces ex:USMCA_Art2_5_Para3_v1 ;
+    life:createsVersion ex:USMCA_Art2_5_Para3_v2 ;
+    life:eventDate "2028-03-01"^^xsd:date ;
+    life:changeDescription "Substitution effective 2028-03-01 per USMCA Amendment Protocol 2028, Art. 4(1)."@en ;
+    prov:wasGeneratedBy ex:EIF_Amendment_2028 .
+
+
+# --- Replaced Provision: Art. 2.5, Para. 3 (Version 2) ---
+
+ex:USMCA_Art2_5_Para3_v2
+    a life:VersionedProvision ;
+    rdfs:label "USMCA Art. 2.5, Para. 3 — Revised Tariff Schedule (v2)"@en ;
+    dct:description """Revised tariff elimination schedule providing for accelerated
+phase-out of tariffs on steel and aluminium products. Tariffs on goods
+classified under HS Chapters 72 and 76 are eliminated in full by 2030."""@en ;
+    ldso:partOf ex:USMCA_Art2_5 ;
+    life:effectiveFrom "2028-03-01"^^xsd:date ;
+    life:versionNumber "2" ;
+    life:stateLabel "Effective" ;
+    life:supersedes     ex:USMCA_Art2_5_Para3_v1 ;
+    life:previousVersion ex:USMCA_Art2_5_Para3_v1 ;
+    prov:wasDerivedFrom ex:Sub_2028_Art2_5_Para3 .
+
+# Inverse: v1 is superseded by v2
+ex:USMCA_Art2_5_Para3_v1 life:supersededBy ex:USMCA_Art2_5_Para3_v2 ;
+    life:nextVersion ex:USMCA_Art2_5_Para3_v2 .
+
+
+# --- Lifecycle Events: Amendment Protocol ---
+
+ex:EIF_Amendment_2028
+    a life:EntryIntoForce ;
+    rdfs:label "USMCA Amendment Protocol 2028 — Entry into Force"@en ;
+    life:eventDate "2028-03-01"^^xsd:date ;
+    life:affects ex:USMCA_AmendmentProtocol_2028 ;
+    life:affects ex:USMCA_Art2_5_Para3_v2 .
+
+
+# --- Legal State Transitions ---
+
+ex:Transition_Para3_v1_Deprecated
+    a life:LegalStateTransition ;
+    rdfs:label "Art. 2.5 Para. 3 v1 — Effective → Deprecated"@en ;
+    life:transitionsFrom life:StateEffective ;
+    life:transitionsTo   life:StateDeprecated ;
+    life:eventDate "2028-03-01"^^xsd:date ;
+    life:affects ex:USMCA_Art2_5_Para3_v1 .
+
+ex:Transition_Para3_v2_Effective
+    a life:LegalStateTransition ;
+    rdfs:label "Art. 2.5 Para. 3 v2 — Pending → Effective"@en ;
+    life:transitionsFrom life:StatePending ;
+    life:transitionsTo   life:StateEffective ;
+    life:eventDate "2028-03-01"^^xsd:date ;
+    life:affects ex:USMCA_Art2_5_Para3_v2 .
+
+
+# --- Consolidation ---
+
+ex:Consolidated_USMCA_2028
+    a life:Consolidation ;
+    rdfs:label "USMCA Consolidated Text (as of 2028-03-01)"@en ;
+    life:consolidates ex:USMCA_Original ;
+    life:consolidates ex:USMCA_AmendmentProtocol_2028 ;
+    life:consolidationDate "2028-03-01"^^xsd:date ;
+    life:changeDescription """Consolidated text of USMCA incorporating the original agreement
+and all amendments in force as of 2028-03-01."""@en .
+
+ex:Consolidated_Art2_5_Para3
+    a life:ConsolidatedProvision ;
+    rdfs:label "USMCA Art. 2.5 Para. 3 — Consolidated (2028-03-01)"@en ;
+    dct:description """Consolidated version of Art. 2.5 Para. 3 as in force from
+2028-03-01, integrating the 2028 Amendment Protocol changes."""@en ;
+    life:derivedFromConsolidation ex:Consolidated_USMCA_2028 ;
+    life:derivedFromProvision ex:USMCA_Art2_5_Para3_v1 ;
+    life:derivedFromProvision ex:USMCA_Art2_5_Para3_v2 ;
+    life:effectiveFrom "2028-03-01"^^xsd:date ;
+    life:versionNumber "consolidated-2028-03-01" ;
+    life:stateLabel "Consolidated" .
+
+
+# =============================================================================
+# SCENARIO B — Temporary Admission Insurance Policy Endorsement
+#
+# Timeline:
+#   2023-01-01  Policy Section 4 enters into force
+#   2024-12-31  Section 4 expires (sunset clause)
+#   2024-11-01  Endorsement signed extending Section 4 for 2 years
+#   2025-01-01  Extended Section 4 enters into force
+# =============================================================================
+
+ex:InsurancePolicy_TA_2023
+    a ldso:Document, life:VersionedResource ;
+    rdfs:label "Temporary Admission Insurance Policy — Auto Parts (2023)"@en ;
+    dct:title "Temporary Admission Insurance Policy — Auto Parts (2023)"@en ;
+    dct:language "en" ;
+    life:effectiveFrom "2023-01-01"^^xsd:date ;
+    life:stateLabel "Effective" .
+
+ex:Policy_TA_Section4_v1
+    a life:VersionedProvision ;
+    rdfs:label "TA Insurance Policy — Section 4 — Premium Schedule (v1)"@en ;
+    dct:description "Premium schedule for temporary admission bonds on automotive parts, valid 2023–2024."@en ;
+    ldso:partOf ex:InsurancePolicy_TA_2023 ;
+    life:effectiveFrom "2023-01-01"^^xsd:date ;
+    life:effectiveTo   "2024-12-31"^^xsd:date ;
+    life:versionNumber "1" ;
+    life:stateLabel "Expired" .
+
+ex:PolicyExpiry_Section4_2024
+    a life:Expiration ;
+    rdfs:label "TA Insurance Policy Section 4 — Natural Expiry 2024-12-31"@en ;
+    life:eventDate "2024-12-31"^^xsd:date ;
+    life:affects ex:Policy_TA_Section4_v1 .
+
+ex:Endorsement_2024_Section4_Extension
+    a life:AmendmentInstruction ;
+    rdfs:label "2024 Endorsement — Section 4 Two-Year Extension"@en ;
+    life:modifies ex:Policy_TA_Section4_v1 ;
+    life:modificationDate "2024-11-01"^^xsd:date ;
+    life:eventDate "2024-11-01"^^xsd:date ;
+    life:changeDescription """Section 4 of the Temporary Admission Insurance Policy is extended
+for an additional two-year period (2025-01-01 to 2026-12-31) with a revised
+premium schedule reflecting updated risk assessments."""@en ;
+    dct:source ex:InsurancePolicy_TA_Endorsement_2024 .
+
+ex:InsurancePolicy_TA_Endorsement_2024
+    a ldso:Document ;
+    rdfs:label "Endorsement to TA Insurance Policy (November 2024)"@en ;
+    dct:title "Endorsement to TA Insurance Policy (November 2024)"@en ;
+    dct:language "en" ;
+    life:amends ex:InsurancePolicy_TA_2023 ;
+    life:effectiveFrom "2025-01-01"^^xsd:date .
+
+ex:Ins_2025_Section4_v2
+    a life:Insertion ;
+    rdfs:label "Insertion — Renewed Section 4 (2025 Endorsement)"@en ;
+    life:derivedFromInstruction ex:Endorsement_2024_Section4_Extension ;
+    life:inserts ex:Policy_TA_Section4_v2 ;
+    life:eventDate "2025-01-01"^^xsd:date .
+
+ex:Policy_TA_Section4_v2
+    a life:VersionedProvision ;
+    rdfs:label "TA Insurance Policy — Section 4 — Premium Schedule (v2, Extended)"@en ;
+    dct:description "Revised premium schedule for temporary admission bonds, valid 2025–2026."@en ;
+    ldso:partOf ex:InsurancePolicy_TA_2023 ;
+    life:effectiveFrom "2025-01-01"^^xsd:date ;
+    life:effectiveTo   "2026-12-31"^^xsd:date ;
+    life:versionNumber "2" ;
+    life:stateLabel "Effective" ;
+    life:supersedes     ex:Policy_TA_Section4_v1 ;
+    life:previousVersion ex:Policy_TA_Section4_v1 ;
+    prov:wasDerivedFrom ex:Ins_2025_Section4_v2 .
+
+
+# =============================================================================
+# SCENARIO C — Treaty Partial Repeal Protocol
+#
+# Timeline:
+#   2015-01-01  Bilateral Investment Treaty (BIT) enters into force
+#   2026-06-01  Termination Protocol — Article 12 repealed
+# =============================================================================
+
+ex:BIT_2015
+    a ldso:Document, life:VersionedResource ;
+    rdfs:label "Bilateral Investment Treaty 2015 (BIT-2015)"@en ;
+    dct:title "Bilateral Investment Treaty 2015"@en ;
+    dct:language "en" ;
+    life:effectiveFrom "2015-01-01"^^xsd:date ;
+    life:stateLabel "Effective" .
+
+ex:BIT_Art12_v1
+    a life:VersionedProvision, life:DeprecatedProvision ;
+    rdfs:label "BIT-2015 Article 12 — Investor–State Dispute Settlement (v1)"@en ;
+    ldso:partOf ex:BIT_2015 ;
+    life:effectiveFrom "2015-01-01"^^xsd:date ;
+    life:effectiveTo   "2026-05-31"^^xsd:date ;
+    life:versionNumber "1" ;
+    life:stateLabel "Deprecated" .
+
+ex:Instr_Repeal_BIT_Art12
+    a life:AmendmentInstruction ;
+    rdfs:label "Repeal Instruction — BIT-2015 Article 12"@en ;
+    life:modifies ex:BIT_Art12_v1 ;
+    life:modificationDate "2025-12-01"^^xsd:date ;
+    life:eventDate "2025-12-01"^^xsd:date ;
+    life:changeDescription """Article 12 of the Bilateral Investment Treaty 2015 is hereby
+repealed with effect from 1 June 2026. Pending arbitrations commenced before
+that date continue to be governed by Article 12 until their conclusion."""@en ;
+    dct:source ex:BIT_TerminationProtocol_2025 .
+
+ex:BIT_TerminationProtocol_2025
+    a ldso:Document ;
+    rdfs:label "BIT-2015 Termination Protocol (2025)"@en ;
+    dct:title "BIT-2015 Termination Protocol (2025)"@en ;
+    dct:language "en" ;
+    life:amends ex:BIT_2015 ;
+    life:effectiveFrom "2026-06-01"^^xsd:date .
+
+ex:Repeal_BIT_Art12
+    a life:Repeal, life:EffectiveModification ;
+    rdfs:label "Repeal — BIT-2015 Article 12 (effective 2026-06-01)"@en ;
+    life:derivedFromInstruction ex:Instr_Repeal_BIT_Art12 ;
+    life:repeals ex:BIT_Art12_v1 ;
+    life:eventDate "2026-06-01"^^xsd:date ;
+    life:changeDescription "Express repeal of ISDS provision per Termination Protocol 2025."@en .
+
+ex:Transition_BIT_Art12_Repealed
+    a life:LegalStateTransition ;
+    rdfs:label "BIT Art. 12 v1 — Effective → Repealed"@en ;
+    life:transitionsFrom life:StateEffective ;
+    life:transitionsTo   life:StateRepealed ;
+    life:eventDate "2026-06-01"^^xsd:date ;
+    life:affects ex:BIT_Art12_v1 .

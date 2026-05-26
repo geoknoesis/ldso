@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LDSO-Lifecycle: Legal Document Lifecycle and Amendment Ontology</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus:    "unofficial",
+      shortName:     "ldso-lifecycle",
+      latestVersion: "https://w3id.org/ldso/lifecycle",
+      edDraftURI:    "https://w3id.org/ldso/lifecycle",
+      editors: [
+        { name: "Stephane Fellah", company: "Geoknoesis LLC", url: "https://www.geoknoesis.com" }
+      ],
+      publishDate: "2026-05-25",
+      license: "cc-by",
+      doJsonLd: true,
+      github: {
+        repoURL: "https://github.com/geoknoesis/ldso",
+        branch:  "main"
+      },
+      localBiblio: {
+        "LDSO-CORE": {
+          title:     "LDSO-Core: Legal Document Structure Ontology",
+          href:      "https://w3id.org/ldso/core",
+          publisher: "LDSO Project"
+        },
+        "LDSO-ENTITIES": {
+          title:     "LDSO-Entities: Named Entity Reference Module",
+          href:      "https://w3id.org/ldso/entities",
+          publisher: "LDSO Project"
+        },
+        "LDSO-SEMANTICS": {
+          title:     "LDSO-Semantics: Legal Semantic Annotation Ontology",
+          href:      "https://w3id.org/ldso/semantics",
+          publisher: "LDSO Project"
+        },
+        "AKN4UN": {
+          title:     "Akoma Ntoso for United Nations Documents",
+          href:      "https://www.un.org/en/actnow/akoma-ntoso",
+          publisher: "United Nations"
+        },
+        "OWL2": {
+          title:     "OWL 2 Web Ontology Language Primer (Second Edition)",
+          href:      "https://www.w3.org/TR/owl2-primer/",
+          publisher: "W3C"
+        },
+        "SHACL": {
+          title:     "Shapes Constraint Language (SHACL)",
+          href:      "https://www.w3.org/TR/shacl/",
+          publisher: "W3C"
+        },
+        "SKOS": {
+          title:     "SKOS Simple Knowledge Organization System Reference",
+          href:      "https://www.w3.org/TR/skos-reference/",
+          publisher: "W3C"
+        },
+        "PROV-O": {
+          title:     "PROV-O: The PROV Ontology",
+          href:      "https://www.w3.org/TR/prov-o/",
+          publisher: "W3C"
+        },
+        "RFC2119": {
+          title:     "Key words for use in RFCs to Indicate Requirement Levels",
+          href:      "https://www.ietf.org/rfc/rfc2119.txt",
+          publisher: "IETF"
+        }
+      }
+    };
+  </script>
+  <style>
+    .ont-term   { font-family: monospace; color: #005a9c; }
+    .ont-prefix { font-family: monospace; color: #707070; }
+    table.ont-table { border-collapse: collapse; width: 100%; }
+    table.ont-table th, table.ont-table td {
+      border: 1px solid #ccc; padding: 0.4em 0.7em; text-align: left;
+      vertical-align: top;
+    }
+    table.ont-table th { background: #f0f0f0; }
+    .disclaimer { background: #fff3cd; border-left: 4px solid #ffc107;
+      padding: 0.7em 1em; margin: 1em 0; }
+    pre.example { background: #f8f8f8; border-left: 4px solid #005a9c;
+      padding: 1em; overflow: auto; }
+    .state-label { font-family: monospace; background: #eef; padding: 0 3px;
+      border: 1px solid #99c; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     Abstract
+     ============================================================ -->
+<section id="abstract">
+  <p>
+    LDSO-Lifecycle is an RDF/OWL ontology module that models the temporal and
+    amendment lifecycle of legal documents and provisions. It defines classes and
+    properties for amendment instructions, legal effects (insertions, deletions,
+    substitutions, repeals, renumberings, consolidations), versioned provisions,
+    temporal validity intervals, and legal state transitions. LDSO-Lifecycle is
+    part of the <strong>Legal Document Structure Ontology (LDSO)</strong> family
+    and extends <a data-cite="LDSO-CORE">LDSO-Core</a>.
+  </p>
+  <p class="disclaimer">
+    <strong>Disclaimer:</strong> This document is not an official W3C Standard or
+    W3C Recommendation. It is a community/project specification using W3C ReSpec
+    formatting conventions.
+  </p>
+</section>
+
+<!-- ============================================================
+     Status
+     ============================================================ -->
+<section id="sotd">
+  <p class="disclaimer">
+    This document is not an official W3C Standard or W3C Recommendation. It is a
+    community/project specification produced by Geoknoesis LLC using W3C ReSpec
+    formatting conventions.
+  </p>
+  <p>
+    This specification is part of the Legal Document Structure Ontology (LDSO) family.
+    Feedback is welcome via the
+    <a href="https://github.com/geoknoesis/ldso/issues">GitHub issue tracker</a>.
+  </p>
+  <section id="version-iri">
+    <h3>Version IRI</h3>
+    <p>
+      The version IRI for this publication is
+      <code>https://w3id.org/ldso/lifecycle/1.0.0</code>.
+      The canonical namespace IRI is <code>https://w3id.org/ldso/lifecycle#</code>
+      (preferred prefix: <code>life</code>). All LDSO-Lifecycle terms carry a
+      <code>rdfs:isDefinedBy</code> assertion pointing to
+      <code>https://w3id.org/ldso/lifecycle</code>.
+    </p>
+  </section>
+</section>
+
+<!-- ============================================================
+     1. Introduction
+     ============================================================ -->
+<section id="introduction">
+  <h2>Introduction</h2>
+  <p>
+    Legal documents do not remain static. Treaties are amended by protocols;
+    statutes are modified by amending acts; regulations are revised; contracts
+    are updated by endorsements. Every such change raises questions: <em>What
+    was the law on a given date? What instruction produced a given change? Which
+    version of a provision is currently in force?</em>
+  </p>
+  <p>
+    LDSO-Lifecycle answers these questions by providing a formal vocabulary for:
+  </p>
+  <ul>
+    <li>the events that mark transitions in a document's life;</li>
+    <li>the amendment instructions that mandate changes;</li>
+    <li>the legal effects that result from those instructions;</li>
+    <li>the immutable version chain of every provision;</li>
+    <li>temporal validity intervals and applicability;</li>
+    <li>legal state transitions and consolidation.</li>
+  </ul>
+
+  <section id="scope">
+    <h3>Scope and Out of Scope</h3>
+    <p>LDSO-Lifecycle is scoped to <em>lifecycle and amendment structure</em>.</p>
+    <p>The following are <strong>out of scope</strong> and belong in other modules:</p>
+    <ul>
+      <li>Legal obligations, permissions, prohibitions — see LDSO-Semantics.</li>
+      <li>Operational trade rules, HS triggers, tariff rates — see domain ontologies.</li>
+      <li>Compliance evaluation and execution results — see execution ontologies.</li>
+    </ul>
+  </section>
+
+  <section id="conventions">
+    <h3>Conventions</h3>
+    <p>
+      The key words <strong>MUST</strong>, <strong>MUST NOT</strong>,
+      <strong>SHOULD</strong>, <strong>SHOULD NOT</strong>, and <strong>MAY</strong>
+      are to be interpreted as described in [[RFC2119]].
+    </p>
+    <p>Namespace prefixes used throughout this document:</p>
+    <pre class="example">
+@prefix rdf:  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; .
+@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt; .
+@prefix owl:  &lt;http://www.w3.org/2002/07/owl#&gt; .
+@prefix xsd:  &lt;http://www.w3.org/2001/XMLSchema#&gt; .
+@prefix skos: &lt;http://www.w3.org/2004/02/skos/core#&gt; .
+@prefix dct:  &lt;http://purl.org/dc/terms/&gt; .
+@prefix prov: &lt;http://www.w3.org/ns/prov#&gt; .
+@prefix sh:   &lt;http://www.w3.org/ns/shacl#&gt; .
+@prefix life: &lt;https://w3id.org/ldso/lifecycle#&gt; .
+@prefix ldso: &lt;https://w3id.org/ldso/core#&gt; .</pre>
+  </section>
+</section>
+
+<!-- ============================================================
+     2. Design Principles
+     ============================================================ -->
+<section id="design-principles">
+  <h2>Design Principles</h2>
+  <ol>
+    <li><strong>Never overwrite historical legal state.</strong> Old provision
+      versions MUST be retained in the graph. Deletion from the knowledge graph
+      is prohibited; logical deprecation is used instead.</li>
+    <li><strong>Preserve temporal traceability.</strong> Every operative state of
+      a provision MUST be recoverable for any past point in time.</li>
+    <li><strong>Preserve amendment provenance.</strong> Every legal effect SHOULD
+      be traceable to the instruction that produced it.</li>
+    <li><strong>Separate instructions from effects.</strong> An amendment
+      instruction (the textual mandate) and the resulting legal effect are
+      distinct resources with distinct IRIs.</li>
+    <li><strong>Support point-in-time queries.</strong> The data model MUST
+      permit efficient SPARQL queries that reconstruct the law as it stood at
+      any date.</li>
+    <li><strong>Support very large corpora.</strong> The model MUST scale to
+      thousands of instruments and hundreds of thousands of provision versions
+      without requiring non-standard extensions.</li>
+    <li><strong>Layered modeling.</strong> Structural concerns (LDSO-Core),
+      amendment lifecycle (this module), legal semantics (LDSO-Semantics), and
+      domain rules are kept in separate layers and linked by reference, not
+      merged.</li>
+  </ol>
+</section>
+
+<!-- ============================================================
+     3. Lifecycle Overview
+     ============================================================ -->
+<section id="lifecycle-overview">
+  <h2>Lifecycle Overview</h2>
+  <p>
+    A legal instrument has a lifecycle that can be modelled as a sequence of
+    events, each triggering a state transition:
+  </p>
+  <ol>
+    <li><strong>Commencement</strong> — the document is formally promulgated,
+      signed, or tabled.</li>
+    <li><strong>Entry into Force</strong> — the document becomes legally
+      operative and binding.</li>
+    <li><strong>Amendment</strong> — one or more provisions are modified by
+      an amending instrument.</li>
+    <li><strong>Suspension</strong> (optional) — the document's effect is
+      temporarily halted.</li>
+    <li><strong>Expiration / Termination / Repeal</strong> — the document
+      ceases to have any operative effect.</li>
+    <li><strong>Consolidation</strong> (optional) — an editorial process
+      integrating all amendments into a unified text.</li>
+  </ol>
+
+  <p>The following example shows USMCA entering into force:</p>
+  <pre class="example">
+:EIF_USMCA_2020
+    a life:EntryIntoForce ;
+    rdfs:label "USMCA Entry into Force — 2020-07-01"@en ;
+    life:eventDate "2020-07-01"^^xsd:date ;
+    life:affects   :USMCA_Original .</pre>
+</section>
+
+<!-- ============================================================
+     4. Amendment Model
+     ============================================================ -->
+<section id="amendment-model">
+  <h2>Amendment Model</h2>
+
+  <section id="instruction-vs-effect">
+    <h3>Instruction vs. Effect</h3>
+    <p>
+      LDSO-Lifecycle rigorously distinguishes two things that are often
+      conflated in legal informatics:
+    </p>
+    <dl>
+      <dt><strong>Amendment Instruction</strong> (<span class="ont-term">life:AmendmentInstruction</span>)</dt>
+      <dd>
+        The textual or formal directive found in an amending instrument. It is
+        a performative speech act: <em>"Article 2.5, paragraph 3 is hereby
+        replaced by the following…"</em> The instruction identifies the target
+        provision and the nature of the change, but it does not itself
+        constitute the new legal state.
+      </dd>
+      <dt><strong>Legal Effect</strong> (<span class="ont-term">life:LegalEffect</span>)</dt>
+      <dd>
+        The resulting change in legal state — a substitution, insertion,
+        deletion, or repeal. The legal effect creates new provision versions
+        and closes old ones. It is linked to the instruction via
+        <span class="ont-term">life:derivedFromInstruction</span>.
+      </dd>
+    </dl>
+    <pre class="example">
+# The instruction — what the amending instrument says
+:Instr_2028_Art2_5_Para3
+    a life:AmendmentInstruction ;
+    life:modifies         :USMCA_Art2_5_Para3_v1 ;
+    life:modificationDate "2028-01-15"^^xsd:date ;
+    life:changeDescription
+        "Art. 2.5 para. 3 is replaced with revised tariff schedule."@en ;
+    dct:source :USMCA_AmendmentProtocol_2028 .
+
+# The effect — what legally results
+:Sub_2028_Art2_5_Para3
+    a life:Substitution ;
+    life:derivedFromInstruction :Instr_2028_Art2_5_Para3 ;
+    life:replaces    :USMCA_Art2_5_Para3_v1 ;
+    life:createsVersion :USMCA_Art2_5_Para3_v2 ;
+    life:eventDate   "2028-03-01"^^xsd:date .</pre>
+  </section>
+
+  <section id="effect-types">
+    <h3>Effect Types</h3>
+    <table class="ont-table">
+      <thead>
+        <tr><th>Class</th><th>Meaning</th><th>Key Properties</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="ont-term">life:Insertion</span></td>
+          <td>New content added without removing existing content</td>
+          <td><span class="ont-term">life:inserts</span></td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:Deletion</span></td>
+          <td>Existing content removed</td>
+          <td><span class="ont-term">life:deletes</span></td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:Substitution</span></td>
+          <td>Content replaced by new content</td>
+          <td><span class="ont-term">life:replaces</span>, <span class="ont-term">life:createsVersion</span></td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:Repeal</span></td>
+          <td>Entire instrument or major unit abrogated</td>
+          <td><span class="ont-term">life:repeals</span></td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:Renumbering</span></td>
+          <td>Structural renumbering without substantive change</td>
+          <td><span class="ont-term">life:createsVersion</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <span class="ont-term">life:Consolidation</span> is <strong>not</strong>
+      a subclass of <span class="ont-term">life:LegalEffect</span>. It is a direct
+      subclass of <span class="ont-term">life:LifecycleEvent</span>. Consolidation
+      is an editorial process that records the accumulated result of prior amendments;
+      it does not itself produce a legal change. See
+      <a href="#consolidation-model">Section 7</a> for the full consolidation model.
+    </p>
+  </section>
+</section>
+
+<!-- ============================================================
+     5. Temporal Model
+     ============================================================ -->
+<section id="temporal-model">
+  <h2>Temporal Model</h2>
+
+  <section id="validity-interval">
+    <h3>Validity Intervals</h3>
+    <p>
+      Every <span class="ont-term">life:VersionedProvision</span> MUST carry
+      <span class="ont-term">life:effectiveFrom</span>. When the provision is
+      superseded or deleted, it MUST also receive
+      <span class="ont-term">life:effectiveTo</span>. An absent
+      <span class="ont-term">life:effectiveTo</span> denotes indefinite
+      (open-ended) validity.
+    </p>
+    <pre class="example">
+:Art_2_5_v1
+    life:effectiveFrom "2020-07-01"^^xsd:date ;
+    life:effectiveTo   "2028-02-28"^^xsd:date .
+
+:Art_2_5_v2
+    life:supersedes    :Art_2_5_v1 ;
+    life:effectiveFrom "2028-03-01"^^xsd:date .   # open-ended</pre>
+
+    <p>
+      For cases requiring additional annotations on the interval itself
+      (e.g., uncertainty flags or retroactivity markers), use the
+      <span class="ont-term">life:ValidityInterval</span> class as a
+      first-class resource linked via
+      <span class="ont-term">life:hasValidityInterval</span>.
+    </p>
+  </section>
+
+  <section id="temporal-applicability">
+    <h3>Temporal Applicability</h3>
+    <p>
+      Validity (when a provision <em>exists</em> in law) is distinct from
+      applicability (when it <em>governs</em> transactions or situations).
+      Use <span class="ont-term">life:TemporalApplicability</span> and
+      <span class="ont-term">life:hasTemporalApplicability</span> to record
+      retroactive, transitional, or prospective application windows.
+    </p>
+  </section>
+
+  <section id="point-in-time">
+    <h3>Point-in-Time Queries</h3>
+    <p>The following SPARQL query retrieves the version of Art. 2.5 Para. 3
+    that was in force on 2025-06-01:</p>
+    <pre class="example">
+PREFIX life: &lt;https://w3id.org/ldso/lifecycle#&gt;
+PREFIX dct:  &lt;http://purl.org/dc/terms/&gt;
+PREFIX ex:   &lt;https://w3id.org/ldso/lifecycle/example#&gt;
+
+SELECT ?version ?from ?to
+WHERE {
+    ?version a life:VersionedProvision ;
+             dct:isPartOf ex:USMCA_Art2_5 ;
+             life:effectiveFrom ?from .
+    OPTIONAL { ?version life:effectiveTo ?to }
+    BIND("2025-06-01"^^xsd:date AS ?queryDate)
+    FILTER (?from &lt;= ?queryDate)
+    FILTER (!BOUND(?to) || ?to &gt;= ?queryDate)
+}</pre>
+  </section>
+
+  <section id="future-amendments">
+    <h3>Future and Pending Amendments</h3>
+    <p>
+      Model amendments enacted but not yet operative as
+      <span class="ont-term">life:PendingModification</span>. They carry a
+      future <span class="ont-term">life:effectiveFrom</span> date. When that
+      date is reached, record the transition via
+      <span class="ont-term">life:LegalStateTransition</span> to
+      <span class="ont-term">life:EffectiveModification</span>.
+    </p>
+  </section>
+</section>
+
+<!-- ============================================================
+     6. Versioning Model
+     ============================================================ -->
+<section id="versioning-model">
+  <h2>Versioning Model</h2>
+
+  <section id="stable-identity">
+    <h3>Stable Identity</h3>
+    <p>
+      The legal entity (e.g., <em>Article 2.5 of USMCA</em>) has a persistent
+      IRI that never changes. Its versioned instances carry temporal metadata.
+      This separation supports reasoning at both the abstract level (the article
+      as a whole) and the version level (the article at a specific point in time).
+    </p>
+  </section>
+
+  <section id="version-chain">
+    <h3>Version Chain</h3>
+    <p>
+      Versions form a doubly-linked list via
+      <span class="ont-term">life:previousVersion</span> and
+      <span class="ont-term">life:nextVersion</span>, which are sub-properties
+      of <span class="ont-term">life:supersededBy</span> and
+      <span class="ont-term">life:supersedes</span> respectively.
+      <span class="ont-term">life:supersedes</span> is declared
+      <code>owl:AsymmetricProperty</code> and <code>owl:IrreflexiveProperty</code>
+      to prevent cyclic chains.
+    </p>
+    <pre class="example">
+:Art2_5_Para3_v1
+    a life:VersionedProvision ;
+    life:versionNumber   "1" ;
+    life:effectiveFrom   "2020-07-01"^^xsd:date ;
+    life:effectiveTo     "2028-02-28"^^xsd:date ;
+    life:nextVersion     :Art2_5_Para3_v2 ;
+    life:supersededBy    :Art2_5_Para3_v2 .
+
+:Art2_5_Para3_v2
+    a life:VersionedProvision ;
+    life:versionNumber   "2" ;
+    life:effectiveFrom   "2028-03-01"^^xsd:date ;
+    life:previousVersion :Art2_5_Para3_v1 ;
+    life:supersedes      :Art2_5_Para3_v1 .</pre>
+  </section>
+
+  <section id="deprecated-provisions">
+    <h3>Deprecated Provisions</h3>
+    <p>
+      Provisions that are no longer operative MUST NOT be removed from the
+      graph. They SHOULD be typed as <span class="ont-term">life:DeprecatedProvision</span>
+      and MUST carry a <span class="ont-term">life:effectiveTo</span> date.
+      This ensures that point-in-time queries and audit trails remain intact.
+    </p>
+  </section>
+</section>
+
+<!-- ============================================================
+     7. Consolidation Model
+     ============================================================ -->
+<section id="consolidation-model">
+  <h2>Consolidation Model</h2>
+  <p>
+    A consolidated legal text integrates the current state of all provisions
+    of an instrument, incorporating all amendments that have taken effect up
+    to the consolidation date. Consolidations are editorial acts, not amending
+    acts — they do not change the law.
+  </p>
+  <pre class="example">
+:Consolidated_USMCA_2028
+    a life:Consolidation ;
+    rdfs:label     "USMCA Consolidated Text (as of 2028-03-01)"@en ;
+    life:consolidates  :USMCA_Original ;
+    life:consolidates  :USMCA_AmendmentProtocol_2028 ;
+    life:consolidationDate "2028-03-01"^^xsd:date ;
+    life:eventDate     "2028-03-01"^^xsd:date .
+
+:Consolidated_Art2_5_Para3
+    a life:ConsolidatedProvision ;
+    life:derivedFromConsolidation :Consolidated_USMCA_2028 ;
+    life:derivedFromProvision     :USMCA_Art2_5_Para3_v1 ;
+    life:derivedFromProvision     :USMCA_Art2_5_Para3_v2 ;
+    life:effectiveFrom "2028-03-01"^^xsd:date ;
+    life:versionNumber "consolidated-2028-03-01" ;
+    life:stateLabel    "Consolidated" .</pre>
+  <p>
+    A <span class="ont-term">life:Consolidation</span> MUST
+    <span class="ont-term">life:consolidates</span> at least two instruments:
+    the original and at least one amendment. This is enforced by the SHACL
+    shapes in <code>shapes.ttl</code>.
+  </p>
+</section>
+
+<!-- ============================================================
+     8. Legal States
+     ============================================================ -->
+<section id="legal-states">
+  <h2>Legal States</h2>
+  <p>
+    The <span class="ont-term">life:LegalStateScheme</span> SKOS concept scheme
+    provides a controlled vocabulary of named legal states. Use
+    <span class="ont-term">life:stateLabel</span> for a human-readable string.
+    For machine-processable state tracking, use
+    <span class="ont-term">life:LegalStateTransition</span> with
+    <span class="ont-term">life:transitionsFrom</span> and
+    <span class="ont-term">life:transitionsTo</span> pointing to SKOS concepts
+    in this scheme.
+  </p>
+
+  <table class="ont-table">
+    <thead>
+      <tr><th>Concept IRI</th><th>Label</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="ont-term">life:StatePending</span></td>
+        <td><span class="state-label">Pending</span></td>
+        <td>Enacted but not yet operative (future entry-into-force date)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:StateEffective</span></td>
+        <td><span class="state-label">Effective</span></td>
+        <td>Currently operative and legally binding</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:StateSuspended</span></td>
+        <td><span class="state-label">Suspended</span></td>
+        <td>Temporarily not operative</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:StateExpired</span></td>
+        <td><span class="state-label">Expired</span></td>
+        <td>Naturally reached end of validity period</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:StateRepealed</span></td>
+        <td><span class="state-label">Repealed</span></td>
+        <td>Formally abrogated by amending instrument</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:StateDeprecated</span></td>
+        <td><span class="state-label">Deprecated</span></td>
+        <td>Superseded or deleted; retained for historical reference</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:StateConsolidated</span></td>
+        <td><span class="state-label">Consolidated</span></td>
+        <td>Present in a consolidated text integrating all amendments</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <pre class="example">
+:Transition_Para3_v1_Deprecated
+    a life:LegalStateTransition ;
+    life:transitionsFrom life:StateEffective ;
+    life:transitionsTo   life:StateDeprecated ;
+    life:eventDate       "2028-03-01"^^xsd:date ;
+    life:affects         :USMCA_Art2_5_Para3_v1 .</pre>
+</section>
+
+<!-- ============================================================
+     9. Competency Questions
+     ============================================================ -->
+<section id="competency-questions">
+  <h2>Competency Questions</h2>
+  <p>
+    The following questions define the scope of what LDSO-Lifecycle is designed to answer.
+    Each is accompanied by a SPARQL query against a conformant dataset.
+  </p>
+
+  <section id="cq-l-01">
+    <h3>CQ-L-01 — What is the current in-force expression of a given legal resource?</h3>
+    <pre class="example" title="CQ-L-01">
+PREFIX ldso: &lt;https://w3id.org/ldso/core#&gt;
+PREFIX life: &lt;https://w3id.org/ldso/lifecycle#&gt;
+PREFIX dct:  &lt;http://purl.org/dc/terms/&gt;
+
+SELECT ?expression ?language ?issued WHERE {
+  &lt;https://example.org/ata&gt; ldso:hasExpression ?expression .
+  FILTER NOT EXISTS { ?expression life:validTo ?end }
+  OPTIONAL { ?expression dct:language ?language }
+  OPTIONAL { ?expression dct:issued   ?issued   }
+}</pre>
+  </section>
+
+  <section id="cq-l-02">
+    <h3>CQ-L-02 — Which amendment instructions targeted a given article?</h3>
+    <pre class="example" title="CQ-L-02">
+PREFIX life: &lt;https://w3id.org/ldso/lifecycle#&gt;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+
+SELECT ?instruction ?instructionLabel ?effectType WHERE {
+  ?instruction a life:AmendmentInstruction ;
+               life:targets &lt;https://example.org/ata/art_5&gt; ;
+               life:producesEffect ?effect .
+  ?effect a ?effectType .
+  OPTIONAL { ?instruction rdfs:label ?instructionLabel }
+}
+ORDER BY ?instructionLabel</pre>
+  </section>
+
+  <section id="cq-l-03">
+    <h3>CQ-L-03 — What was the applicable version of a provision on a specific date?</h3>
+    <pre class="example" title="CQ-L-03">
+PREFIX life: &lt;https://w3id.org/ldso/lifecycle#&gt;
+
+BIND("2024-01-01"^^xsd:date AS ?pointInTime)
+
+SELECT ?expression ?validFrom ?validTo WHERE {
+  ?expression life:validFrom ?validFrom .
+  OPTIONAL { ?expression life:validTo ?validTo }
+  FILTER(?validFrom &lt;= ?pointInTime)
+  FILTER(!BOUND(?validTo) || ?validTo &gt; ?pointInTime)
+}</pre>
+  </section>
+
+  <section id="cq-l-04">
+    <h3>CQ-L-04 — Which instruments have been repealed?</h3>
+    <pre class="example" title="CQ-L-04">
+PREFIX life: &lt;https://w3id.org/ldso/lifecycle#&gt;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+
+SELECT ?resource ?repealedBy ?repealDate WHERE {
+  ?event a life:Repeal ;
+         life:affects ?resource .
+  OPTIONAL { ?event life:eventDate ?repealDate }
+  OPTIONAL { ?event life:producedBy ?repealedBy }
+}
+ORDER BY ?repealDate</pre>
+  </section>
+
+  <section id="cq-l-05">
+    <h3>CQ-L-05 — What is the version chain of a given legal resource?</h3>
+    <pre class="example" title="CQ-L-05">
+PREFIX life: &lt;https://w3id.org/ldso/lifecycle#&gt;
+PREFIX dct:  &lt;http://purl.org/dc/terms/&gt;
+
+SELECT ?version ?issued WHERE {
+  &lt;https://example.org/ata/v1&gt; life:supersedes* ?version .
+  OPTIONAL { ?version dct:issued ?issued }
+}
+ORDER BY ?issued</pre>
+  </section>
+
+  <section id="cq-l-06">
+    <h3>CQ-L-06 — Which consolidated texts incorporate a given amending act?</h3>
+    <pre class="example" title="CQ-L-06">
+PREFIX life: &lt;https://w3id.org/ldso/lifecycle#&gt;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+
+SELECT ?consolidated ?label WHERE {
+  ?consolidated life:consolidates &lt;https://example.org/protocol_2020&gt; .
+  OPTIONAL { ?consolidated rdfs:label ?label }
+}</pre>
+  </section>
+</section>
+
+<!-- ============================================================
+     10. Conformance
+     ============================================================ -->
+<section id="conformance">
+  <h2>Conformance</h2>
+  <p>
+    A conforming LDSO-Lifecycle implementation MUST:
+  </p>
+  <ol>
+    <li>Use the namespace <code>https://w3id.org/ldso/lifecycle#</code> for all
+        LDSO-Lifecycle terms.</li>
+    <li>Type every lifecycle event node as <code>life:LifecycleEvent</code> or one of
+        its subclasses: <code>life:Entry</code>, <code>life:Suspension</code>,
+        <code>life:Repeal</code>, <code>life:Expiry</code>.</li>
+    <li>Link every <code>life:AmendmentInstruction</code> to a target provision via
+        <code>life:targets</code> and to its resulting <code>life:AmendmentEffect</code>
+        via <code>life:producesEffect</code>.</li>
+    <li>Represent document version chains using <code>life:supersedes</code> and
+        <code>life:supersededBy</code> only between <code>ldso:LegalExpression</code>
+        nodes. These properties are asymmetric and irreflexive — a document cannot
+        supersede itself.</li>
+    <li>Represent temporal applicability via <code>life:validFrom</code> and
+        <code>life:validTo</code> on <code>ldso:LegalExpression</code> or
+        <code>ldso:LegalElement</code> nodes. If <code>life:validTo</code> is absent,
+        the resource is considered currently in force.</li>
+    <li>Pass all SHACL shapes defined in <code>shapes.ttl</code> without violations.</li>
+  </ol>
+  <p>
+    A conforming implementation SHOULD:
+  </p>
+  <ul>
+    <li>Record <code>prov:wasDerivedFrom</code> on consolidated versions pointing to
+        the base version and all amending instruments.</li>
+    <li>Assert <code>life:consolidates</code> to link a consolidated text to the
+        legislative instruments incorporated into it.</li>
+  </ul>
+</section>
+
+<!-- ============================================================
+     10. Class Definitions
+     ============================================================ -->
+<section id="class-definitions">
+  <h2>Class Definitions</h2>
+
+  <section id="class-LifecycleEvent">
+    <h3><span class="ont-term">life:LifecycleEvent</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/lifecycle#LifecycleEvent</code></p>
+    <p><strong>Label:</strong> Lifecycle Event</p>
+    <p><strong>Definition:</strong> An event that affects the legal status, validity, or content of a legal document or provision.</p>
+    <p><strong>Subclasses:</strong> <span class="ont-term">life:Modification</span>, <span class="ont-term">life:LegalEffect</span>, <span class="ont-term">life:AmendmentInstruction</span>, <span class="ont-term">life:Consolidation</span>, <span class="ont-term">life:Commencement</span>, <span class="ont-term">life:EntryIntoForce</span>, <span class="ont-term">life:Termination</span>, <span class="ont-term">life:Suspension</span>, <span class="ont-term">life:Expiration</span></p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:eventDate</span> (MUST), <span class="ont-term">rdfs:label</span> (SHOULD)</p>
+  </section>
+
+  <section id="class-Modification">
+    <h3><span class="ont-term">life:Modification</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/lifecycle#Modification</code></p>
+    <p><strong>Label:</strong> Modification</p>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">life:LifecycleEvent</span></p>
+    <p><strong>Definition:</strong> A lifecycle event that changes the text, structure, or legal effect of a provision or document.</p>
+    <p><strong>Subclasses:</strong> <span class="ont-term">life:PendingModification</span>, <span class="ont-term">life:EffectiveModification</span></p>
+  </section>
+
+  <section id="class-AmendmentInstruction">
+    <h3><span class="ont-term">life:AmendmentInstruction</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/lifecycle#AmendmentInstruction</code></p>
+    <p><strong>Label:</strong> Amendment Instruction</p>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">life:LifecycleEvent</span></p>
+    <p><strong>Definition:</strong> The textual or formal direction, found within an amending legal instrument, that specifies what change is to be made to the target provision.</p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:modifies</span> (MUST), <span class="ont-term">life:modificationDate</span> (MUST), <span class="ont-term">life:changeDescription</span> (SHOULD), <span class="ont-term">dct:source</span> (SHOULD)</p>
+    <p><strong>Usage note:</strong> An AmendmentInstruction is the cause. Its corresponding LegalEffect is the consequence. Both MUST exist as distinct resources.</p>
+  </section>
+
+  <section id="class-LegalEffect">
+    <h3><span class="ont-term">life:LegalEffect</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/lifecycle#LegalEffect</code></p>
+    <p><strong>Label:</strong> Legal Effect</p>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">life:LifecycleEvent</span></p>
+    <p><strong>Definition:</strong> The actual legal consequence of an amendment instruction on the state of the legal corpus.</p>
+    <p><strong>Subclasses:</strong> <span class="ont-term">life:Insertion</span>, <span class="ont-term">life:Deletion</span>, <span class="ont-term">life:Substitution</span>, <span class="ont-term">life:Repeal</span>, <span class="ont-term">life:Renumbering</span>, <span class="ont-term">life:Consolidation</span></p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:eventDate</span> (MUST), <span class="ont-term">life:derivedFromInstruction</span> (SHOULD)</p>
+  </section>
+
+  <section id="class-Insertion">
+    <h3><span class="ont-term">life:Insertion</span></h3>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">life:LegalEffect</span></p>
+    <p><strong>Definition:</strong> New content added to an existing legal instrument without removing existing content.</p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:inserts</span> (MUST)</p>
+  </section>
+
+  <section id="class-Deletion">
+    <h3><span class="ont-term">life:Deletion</span></h3>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">life:LegalEffect</span></p>
+    <p><strong>Definition:</strong> Existing content removed from an instrument. The removed provision MUST receive <span class="ont-term">life:effectiveTo</span>.</p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:deletes</span> (MUST)</p>
+  </section>
+
+  <section id="class-Substitution">
+    <h3><span class="ont-term">life:Substitution</span></h3>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">life:LegalEffect</span></p>
+    <p><strong>Definition:</strong> Existing content replaced by new content. Closes the old version and opens a new one.</p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:replaces</span> (MUST), <span class="ont-term">life:createsVersion</span> (MUST)</p>
+  </section>
+
+  <section id="class-Repeal">
+    <h3><span class="ont-term">life:Repeal</span></h3>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">life:LegalEffect</span></p>
+    <p><strong>Definition:</strong> An entire instrument or major structural unit abrogated.</p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:repeals</span> (MUST)</p>
+  </section>
+
+  <section id="class-Renumbering">
+    <h3><span class="ont-term">life:Renumbering</span></h3>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">life:LegalEffect</span></p>
+    <p><strong>Definition:</strong> Structural renumbering without substantive content change.</p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:createsVersion</span> (MUST)</p>
+  </section>
+
+  <section id="class-Consolidation">
+    <h3><span class="ont-term">life:Consolidation</span></h3>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">life:LifecycleEvent</span></p>
+    <p><strong>Definition:</strong> An editorial process that assembles the current state of a legal instrument by integrating all amendments into a unified text at a given date. Consolidation records accumulated prior effects; it does not itself produce a legal change.</p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:consolidates</span> (MUST, ≥2), <span class="ont-term">life:consolidationDate</span> (MUST)</p>
+  </section>
+
+  <section id="class-VersionedProvision">
+    <h3><span class="ont-term">life:VersionedProvision</span></h3>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">life:VersionedResource</span></p>
+    <p><strong>Definition:</strong> A version-specific representation of a legal provision valid during a defined temporal interval.</p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:effectiveFrom</span> (MUST), <span class="ont-term">life:versionNumber</span> (MUST), <span class="ont-term">life:effectiveTo</span> (MUST when superseded)</p>
+    <p><strong>Usage note:</strong> Old instances MUST NEVER be deleted. New amendments MUST create new instances.</p>
+  </section>
+
+  <section id="class-ConsolidatedProvision">
+    <h3><span class="ont-term">life:ConsolidatedProvision</span></h3>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">life:VersionedProvision</span></p>
+    <p><strong>Definition:</strong> A provision in a consolidated text, integrating the original and all amendments to the consolidation date.</p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:derivedFromConsolidation</span> (MUST), <span class="ont-term">life:derivedFromProvision</span> (MUST, ≥1)</p>
+  </section>
+
+  <section id="class-DeprecatedProvision">
+    <h3><span class="ont-term">life:DeprecatedProvision</span></h3>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">life:VersionedProvision</span></p>
+    <p><strong>Definition:</strong> A provision that is no longer operative, retained for historical reference.</p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:effectiveTo</span> (MUST)</p>
+  </section>
+
+  <section id="class-ValidityInterval">
+    <h3><span class="ont-term">life:ValidityInterval</span></h3>
+    <p><strong>Definition:</strong> A time interval during which a legal resource is legally operative.</p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:effectiveFrom</span> (MUST)</p>
+  </section>
+
+  <section id="class-TemporalApplicability">
+    <h3><span class="ont-term">life:TemporalApplicability</span></h3>
+    <p><strong>Definition:</strong> A specification of when a legal rule applies in time, potentially distinct from its validity interval (supports retroactive, transitional, prospective application).</p>
+  </section>
+
+  <section id="class-LegalStateTransition">
+    <h3><span class="ont-term">life:LegalStateTransition</span></h3>
+    <p><strong>Definition:</strong> A transition between two named legal states triggered by a lifecycle event.</p>
+    <p><strong>Required properties:</strong> <span class="ont-term">life:transitionsFrom</span> (MUST), <span class="ont-term">life:transitionsTo</span> (MUST), <span class="ont-term">life:eventDate</span> (MUST), <span class="ont-term">life:affects</span> (MUST)</p>
+  </section>
+</section>
+
+<!-- ============================================================
+     10. Property Definitions
+     ============================================================ -->
+<section id="property-definitions">
+  <h2>Property Definitions</h2>
+
+  <section id="object-properties">
+    <h3>Object Properties</h3>
+    <table class="ont-table">
+      <thead>
+        <tr><th>Property</th><th>Domain</th><th>Range</th><th>Definition</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="ont-term">life:amends</span></td>
+          <td><span class="ont-term">ldso:Document</span></td>
+          <td><span class="ont-term">ldso:Document</span></td>
+          <td>Relates an amending instrument to the instrument it amends.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:modifies</span></td>
+          <td><span class="ont-term">life:Modification</span></td>
+          <td>any</td>
+          <td>Relates an AmendmentInstruction to the target provision.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:affects</span></td>
+          <td><span class="ont-term">life:LifecycleEvent</span></td>
+          <td>any</td>
+          <td>Relates a lifecycle event to any affected legal resource.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:replaces</span></td>
+          <td><span class="ont-term">life:Substitution</span></td>
+          <td><span class="ont-term">life:VersionedProvision</span></td>
+          <td>Relates a Substitution to the provision version it replaces.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:repeals</span></td>
+          <td><span class="ont-term">life:Repeal</span></td>
+          <td>any</td>
+          <td>Relates a Repeal to the instrument or provision abrogated.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:inserts</span></td>
+          <td><span class="ont-term">life:Insertion</span></td>
+          <td><span class="ont-term">life:VersionedProvision</span></td>
+          <td>Relates an Insertion to the newly added provision.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:deletes</span></td>
+          <td><span class="ont-term">life:Deletion</span></td>
+          <td><span class="ont-term">life:VersionedProvision</span></td>
+          <td>Relates a Deletion to the removed provision.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:createsVersion</span></td>
+          <td><span class="ont-term">life:LegalEffect</span></td>
+          <td><span class="ont-term">life:VersionedProvision</span></td>
+          <td>Relates a legal effect to the new provision version it creates.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:supersedes</span></td>
+          <td><span class="ont-term">life:VersionedProvision</span></td>
+          <td><span class="ont-term">life:VersionedProvision</span></td>
+          <td>Newer version supersedes older. Asymmetric, irreflexive.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:previousVersion</span></td>
+          <td><span class="ont-term">life:VersionedProvision</span></td>
+          <td><span class="ont-term">life:VersionedProvision</span></td>
+          <td>Immediately preceding version. Sub-property of <span class="ont-term">life:supersededBy</span>.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:nextVersion</span></td>
+          <td><span class="ont-term">life:VersionedProvision</span></td>
+          <td><span class="ont-term">life:VersionedProvision</span></td>
+          <td>Immediately succeeding version. Sub-property of <span class="ont-term">life:supersedes</span>.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:hasLegalEffect</span></td>
+          <td><span class="ont-term">life:LifecycleEvent</span></td>
+          <td><span class="ont-term">life:LegalEffect</span></td>
+          <td>Links an instruction or event to the legal effect it produces.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:derivedFromInstruction</span></td>
+          <td><span class="ont-term">life:LegalEffect</span></td>
+          <td><span class="ont-term">life:AmendmentInstruction</span></td>
+          <td>Provenance link from effect to instruction.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:derivedFromProvision</span></td>
+          <td><span class="ont-term">life:ConsolidatedProvision</span></td>
+          <td><span class="ont-term">life:VersionedProvision</span></td>
+          <td>Links consolidated provision to source version(s).</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:consolidates</span></td>
+          <td><span class="ont-term">life:Consolidation</span></td>
+          <td>any</td>
+          <td>Relates a Consolidation to an instrument it incorporates.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:derivedFromConsolidation</span></td>
+          <td><span class="ont-term">life:ConsolidatedProvision</span></td>
+          <td><span class="ont-term">life:Consolidation</span></td>
+          <td>Links a consolidated provision to its source consolidation.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:hasValidityInterval</span></td>
+          <td>any</td>
+          <td><span class="ont-term">life:ValidityInterval</span></td>
+          <td>Links a resource to a first-class ValidityInterval.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:hasTemporalApplicability</span></td>
+          <td>any</td>
+          <td><span class="ont-term">life:TemporalApplicability</span></td>
+          <td>Links a rule or provision to its applicability specification.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:effectiveFromEvent</span></td>
+          <td>any</td>
+          <td><span class="ont-term">life:LifecycleEvent</span></td>
+          <td>Links a resource to the event starting its operative period.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:effectiveUntilEvent</span></td>
+          <td>any</td>
+          <td><span class="ont-term">life:LifecycleEvent</span></td>
+          <td>Links a resource to the event ending its operative period.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:transitionsFrom</span></td>
+          <td><span class="ont-term">life:LegalStateTransition</span></td>
+          <td><span class="ont-term">skos:Concept</span></td>
+          <td>The legal state departed from in this transition.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:transitionsTo</span></td>
+          <td><span class="ont-term">life:LegalStateTransition</span></td>
+          <td><span class="ont-term">skos:Concept</span></td>
+          <td>The legal state arrived at in this transition.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="datatype-properties">
+    <h3>Datatype Properties</h3>
+    <table class="ont-table">
+      <thead>
+        <tr><th>Property</th><th>Range</th><th>Definition</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="ont-term">life:effectiveFrom</span></td>
+          <td><code>xsd:date</code></td>
+          <td>Date a provision or instrument becomes operative. MUST on every VersionedProvision.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:effectiveTo</span></td>
+          <td><code>xsd:date</code></td>
+          <td>Date a provision ceases to be operative. Absent = indefinitely valid.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:versionNumber</span></td>
+          <td><code>xsd:string</code></td>
+          <td>Ordinal identifier in the version chain. MUST on every VersionedProvision.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:consolidationDate</span></td>
+          <td><code>xsd:date</code></td>
+          <td>Point-in-time state captured by a Consolidation.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:modificationDate</span></td>
+          <td><code>xsd:date</code></td>
+          <td>Date an AmendmentInstruction was issued or enacted. Sub-property of <span class="ont-term">life:eventDate</span> — satisfies the <span class="ont-term">LifecycleEventShape</span> eventDate requirement automatically.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:eventDate</span></td>
+          <td><code>xsd:date</code></td>
+          <td>Date a LifecycleEvent occurred. MUST on every LifecycleEvent.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:stateLabel</span></td>
+          <td><code>xsd:string</code></td>
+          <td>Human-readable legal state. Values: Pending, Effective, Suspended, Expired, Repealed, Deprecated, Consolidated.</td>
+        </tr>
+        <tr>
+          <td><span class="ont-term">life:changeDescription</span></td>
+          <td><code>rdf:langString</code></td>
+          <td>Natural-language description of a modification, event, or legal effect.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<!-- ============================================================
+     11. SHACL Validation
+     ============================================================ -->
+<section id="shacl-validation">
+  <h2>SHACL Validation</h2>
+  <p>
+    The file <code>shapes.ttl</code> provides SHACL shapes validating the
+    constraints summarised below.
+  </p>
+
+  <table class="ont-table">
+    <thead>
+      <tr><th>Shape</th><th>Target Class</th><th>Constraints</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="ont-term">life:VersionedProvisionShape</span></td>
+        <td><span class="ont-term">life:VersionedProvision</span></td>
+        <td>effectiveFrom (1), versionNumber (1), effectiveTo ≤ effectiveFrom (SPARQL)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:AmendmentInstructionShape</span></td>
+        <td><span class="ont-term">life:AmendmentInstruction</span></td>
+        <td>modifies (≥1), modificationDate (1)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:LegalEffectShape</span></td>
+        <td><span class="ont-term">life:LegalEffect</span></td>
+        <td>eventDate (1), derivedFromInstruction (warning)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:SubstitutionShape</span></td>
+        <td><span class="ont-term">life:Substitution</span></td>
+        <td>replaces (≥1), createsVersion (≥1)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:InsertionShape</span></td>
+        <td><span class="ont-term">life:Insertion</span></td>
+        <td>inserts (≥1)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:DeletionShape</span></td>
+        <td><span class="ont-term">life:Deletion</span></td>
+        <td>deletes (≥1)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:RepealShape</span></td>
+        <td><span class="ont-term">life:Repeal</span></td>
+        <td>repeals (≥1)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:ConsolidationShape</span></td>
+        <td><span class="ont-term">life:Consolidation</span></td>
+        <td>consolidates (≥2), consolidationDate (1)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:ConsolidatedProvisionShape</span></td>
+        <td><span class="ont-term">life:ConsolidatedProvision</span></td>
+        <td>derivedFromConsolidation (≥1), derivedFromProvision (≥1)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:LegalStateTransitionShape</span></td>
+        <td><span class="ont-term">life:LegalStateTransition</span></td>
+        <td>transitionsFrom (1), transitionsTo (1), eventDate (1), affects (≥1)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:ValidityIntervalShape</span></td>
+        <td><span class="ont-term">life:ValidityInterval</span></td>
+        <td>effectiveFrom (1), effectiveTo ≥ effectiveFrom (SPARQL)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:LifecycleEventShape</span></td>
+        <td><span class="ont-term">life:LifecycleEvent</span></td>
+        <td>eventDate (1), rdfs:label (warning)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:NoSelfSupersessionShape</span></td>
+        <td><span class="ont-term">life:VersionedProvision</span></td>
+        <td>Provision MUST NOT supersede itself (cyclic guard, SPARQL)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:VersionLineageShape</span></td>
+        <td><span class="ont-term">life:VersionedProvision</span></td>
+        <td>nextVersion / supersedes consistency (warning, SPARQL)</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">life:DeprecatedProvisionShape</span></td>
+        <td><span class="ont-term">life:DeprecatedProvision</span></td>
+        <td>effectiveTo (1)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Example shape:</p>
+  <pre class="example">
+life:VersionedProvisionShape
+    a sh:NodeShape ;
+    sh:targetClass life:VersionedProvision ;
+    sh:property [
+        sh:path     life:effectiveFrom ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:message  "Every VersionedProvision MUST have exactly one life:effectiveFrom."@en ;
+    ] ;
+    sh:sparql [
+        sh:message "life:effectiveTo MUST be >= life:effectiveFrom."@en ;
+        sh:select  """
+            SELECT $this WHERE {
+                $this life:effectiveFrom ?from ;
+                      life:effectiveTo   ?to .
+                FILTER (?to &lt; ?from)
+            }
+        """ ;
+    ] .</pre>
+</section>
+
+<!-- ============================================================
+     12. Examples
+     ============================================================ -->
+<section id="examples">
+  <h2>Examples</h2>
+
+  <section id="example-substitution">
+    <h3>Example 1: Treaty Amendment — Substitution</h3>
+    <p>
+      USMCA Article 2.5, Paragraph 3 is replaced by the 2028 Amendment
+      Protocol with effect from 1 March 2028.
+    </p>
+    <pre class="example">
+# Original provision
+:USMCA_Art2_5_Para3_v1
+    a life:VersionedProvision ;
+    rdfs:label  "USMCA Art. 2.5, Para. 3 — Original Tariff Schedule (v1)"@en ;
+    life:effectiveFrom "2020-07-01"^^xsd:date ;
+    life:effectiveTo   "2028-02-28"^^xsd:date ;
+    life:versionNumber "1" ;
+    life:stateLabel    "Deprecated" .
+
+# Amendment instruction
+:Instr_2028_Art2_5_Para3
+    a life:AmendmentInstruction ;
+    life:modifies         :USMCA_Art2_5_Para3_v1 ;
+    life:modificationDate "2028-01-15"^^xsd:date ;
+    dct:source            :USMCA_AmendmentProtocol_2028 .
+
+# Legal effect
+:Sub_2028_Art2_5_Para3
+    a life:Substitution, life:EffectiveModification ;
+    life:derivedFromInstruction :Instr_2028_Art2_5_Para3 ;
+    life:replaces    :USMCA_Art2_5_Para3_v1 ;
+    life:createsVersion :USMCA_Art2_5_Para3_v2 ;
+    life:eventDate   "2028-03-01"^^xsd:date .
+
+# New version
+:USMCA_Art2_5_Para3_v2
+    a life:VersionedProvision ;
+    life:effectiveFrom   "2028-03-01"^^xsd:date ;
+    life:versionNumber   "2" ;
+    life:supersedes      :USMCA_Art2_5_Para3_v1 ;
+    life:previousVersion :USMCA_Art2_5_Para3_v1 ;
+    life:stateLabel      "Effective" .</pre>
+  </section>
+
+  <section id="example-consolidation">
+    <h3>Example 2: Consolidation</h3>
+    <pre class="example">
+:Consolidated_USMCA_2028
+    a life:Consolidation ;
+    life:consolidates      :USMCA_Original ;
+    life:consolidates      :USMCA_AmendmentProtocol_2028 ;
+    life:consolidationDate "2028-03-01"^^xsd:date ;
+    life:eventDate         "2028-03-01"^^xsd:date .
+
+:Consolidated_Art2_5_Para3
+    a life:ConsolidatedProvision ;
+    life:derivedFromConsolidation :Consolidated_USMCA_2028 ;
+    life:derivedFromProvision     :USMCA_Art2_5_Para3_v1 ;
+    life:derivedFromProvision     :USMCA_Art2_5_Para3_v2 ;
+    life:effectiveFrom    "2028-03-01"^^xsd:date ;
+    life:versionNumber    "consolidated-2028-03-01" ;
+    life:stateLabel       "Consolidated" .</pre>
+  </section>
+
+  <section id="example-repeal">
+    <h3>Example 3: Partial Repeal</h3>
+    <pre class="example">
+:Repeal_BIT_Art12
+    a life:Repeal, life:EffectiveModification ;
+    life:derivedFromInstruction :Instr_Repeal_BIT_Art12 ;
+    life:repeals    :BIT_Art12_v1 ;
+    life:eventDate  "2026-06-01"^^xsd:date .
+
+:Transition_BIT_Art12_Repealed
+    a life:LegalStateTransition ;
+    life:transitionsFrom life:StateEffective ;
+    life:transitionsTo   life:StateRepealed ;
+    life:eventDate       "2026-06-01"^^xsd:date ;
+    life:affects         :BIT_Art12_v1 .</pre>
+  </section>
+
+  <section id="example-jsonld">
+    <h3>Example 4: JSON-LD Representation</h3>
+    <p>
+      The full JSON-LD context and data graph are provided in
+      <code>examples/example.jsonld</code>. A fragment showing the versioned
+      provision and substitution:
+    </p>
+    <pre class="example">
+{
+  "@context": {
+    "life": "https://w3id.org/ldso/lifecycle#",
+    "effectiveFrom": { "@id": "life:effectiveFrom", "@type": "xsd:date" },
+    "supersedes":    { "@id": "life:supersedes",    "@type": "@id" }
+  },
+  "@graph": [
+    {
+      "@id": "ex:USMCA_Art2_5_Para3_v2",
+      "@type": "life:VersionedProvision",
+      "effectiveFrom": "2028-03-01",
+      "supersedes":    "ex:USMCA_Art2_5_Para3_v1",
+      "life:versionNumber": "2",
+      "life:stateLabel": "Effective"
+    }
+  ]
+}</pre>
+  </section>
+</section>
+
+<!-- ============================================================
+     13. References
+     ============================================================ -->
+<section id="references">
+  <h2>References</h2>
+
+  <section id="normative-references">
+    <h3>Normative References</h3>
+    <dl>
+      <dt>[[OWL2]]</dt><dd>OWL 2 Web Ontology Language Primer (Second Edition). W3C Recommendation.</dd>
+      <dt>[[SHACL]]</dt><dd>Shapes Constraint Language (SHACL). W3C Recommendation.</dd>
+      <dt>[[SKOS]]</dt><dd>SKOS Simple Knowledge Organization System Reference. W3C Recommendation.</dd>
+      <dt>[[PROV-O]]</dt><dd>PROV-O: The PROV Ontology. W3C Recommendation.</dd>
+      <dt>[[RFC2119]]</dt><dd>Key words for use in RFCs to Indicate Requirement Levels. IETF.</dd>
+    </dl>
+  </section>
+
+  <section id="informative-references">
+    <h3>Informative References</h3>
+    <dl>
+      <dt>[[LDSO-CORE]]</dt><dd>LDSO-Core: Legal Document Structure Ontology.</dd>
+      <dt>[[LDSO-ENTITIES]]</dt><dd>LDSO-Entities: Named Entity Reference Module.</dd>
+      <dt>[[LDSO-SEMANTICS]]</dt><dd>LDSO-Semantics: Legal Semantic Annotation Ontology.</dd>
+      <dt>[[AKN4UN]]</dt><dd>Akoma Ntoso for United Nations Documents.</dd>
+    </dl>
+  </section>
+</section>
+
+<!-- ============================================================
+     Appendix A — Full Ontology Turtle
+     ============================================================ -->
+<section class="appendix" id="appendix-ontology">
+  <h2>Appendix A: Full Ontology (Turtle)</h2>
+  <p>The complete <code>ontology.ttl</code> is provided alongside this
+  specification. The namespace IRI is
+  <code>https://w3id.org/ldso/lifecycle</code>.</p>
+  <p>Key ontology declaration:</p>
+  <pre class="example">
+&lt;https://w3id.org/ldso/lifecycle&gt;
+    a owl:Ontology ;
+    owl:versionIRI &lt;https://w3id.org/ldso/lifecycle/1.0.0&gt; ;
+    owl:imports    &lt;https://w3id.org/ldso/core&gt; ;
+    dct:title      "LDSO-Lifecycle: Legal Document Lifecycle and Amendment Ontology"@en ;
+    owl:versionInfo "1.0.0" .</pre>
+</section>
+
+<!-- ============================================================
+     Appendix B — SHACL Shapes Summary
+     ============================================================ -->
+<section class="appendix" id="appendix-shapes">
+  <h2>Appendix B: SHACL Shapes Summary</h2>
+  <p>All shapes are in <code>shapes.ttl</code>. See
+  <a href="#shacl-validation">Section 11</a> for the complete constraint table.</p>
+</section>
+
+<!-- ============================================================
+     Appendix C — Namespace Summary
+     ============================================================ -->
+<section class="appendix" id="appendix-namespace">
+  <h2>Appendix C: Namespace Summary</h2>
+  <table class="ont-table">
+    <thead>
+      <tr><th>Prefix</th><th>Namespace IRI</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>life:</code></td><td><code>https://w3id.org/ldso/lifecycle#</code></td><td>This ontology</td></tr>
+      <tr><td><code>ldso:</code></td><td><code>https://w3id.org/ldso/core#</code></td><td>LDSO-Core document structure</td></tr>
+
+      <tr><td><code>skos:</code></td><td><code>http://www.w3.org/2004/02/skos/core#</code></td><td>SKOS labels, definitions, schemes</td></tr>
+      <tr><td><code>dct:</code></td><td><code>http://purl.org/dc/terms/</code></td><td>Dublin Core metadata</td></tr>
+      <tr><td><code>prov:</code></td><td><code>http://www.w3.org/ns/prov#</code></td><td>PROV provenance</td></tr>
+      <tr><td><code>sh:</code></td><td><code>http://www.w3.org/ns/shacl#</code></td><td>SHACL shapes</td></tr>
+      <tr><td><code>xsd:</code></td><td><code>http://www.w3.org/2001/XMLSchema#</code></td><td>XML Schema datatypes</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>

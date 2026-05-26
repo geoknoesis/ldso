@@ -1,0 +1,643 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix leg:  <https://w3id.org/ldso/semantics#> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Semantics: Legal Semantic Annotation Ontology
+# Version: 1.0.0
+# Namespace: https://w3id.org/ldso/semantics#
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/semantics>
+  a owl:Ontology ;
+  dct:title "LDSO-Semantics: Legal Semantic Annotation Ontology"@en ;
+  dct:description """LDSO-Semantics provides a vocabulary for annotating the deontic
+and definitional content of legal provisions. It records what provisions
+oblige, permit, prohibit, or define — without encoding the structural
+form (covered by LDSO-Core) or the lifecycle state (covered by LDSO-Lifecycle).
+Annotations are first-class nodes that point to LDSO-Core structural elements
+via leg:annotates, keeping structure and meaning cleanly separated."""@en ;
+  dct:creator "Stephane Fellah" ;
+  dct:publisher "Geoknoesis LLC" ;
+  dct:created "2026-05-25"^^xsd:date ;
+  owl:versionIRI <https://w3id.org/ldso/semantics/1.0.0> ;
+  owl:versionInfo "1.0.0" ;
+  dct:modified "2026-05-25"^^xsd:date ;
+  owl:imports <https://w3id.org/ldso/core> ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+  vann:preferredNamespacePrefix "leg" ;
+  vann:preferredNamespaceUri "https://w3id.org/ldso/semantics#" ;
+  rdfs:comment """DISCLAIMER: This ontology is not an official W3C Standard or W3C Recommendation.
+It is a community/project specification using W3C ReSpec formatting conventions."""@en ;
+  rdfs:seeAlso <https://w3id.org/ldso/semantics/index.html> .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ABSTRACT BASE CLASS
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:LegalAnnotation
+  a owl:Class ;
+  rdfs:label "Legal Annotation"@en ;
+  skos:definition """An annotation that records a semantic property — deontic force,
+definitional content, scope, or exception — of a legal provision or element.
+A LegalAnnotation is not itself a structural element: it is a separate node
+that points to the structural element it annotates via leg:annotates."""@en ;
+  skos:scopeNote """Use subclasses (NormativeStatement, Definition, Exception, Scope)
+rather than LegalAnnotation directly. The separation between annotation and
+element allows the same provision to carry multiple annotations of different
+types and supports independent querying of structure and meaning.
+Never place leg:annotates on a ldso:LegalElement — the direction is
+annotation → element, not element → annotation."""@en ;
+  skos:example """
+ex:Oblig_Para1_Admit
+  a leg:Obligation ;
+  leg:annotates ex:para_1 ;
+  leg:normativeSubject ex:contracting_party ;
+  leg:deonticModal "shall" ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# NORMATIVE STATEMENTS
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:NormativeStatement
+  a owl:Class ;
+  rdfs:label "Normative Statement"@en ;
+  rdfs:subClassOf leg:LegalAnnotation ;
+  skos:definition """A legal annotation that records a deontic norm: an obligation,
+permission, prohibition, right, or discretion expressed in a provision. A
+NormativeStatement captures who is bound or empowered (normativeSubject),
+what the norm concerns (normativeObject), the modal verb used in the source
+text (deonticModal), and any conditions or exceptions."""@en ;
+  skos:scopeNote """Use the concrete subclasses Obligation, Permission, Prohibition,
+Right, or Discretion. All normative statements SHOULD carry leg:annotates
+(the source provision), leg:normativeSubject, and leg:deonticModal. The
+verbatim normative sentence MAY be captured in leg:normativeText."""@en ;
+  skos:example """
+ex:Perm_FilingParty
+  a leg:Permission ;
+  leg:annotates ex:art_3 ;
+  leg:normativeSubject ex:filing_party ;
+  leg:deonticModal "may" ;
+  leg:normativeText "A filing party may lodge the declaration electronically."@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:Obligation
+  a owl:Class ;
+  rdfs:label "Obligation"@en ;
+  rdfs:subClassOf leg:NormativeStatement ;
+  skos:definition """A normative statement imposing a duty on the normative subject to
+perform or refrain from a specific act. Expressed in legal text by SHALL,
+MUST, IS REQUIRED TO, IS OBLIGED TO, or equivalent constructions."""@en ;
+  skos:scopeNote """Model the subject of the duty via leg:normativeSubject and the
+matter of the duty via leg:normativeObject. Link to conditions via
+leg:conditionedBy and to exceptions via leg:exceptedBy.
+Example: 'Each Party shall eliminate customs duties on originating goods.'"""@en ;
+  skos:example """
+ex:Oblig_Para1_Admit
+  a leg:Obligation ;
+  leg:annotates ex:para_1 ;
+  leg:normativeSubject ex:contracting_party ;
+  leg:normativeObject ex:goods ;
+  leg:deonticModal "shall" ;
+  leg:conditionedBy ex:Cond_ReExport ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:Permission
+  a owl:Class ;
+  rdfs:label "Permission"@en ;
+  rdfs:subClassOf leg:NormativeStatement ;
+  skos:definition """A normative statement conferring on the normative subject a faculty
+to perform an act that would otherwise be restricted or uncertain. Expressed
+in legal text by MAY, IS PERMITTED TO, IS AUTHORIZED TO, or equivalent."""@en ;
+  skos:scopeNote """Permissions remove or relax a presumed restriction. Distinguish from
+Discretion (an explicit operational power) and from Right (which is
+stronger — entitlement against a duty-bearer).
+Example: 'A Party may request consultations with another Party.'"""@en ;
+  skos:example """
+ex:Perm_RequestConsultations
+  a leg:Permission ;
+  leg:annotates ex:art_22_1 ;
+  leg:normativeSubject ex:party ;
+  leg:deonticModal "may" ;
+  leg:normativeText "A Party may request consultations with another Party."@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:Prohibition
+  a owl:Class ;
+  rdfs:label "Prohibition"@en ;
+  rdfs:subClassOf leg:NormativeStatement ;
+  skos:definition """A normative statement forbidding the normative subject from
+performing a specific act. Expressed in legal text by SHALL NOT, MUST NOT,
+IS PROHIBITED FROM, NO PARTY SHALL, or equivalent constructions."""@en ;
+  skos:scopeNote """A Prohibition is the negation of a Permission. Unlike a missing
+Permission, a Prohibition is an explicit legal barrier.
+Example: 'No Party shall impose any form of export price requirement.'"""@en ;
+  skos:example """
+ex:Prohib_ExportPriceReq
+  a leg:Prohibition ;
+  leg:annotates ex:art_2_11 ;
+  leg:normativeSubject ex:party ;
+  leg:deonticModal "shall not" ;
+  leg:normativeText "No Party shall impose any form of export price requirement."@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:Right
+  a owl:Class ;
+  rdfs:label "Right"@en ;
+  rdfs:subClassOf leg:NormativeStatement ;
+  skos:definition """A normative statement conferring on the normative subject a legal
+entitlement against one or more duty-bearers. A Right correlates with a
+corresponding Obligation on another party. Expressed by IS ENTITLED TO,
+HAS THE RIGHT TO, SHALL BE ENTITLED TO, or equivalent."""@en ;
+  skos:scopeNote """Use when the provision confers an enforceable entitlement, not
+merely a permission. Link the correlated Obligation (on the duty-bearer)
+via leg:correlatesTo when that obligation is separately annotated.
+Example: 'Any person has the right to submit a declaration.'"""@en ;
+  skos:example """
+ex:Right_SubmitDeclaration
+  a leg:Right ;
+  leg:annotates ex:art_5_2 ;
+  leg:normativeSubject ex:any_person ;
+  leg:deonticModal "has the right to" ;
+  leg:correlatesTo ex:Oblig_AcceptDeclaration ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:Discretion
+  a owl:Class ;
+  rdfs:label "Discretion"@en ;
+  rdfs:subClassOf leg:NormativeStatement ;
+  skos:definition """A normative statement conferring on the normative subject an
+operational power to take action at its own judgment. Expressed by MAY AT
+ITS DISCRETION, MAY DETERMINE, IS EMPOWERED TO, or equivalent."""@en ;
+  skos:scopeNote """Distinguish Discretion from Permission. A Permission removes a
+restriction; a Discretion grants a positive operational capability — typically
+to an administrative or institutional actor. A customs authority's power to
+inspect goods is a Discretion; a trader's right to file voluntarily is a
+Permission.
+Example: 'The competent authority may extend the period of temporary admission.'"""@en ;
+  skos:example """
+ex:Disc_ExtendAdmission
+  a leg:Discretion ;
+  leg:annotates ex:art_7_3 ;
+  leg:normativeSubject ex:competent_authority ;
+  leg:deonticModal "may" ;
+  leg:normativeText "The competent authority may extend the period of temporary admission."@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DEFINITION
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:Definition
+  a owl:Class ;
+  rdfs:label "Definition"@en ;
+  rdfs:subClassOf leg:LegalAnnotation ;
+  skos:definition """A legal annotation recording a term formally defined within a
+provision. The definition specifies the meaning of a named concept for the
+purposes of the legal instrument. A Definition carries the term itself
+(leg:definedTerm) and the definition text (leg:definitionText)."""@en ;
+  skos:scopeNote """Definitions appear in dedicated 'Definitions' articles and occasionally
+inline in substantive provisions. Each formal definition SHOULD be captured
+as a separate Definition instance, even when multiple terms are defined in
+one article. Link via leg:annotates to the structural element that contains
+the definition. Link to the entity being defined (if declared in
+LDSO-Entities) via leg:definesEntity."""@en ;
+  skos:example """
+ex:Def_TemporaryAdmission
+  a leg:Definition ;
+  leg:annotates ex:art_1 ;
+  leg:definedTerm "temporary admission"@en ;
+  leg:definitionText """Temporary admission means the customs procedure
+under which certain goods can be brought into a customs territory
+conditionally relieved from payment of import duties and taxes."""@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# EXCEPTION AND EXEMPTION
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:Exception
+  a owl:Class ;
+  rdfs:label "Exception"@en ;
+  rdfs:subClassOf leg:LegalAnnotation ;
+  skos:definition """A legal annotation recording a carve-out from the general rule
+expressed by a NormativeStatement. An Exception specifies circumstances,
+categories, or cases to which the norm does not apply."""@en ;
+  skos:scopeNote """Link to the NormativeStatement being excepted via leg:exceptionOf.
+An Exception SHOULD also point via leg:annotates to the provision in which
+the exception is stated (which may differ from the provision carrying the
+excepted norm). Exceptions are logically distinct from conditions: a condition
+restricts when a norm applies; an exception carves out categories where the
+norm is suspended despite being otherwise applicable."""@en ;
+  skos:example """
+ex:Except_GoodsInTransit
+  a leg:Exception ;
+  leg:annotates ex:art_3_4 ;
+  leg:exceptionOf ex:Oblig_Para1_Admit ;
+  leg:exceptionText "Goods in direct transit are excluded from the scope of Article 3.1."@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:Exemption
+  a owl:Class ;
+  rdfs:label "Exemption"@en ;
+  rdfs:subClassOf leg:Exception ;
+  skos:definition """A specific exception that releases a named subject, category, or
+item from a norm that would otherwise bind it. An Exemption is more
+specific than an Exception: it names who or what is exempt, not merely
+the circumstances of inapplicability."""@en ;
+  skos:scopeNote """Use when the legal text says 'X is exempt from Y', 'Y shall not
+apply to X', or 'X is excluded from the scope of this Article'.
+Example: 'Goods for temporary admission in transit are exempt from the
+standard documentation requirement.'"""@en ;
+  skos:example """
+ex:Exemp_TransitGoods
+  a leg:Exemption ;
+  leg:annotates ex:art_5_3 ;
+  leg:exceptionOf ex:Oblig_DocumentaryProof ;
+  leg:normativeSubject ex:transit_goods ;
+  leg:exceptionText "Goods for temporary admission in transit are exempt from the standard documentation requirement."@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CONDITION
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:Condition
+  a owl:Class ;
+  rdfs:label "Condition"@en ;
+  skos:definition """A prerequisite or trigger that must be satisfied for a
+NormativeStatement to apply or take effect. A Condition is not itself a
+LegalAnnotation — it is a reusable node that can be shared across multiple
+NormativeStatements via leg:conditionedBy."""@en ;
+  skos:scopeNote """Conditions express the 'if' part of if-then normative structures.
+A single Condition may be referenced by multiple NormativeStatements (e.g.,
+'if the goods are intended for re-exportation, then X and also Y').
+Record the natural-language condition in leg:conditionText. Link to the
+provision stating the condition via leg:statedIn.
+Distinct from an Exception: a Condition restricts when a norm applies;
+an Exception carves out categories from an otherwise applicable norm."""@en ;
+  skos:example """
+ex:Cond_ReExport
+  a leg:Condition ;
+  leg:conditionText "The goods are intended for re-exportation within the authorised period."@en ;
+  leg:statedIn ex:art_2_1 ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SCOPE
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:Scope
+  a owl:Class ;
+  rdfs:label "Scope"@en ;
+  rdfs:subClassOf leg:LegalAnnotation ;
+  skos:definition """A legal annotation describing the range of subjects, objects,
+or situations to which a provision or group of provisions applies."""@en ;
+  skos:scopeNote """Use to record the personal scope (who is bound), material scope
+(what activities or goods), territorial scope (which jurisdictions), and
+temporal scope (when the provision applies) of a norm or document section.
+Link via leg:annotates to the element declaring the scope and via
+leg:scopeOf to any NormativeStatements within that scope."""@en ;
+  skos:example """
+ex:Scope_Chapter2
+  a leg:Scope ;
+  leg:annotates ex:art_2_1 ;
+  leg:scopeText "This Chapter applies to trade in goods between the Parties."@en ;
+  leg:scopeOf ex:Oblig_EliminateCustomsDuties ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# OBJECT PROPERTIES
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:annotates
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "annotates"@en ;
+  skos:definition """Relates a LegalAnnotation to the structural element (ldso:LegalElement)
+whose meaning it records."""@en ;
+  rdfs:range ldso:LegalElement ;
+  owl:inverseOf leg:annotatedBy ;
+  skos:scopeNote """Every LegalAnnotation MUST carry at least one leg:annotates triple
+pointing to its source provision. One annotation may annotate multiple
+elements (e.g., an obligation spanning several paragraphs), but each
+such element should be linked separately. This is the primary bridge
+between the structural layer (LDSO-Core) and the semantic layer."""@en ;
+  skos:example """
+ex:Oblig_Para1_Admit  leg:annotates  ex:para_1 ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:annotatedBy
+  a owl:ObjectProperty ;
+  rdfs:label "annotated by"@en ;
+  skos:definition """Inverse of leg:annotates. Relates a structural element to all
+LegalAnnotation instances that annotate it."""@en ;
+  rdfs:range  leg:LegalAnnotation ;
+  owl:inverseOf leg:annotates ;
+  skos:scopeNote """Use for navigation from a provision to its annotations, e.g., to
+retrieve all obligations on a given article. The primary assertion direction
+is annotation → element via leg:annotates; this inverse is inferred but
+may be asserted explicitly for query performance."""@en ;
+  skos:example """
+ex:para_1  leg:annotatedBy  ex:Oblig_Para1_Admit ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:normativeSubject
+  a owl:ObjectProperty ;
+  rdfs:label "normative subject"@en ;
+  skos:definition """Relates a NormativeStatement to the entity, role, or category of
+persons who bear the obligation, enjoy the permission, or hold the right."""@en ;
+  skos:scopeNote """The normative subject is typically an ent:Organization, ent:Role,
+or ent:Person declared in LDSO-Entities. It may also be a structural element
+(e.g., 'each Party' where Party is a named entity) or an undefined term.
+A norm may have multiple subjects; each is linked by a separate triple.
+Example: leg:normativeSubject :contracting_party ."""@en ;
+  skos:example """
+ex:Oblig_Para1_Admit  leg:normativeSubject  ex:contracting_party ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:normativeObject
+  a owl:ObjectProperty ;
+  rdfs:label "normative object"@en ;
+  skos:definition """Relates a NormativeStatement to the matter, action, thing, or
+situation the norm concerns — what is to be done, permitted, or forbidden."""@en ;
+  skos:scopeNote """The normative object is typically an ent:Concept or ent:Location from
+LDSO-Entities, or a structural element describing the relevant provision
+or category. It answers the question 'obligation to do WHAT?'
+Example: leg:normativeObject :goods_in_temporary_admission ."""@en ;
+  skos:example """
+ex:Oblig_Para1_Admit  leg:normativeObject  ex:goods_in_temporary_admission ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:conditionedBy
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "conditioned by"@en ;
+  skos:definition """Relates a NormativeStatement to a Condition that must be satisfied
+for the norm to apply or take effect."""@en ;
+  rdfs:range leg:Condition ;
+  owl:inverseOf leg:conditionOf ;
+  skos:scopeNote """A NormativeStatement may be conditioned by multiple Conditions (all
+of which are implicitly conjoined unless stated otherwise). Use
+leg:conditionText on the Condition for the natural-language expression
+of the prerequisite."""@en ;
+  skos:example """
+ex:Oblig_Para1_Admit  leg:conditionedBy  ex:Cond_ReExport ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:conditionOf
+  a owl:ObjectProperty ;
+  rdfs:label "condition of"@en ;
+  skos:definition """Inverse of leg:conditionedBy. Relates a Condition to the
+NormativeStatements it governs."""@en ;
+  owl:inverseOf leg:conditionedBy ;
+  skos:example """
+ex:Cond_ReExport  leg:conditionOf  ex:Oblig_Para1_Admit ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:exceptedBy
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "excepted by"@en ;
+  skos:definition """Relates a NormativeStatement to an Exception or Exemption that
+carves out cases where the norm does not apply."""@en ;
+  rdfs:range leg:Exception ;
+  owl:inverseOf leg:exceptionOf ;
+  skos:scopeNote """A single NormativeStatement may have multiple exceptions. Record
+each via a separate leg:exceptedBy triple linking to a distinct
+leg:Exception or leg:Exemption instance."""@en ;
+  skos:example """
+ex:Oblig_Para1_Admit  leg:exceptedBy  ex:Except_GoodsInTransit ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:exceptionOf
+  a owl:ObjectProperty ;
+  rdfs:label "exception of"@en ;
+  skos:definition """Inverse of leg:exceptedBy. Relates an Exception to the
+NormativeStatement from which it creates a carve-out."""@en ;
+  owl:inverseOf leg:exceptedBy ;
+  rdfs:range leg:NormativeStatement ;
+  skos:example """
+ex:Except_GoodsInTransit  leg:exceptionOf  ex:Oblig_Para1_Admit ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:scopeOf
+  a owl:ObjectProperty ;
+  rdfs:label "scope of"@en ;
+  skos:definition """Relates a Scope annotation to the LegalAnnotation(s) whose
+applicability it delimits."""@en ;
+  rdfs:range leg:LegalAnnotation ;
+  owl:inverseOf leg:hasScopeAnnotation ;
+  skos:scopeNote """Use when a scope provision explicitly bounds a named set of norms.
+Link to individual NormativeStatements or leave the range open when the
+scope governs the entire article implicitly."""@en ;
+  skos:example """
+ex:Scope_Chapter2  leg:scopeOf  ex:Oblig_EliminateCustomsDuties ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:hasScopeAnnotation
+  a owl:ObjectProperty ;
+  rdfs:label "has scope annotation"@en ;
+  skos:definition """Inverse of leg:scopeOf. Relates a LegalAnnotation to a Scope
+that delimits its applicability."""@en ;
+  owl:inverseOf leg:scopeOf ;
+  skos:example """
+ex:Oblig_EliminateCustomsDuties  leg:hasScopeAnnotation  ex:Scope_Chapter2 ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:statedIn
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "stated in"@en ;
+  skos:definition """Relates a Condition or Exception to the structural element in which
+it is textually stated, when that element differs from the element carrying
+the annotated norm."""@en ;
+  rdfs:range ldso:LegalElement ;
+  skos:scopeNote """Use when conditions or exceptions are stated in a different provision
+from the one they govern — for example, a general exceptions article that
+modifies obligations stated elsewhere."""@en ;
+  skos:example """
+ex:Cond_ReExport  leg:statedIn  ex:art_2_1 ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:correlatesTo
+  a owl:ObjectProperty, owl:IrreflexiveProperty ;
+  rdfs:label "correlates to"@en ;
+  skos:definition """Relates a Right to the Obligation on another party that is its
+normative correlate in a Hohfeldian sense."""@en ;
+  rdfs:range leg:Obligation ;
+  skos:scopeNote """Use when both the right and its correlating obligation are separately
+annotated. Not required — the correlate relationship is implicit if both
+annotations target the same provision."""@en ;
+  skos:example """
+ex:Right_SubmitDeclaration  leg:correlatesTo  ex:Oblig_AcceptDeclaration ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:definesEntity
+  a owl:ObjectProperty ;
+  rdfs:label "defines entity"@en ;
+  skos:definition """Relates a Definition annotation to the named entity (from
+LDSO-Entities) that represents the concept being defined."""@en ;
+  skos:scopeNote """Use when the defined term has a corresponding ent:Concept, ent:Role,
+or other ent:NamedEntity in the LDSO-Entities catalogue. This cross-layer
+link enables queries like 'find all provisions that define the concept
+of temporary admission'."""@en ;
+  skos:example """
+ex:Def_TemporaryAdmission  leg:definesEntity  ent:TemporaryAdmission ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DATATYPE PROPERTIES
+# ═════════════════════════════════════════════════════════════════════════════
+
+leg:deonticModal
+  a owl:DatatypeProperty ;
+  rdfs:label "deontic modal"@en ;
+  skos:definition """The modal verb or modal construction used in the source text to
+express the deontic force of a NormativeStatement, preserved verbatim."""@en ;
+  rdfs:range xsd:string ;
+  skos:scopeNote """Examples: 'shall', 'shall not', 'may', 'must', 'is entitled to',
+'is required to', 'may not'. Use lower-case and preserve multi-word
+constructions. This property captures the linguistic evidence for the
+deontic classification; the classification itself is carried by the
+subclass (Obligation, Permission, etc.)."""@en ;
+  skos:example """
+ex:Oblig_Para1_Admit  leg:deonticModal  "shall" .
+ex:Prohib_ExportPriceReq  leg:deonticModal  "shall not" .
+ex:Perm_RequestConsultations  leg:deonticModal  "may" ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:normativeText
+  a owl:DatatypeProperty ;
+  rdfs:label "normative text"@en ;
+  skos:definition """The verbatim sentence or clause from the source provision that
+expresses the NormativeStatement, language-tagged."""@en ;
+  rdfs:range rdf:langString ;
+  skos:scopeNote """Capture the minimal sentence that makes the norm self-contained.
+Always assert with a BCP 47 language tag. Use when exact text provenance
+is important for human review or NLP pipelines."""@en ;
+  skos:example """
+ex:Oblig_Para1_Admit
+  leg:normativeText "Each Party shall admit goods temporarily free of customs duties."@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:definedTerm
+  a owl:DatatypeProperty ;
+  rdfs:label "defined term"@en ;
+  skos:definition """The term being defined by a Definition annotation, expressed as a
+language-tagged literal matching the form used in the source text."""@en ;
+  rdfs:range rdf:langString ;
+  skos:scopeNote """Use the exact form of the term as it appears in the definition
+clause, with the appropriate BCP 47 language tag.
+Example: leg:definedTerm \"temporary admission\"@en ."""@en ;
+  skos:example """
+ex:Def_TemporaryAdmission  leg:definedTerm  "temporary admission"@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:definitionText
+  a owl:DatatypeProperty ;
+  rdfs:label "definition text"@en ;
+  skos:definition """The verbatim text of a definition as it appears in the legal
+instrument, language-tagged."""@en ;
+  rdfs:range rdf:langString ;
+  skos:scopeNote """Capture the complete definition clause, starting after the defined
+term and the 'means' or 'refers to' conjunction. Always assert with a
+language tag. Where the official French or Spanish text differs
+substantively, add additional triples with the appropriate language tag."""@en ;
+  skos:example """
+ex:Def_TemporaryAdmission
+  leg:definitionText "means the customs procedure under which certain goods can be brought into a customs territory conditionally relieved from payment of import duties and taxes"@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:conditionText
+  a owl:DatatypeProperty ;
+  rdfs:label "condition text"@en ;
+  skos:definition """The natural-language formulation of a Condition as it appears in
+or is derived from the source provision, language-tagged."""@en ;
+  rdfs:range rdf:langString ;
+  skos:scopeNote """May be a direct quotation or a paraphrase derived from the provision
+text. Always assert with a language tag. Where the condition spans multiple
+sentences, capture the minimal formulation that makes the precondition
+self-contained."""@en ;
+  skos:example """
+ex:Cond_ReExport
+  leg:conditionText  "The goods are intended for re-exportation within the authorised period."@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:scopeText
+  a owl:DatatypeProperty ;
+  rdfs:label "scope text"@en ;
+  skos:definition """A natural-language description of a Scope annotation derived from
+or quoting the source provision, language-tagged."""@en ;
+  rdfs:range rdf:langString ;
+  skos:example """
+ex:Scope_Chapter2
+  leg:scopeText  "This Chapter applies to trade in goods between the Parties."@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+leg:exceptionText
+  a owl:DatatypeProperty ;
+  rdfs:label "exception text"@en ;
+  skos:definition """The verbatim or paraphrased text of an Exception or Exemption
+as it appears in the source provision, language-tagged."""@en ;
+  rdfs:range rdf:langString ;
+  skos:example """
+ex:Except_GoodsInTransit
+  leg:exceptionText  "Goods in direct transit are excluded from the scope of Article 3.1."@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DISJOINTNESS AXIOMS
+# ═════════════════════════════════════════════════════════════════════════════
+
+# Deontic types are mutually exclusive: a norm cannot simultaneously be an
+# obligation AND a permission AND a prohibition, etc.
+[ a owl:AllDisjointClasses ;
+  owl:members ( leg:Obligation leg:Permission leg:Prohibition
+                leg:Right leg:Discretion ) ] .
+
+# Top-level annotation categories are mutually exclusive.
+# NormativeStatement, Definition, Exception, and Scope each represent
+# a distinct semantic role; no annotation should occupy two roles.
+[ a owl:AllDisjointClasses ;
+  owl:members ( leg:NormativeStatement leg:Definition
+                leg:Exception leg:Scope ) ] .
+
+# A Condition is explicitly NOT a LegalAnnotation (it is a reusable
+# prerequisite node, not an annotation of a provision).
+leg:Condition owl:disjointWith leg:LegalAnnotation .

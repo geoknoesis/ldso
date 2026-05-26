@@ -1,0 +1,769 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+@prefix leg:  <https://w3id.org/ldso/semantics#> .
+@prefix ops:  <https://w3id.org/ldso/operations#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Operations: Operational Rule Layer
+# Version: 1.0.0
+# Namespace: https://w3id.org/ldso/operations#
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/operations>
+  a owl:Ontology ;
+  dct:title "LDSO-Operations: Operational Rule Layer"@en ;
+  dct:description """A domain-agnostic RDF/OWL vocabulary for expressing the operational
+machinery of legal rules — triggers, criteria, procedures, schedules, measurements,
+and documentary requirements. Provides the bridge between abstract legal semantics
+(LDSO-Semantics, Layer 4) and domain-specific vertical ontologies (Layer 5b)."""@en ;
+  dct:creator "Stephane Fellah" ;
+  dct:publisher "Geoknoesis LLC" ;
+  dct:created "2026-05-25"^^xsd:date ;
+  owl:versionIRI <https://w3id.org/ldso/operations/1.0.0> ;
+  owl:versionInfo "1.0.0" ;
+  dct:modified "2026-05-25"^^xsd:date ;
+  owl:imports <https://w3id.org/ldso/semantics> ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+  vann:preferredNamespacePrefix "ops" ;
+  vann:preferredNamespaceUri "https://w3id.org/ldso/operations#" ;
+  rdfs:seeAlso <https://w3id.org/ldso/operations/index.html> ;
+  rdfs:comment """DISCLAIMER: This ontology is not an official W3C Standard or W3C Recommendation.
+It is a community/project specification using W3C ReSpec formatting conventions."""@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# OPERATIVE RULE
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:OperativeRule
+  a owl:Class ;
+  rdfs:label "Operative Rule"@en ;
+  skos:definition """A machine-executable rule that operationalizes one or more normative
+statements from LDSO-Semantics. An operative rule binds a trigger (what activates it),
+zero or more criteria (qualifying conditions), an optional procedure (ordered steps),
+an optional schedule (temporal constraints), and zero or more documentary requirements."""@en ;
+  skos:scopeNote """An OperativeRule is the computational counterpart of a leg:NormativeStatement.
+Every OperativeRule MUST reference the NormativeStatement it operationalizes via
+ops:operativizes and MUST carry at least one ops:hasTrigger. Multiple OperativeRules
+may operationalize the same NormativeStatement to represent different jurisdictional
+implementations or procedural paths. OperativeRules are domain-agnostic; domain
+verticals (Layer 5b) subclass OperativeRule to add domain-specific constraints."""@en ;
+  skos:example """
+ex:Rule_TemporaryAdmission
+  a ops:OperativeRule ;
+  rdfs:label "Temporary admission rule — ATA carnet"@en ;
+  ops:operativizes ex:Oblig_AdmitGoods ;
+  ops:hasTrigger ex:Trigger_CarnetPresented ;
+  ops:hasCriterion ex:Crit_ValidCarnet ;
+  ops:hasProcedure ex:Proc_CarnetAdmission ;
+  ops:hasSchedule ex:Sched_6MonthDeadline ."""@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# TRIGGER HIERARCHY
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:Trigger
+  a owl:Class ;
+  rdfs:label "Trigger"@en ;
+  skos:definition """A condition or event whose occurrence activates an operative rule.
+When the trigger fires and all associated criteria are satisfied, the rule's normative
+consequence applies."""@en ;
+  skos:scopeNote """A trigger represents the activation condition of a rule, distinct from
+criteria which represent qualifying conditions. Use a specific subclass (EventTrigger,
+ThresholdTrigger, StatusTrigger, TemporalTrigger, RequestTrigger) rather than
+instantiating Trigger directly. An OperativeRule MUST have at least one trigger;
+multiple triggers are interpreted disjunctively — the rule fires when any fires."""@en ;
+  skos:example """
+ex:Trigger_CarnetPresented
+  a ops:RequestTrigger ;
+  rdfs:label "ATA carnet presented at customs post"@en ;
+  ops:triggerDescription "Fires when a holder presents an ATA carnet at a customs post."@en ."""@en .
+
+ops:EventTrigger
+  a owl:Class ;
+  rdfs:label "Event Trigger"@en ;
+  skos:definition "A trigger activated by a named real-world event — a legal occurrence, a natural occurrence, or a declared situation."@en ;
+  rdfs:subClassOf ops:Trigger ;
+  skos:scopeNote "Examples: entry into force of an agreement, occurrence of a customs inspection, declaration of a state of emergency, occurrence of a reportable incident."@en ;
+  skos:example """
+ex:Trigger_EntryIntoForce
+  a ops:EventTrigger ;
+  rdfs:label "Entry into force trigger"@en ;
+  ops:triggerDescription "Fires when the agreement enters into force."@en ."""@en .
+
+ops:ThresholdTrigger
+  a owl:Class ;
+  rdfs:label "Threshold Trigger"@en ;
+  skos:definition "A trigger activated when a measured value crosses a specified numeric boundary."@en ;
+  rdfs:subClassOf ops:Trigger ;
+  skos:scopeNote "Examples: import volume exceeds quota limit, concentration level exceeds permitted maximum, transaction value exceeds reporting threshold. MUST carry ops:hasMeasurement."@en ;
+  skos:example """
+ex:Trigger_QuotaExceeded
+  a ops:ThresholdTrigger ;
+  rdfs:label "Import quota threshold trigger"@en ;
+  ops:hasMeasurement ex:Meas_QuotaLimit ."""@en .
+
+ops:StatusTrigger
+  a owl:Class ;
+  rdfs:label "Status Trigger"@en ;
+  skos:definition "A trigger activated when a subject entity reaches or transitions into a specified status."@en ;
+  rdfs:subClassOf ops:Trigger ;
+  skos:scopeNote "Examples: goods declared as temporarily admitted, applicant granted authorized operator status, entity classified as non-compliant."@en ;
+  skos:example """
+ex:Trigger_GoodsPresented
+  a ops:StatusTrigger ;
+  rdfs:label "Goods presented at border"@en ;
+  ops:triggerDescription "Activated when goods are presented at a border crossing point under an ATA carnet."@en ."""@en .
+
+ops:TemporalTrigger
+  a owl:Class ;
+  rdfs:label "Temporal Trigger"@en ;
+  skos:definition "A trigger activated at a specific date, after a specified duration, or at the boundary of a time period."@en ;
+  rdfs:subClassOf ops:Trigger ;
+  skos:scopeNote "Examples: annual reporting date, 30 days after notification, end of fiscal year, anniversary of agreement entry into force."@en ;
+  skos:example """
+ex:Trigger_AnnualReview
+  a ops:TemporalTrigger ;
+  rdfs:label "Annual review trigger"@en ;
+  ops:triggerDescription "Fires on the first day of each calendar year."@en ."""@en .
+
+ops:RequestTrigger
+  a owl:Class ;
+  rdfs:label "Request Trigger"@en ;
+  skos:definition "A trigger activated by the submission of a request, application, declaration, or notification by a party."@en ;
+  rdfs:subClassOf ops:Trigger ;
+  skos:scopeNote "Examples: application for a permit, declaration of temporary admission, submission of an appeal, filing of a compliance report."@en ;
+  skos:example """
+ex:Trigger_CarnetPresented
+  a ops:RequestTrigger ;
+  rdfs:label "ATA carnet presented at customs post"@en ;
+  ops:triggerDescription "Fires when a holder presents an ATA carnet at a customs post."@en ."""@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CRITERION HIERARCHY
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:Criterion
+  a owl:Class ;
+  rdfs:label "Criterion"@en ;
+  skos:definition """A qualifying condition that must be satisfied for an operative rule to
+apply to a given subject or situation. Criteria are evaluated after a trigger fires;
+the rule applies only when all associated criteria are met."""@en ;
+  skos:scopeNote """Criteria represent the 'provided that' conditions of a rule. Use a
+specific subclass rather than instantiating Criterion directly. Multiple criteria
+on the same rule are interpreted conjunctively — all must be satisfied — unless
+the rule explicitly states otherwise."""@en ;
+  skos:example """
+ex:Crit_ValidCarnet
+  a ops:DocumentaryCriterion ;
+  rdfs:label "Valid ATA carnet must be presented"@en ;
+  ops:hasDocumentaryRequirement ex:DocReq_ATACarnet ."""@en .
+
+ops:EligibilityCriterion
+  a owl:Class ;
+  rdfs:label "Eligibility Criterion"@en ;
+  skos:definition "A criterion requiring that the subject entity possesses a specified status, attribute, or qualification."@en ;
+  rdfs:subClassOf ops:Criterion ;
+  skos:scopeNote "Examples: applicant must be a registered operator, goods must originate in a contracting party, entity must hold a valid authorization."@en ;
+  skos:example """
+ex:Crit_AuthorizedOperator
+  a ops:EligibilityCriterion ;
+  rdfs:label "Applicant must be an authorized economic operator"@en ;
+  ops:criterionDescription "The applicant must hold a current authorized economic operator certificate."@en ."""@en .
+
+ops:ClassificationCriterion
+  a owl:Class ;
+  rdfs:label "Classification Criterion"@en ;
+  skos:definition "A criterion requiring that the subject be classified within a specified category or taxonomy."@en ;
+  rdfs:subClassOf ops:Criterion ;
+  skos:scopeNote """Examples: goods must fall within a specified product category, activity must be classified as a regulated activity. Domain verticals specialize this class
+to add domain-specific classification schemes (e.g., HS chapter, emission category, asset class)."""@en ;
+  skos:example """
+ex:Crit_HSChapter87
+  a ops:ClassificationCriterion ;
+  rdfs:label "Goods must be classified under HS Chapter 87"@en ;
+  ops:criterionDescription "The goods must be classified under Harmonized System Chapter 87 (vehicles)."@en ."""@en .
+
+ops:ThresholdCriterion
+  a owl:Class ;
+  rdfs:label "Threshold Criterion"@en ;
+  skos:definition "A criterion requiring that a measured value stand in a specified relation to a numeric threshold."@en ;
+  rdfs:subClassOf ops:Criterion ;
+  skos:scopeNote "Examples: regional value content must be at least 60%, emission level must not exceed permitted maximum. MUST carry ops:hasMeasurement."@en ;
+  skos:example """
+ex:Crit_MinRVC60
+  a ops:ThresholdCriterion ;
+  rdfs:label "Regional value content at least 60%"@en ;
+  ops:hasMeasurement ex:Meas_MinRVC ."""@en .
+
+ops:DocumentaryCriterion
+  a owl:Class ;
+  rdfs:label "Documentary Criterion"@en ;
+  skos:definition "A criterion requiring that specified documentary evidence be presented or on file."@en ;
+  rdfs:subClassOf ops:Criterion ;
+  skos:scopeNote "Examples: valid certificate of origin must be presented, ATA carnet must be produced, proof of insurance must be on file. MUST carry ops:hasDocumentaryRequirement."@en ;
+  skos:example """
+ex:Crit_ValidCarnet
+  a ops:DocumentaryCriterion ;
+  rdfs:label "Valid ATA carnet required"@en ;
+  ops:hasDocumentaryRequirement ex:DocReq_ATACarnet ."""@en .
+
+ops:TemporalCriterion
+  a owl:Class ;
+  rdfs:label "Temporal Criterion"@en ;
+  skos:definition "A criterion requiring that the rule be invoked within a specified time window or before a deadline."@en ;
+  rdfs:subClassOf ops:Criterion ;
+  skos:scopeNote "Examples: application must be filed within 30 days of notification, goods must be re-exported before the authorized period expires."@en ;
+  skos:example """
+ex:Crit_WithinAdmissionPeriod
+  a ops:TemporalCriterion ;
+  rdfs:label "Goods must be re-exported within authorised period"@en ;
+  ops:criterionDescription "The goods must be re-exported before the temporary admission period expires."@en ."""@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# PROCEDURE AND STEP
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:Procedure
+  a owl:Class ;
+  rdfs:label "Procedure"@en ;
+  skos:definition """An ordered sequence of steps that must be carried out to fulfil an
+operative rule. A procedure makes explicit the 'how' of compliance — the actions,
+actors, and sequence required to satisfy the normative obligation."""@en ;
+  skos:scopeNote """A Procedure aggregates Step instances linked via ops:hasStep. Steps are
+ordered by ops:stepOrder. A procedure may specify the role responsible for each step via
+ops:performedBy on individual Step instances. A rule SHOULD reference at most one
+Procedure; alternative procedural paths SHOULD be modelled as separate OperativeRules."""@en ;
+  skos:example """
+ex:Proc_CarnetAdmission
+  a ops:Procedure ;
+  rdfs:label "ATA carnet temporary admission procedure"@en ;
+  ops:hasStep ex:Step1_VerifyCarnet ;
+  ops:hasStep ex:Step2_InspectGoods ;
+  ops:hasStep ex:Step3_RecordEntry ;
+  ops:hasStep ex:Step4_StampCounterfoil ."""@en .
+
+ops:Step
+  a owl:Class ;
+  rdfs:label "Step"@en ;
+  skos:definition "A single, discrete action within a procedure, carried out by a specified role in a defined order."@en ;
+  skos:scopeNote """Every Step MUST carry ops:stepOrder (xsd:integer, 1-based) and
+ops:stepDescription. Steps within the same Procedure MUST have unique stepOrder values.
+The optional ops:nextStep property makes the sequence traversable as a linked list in
+addition to the stepOrder ordering."""@en ;
+  skos:example """
+ex:Step1_VerifyCarnet
+  a ops:Step ;
+  rdfs:label "Step 1 — Verify carnet validity"@en ;
+  ops:stepOrder 1 ;
+  ops:stepDescription "Check that the ATA carnet has not expired and covers the goods presented."@en ;
+  ops:performedBy ex:CustomsOfficer ;
+  ops:nextStep ex:Step2_InspectGoods ."""@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SCHEDULE HIERARCHY
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:Schedule
+  a owl:Class ;
+  rdfs:label "Schedule"@en ;
+  skos:definition """A temporal constraint associated with an operative rule, specifying when
+the rule applies, how long its effects persist, or the timing of required actions."""@en ;
+  skos:scopeNote """Use a specific subclass (Deadline, RecurringSchedule, PeriodSchedule)
+rather than instantiating Schedule directly. A single rule may carry multiple schedules
+(e.g., a filing deadline and a recurring renewal schedule)."""@en ;
+  skos:example """
+ex:Sched_6MonthDeadline
+  a ops:Deadline ;
+  rdfs:label "6-month temporary admission deadline"@en ;
+  ops:deadlineDuration "P6M"^^xsd:duration ."""@en .
+
+ops:Deadline
+  a owl:Class ;
+  rdfs:label "Deadline"@en ;
+  skos:definition "A schedule specifying a fixed date or a duration after which compliance is required or an authorization expires."@en ;
+  rdfs:subClassOf ops:Schedule ;
+  skos:scopeNote """Use ops:deadlineDate for an absolute date (xsd:date) or ops:deadlineDuration
+for a relative duration from trigger (xsd:duration). Every Deadline MUST carry at least
+one of these two properties."""@en ;
+  skos:example """
+ex:Sched_6MonthAdmission
+  a ops:Deadline ;
+  rdfs:label "6-month temporary admission deadline"@en ;
+  ops:deadlineDuration "P6M"^^xsd:duration ."""@en .
+
+ops:RecurringSchedule
+  a owl:Class ;
+  rdfs:label "Recurring Schedule"@en ;
+  skos:definition "A schedule specifying a repeating interval at which an action must be performed or a condition must be checked."@en ;
+  rdfs:subClassOf ops:Schedule ;
+  skos:scopeNote "MUST carry ops:recurrencePeriod (xsd:duration). Examples: quarterly reporting (P3M), annual review (P1Y), daily monitoring (P1D)."@en ;
+  skos:example """
+ex:Sched_AnnualReport
+  a ops:RecurringSchedule ;
+  rdfs:label "Annual reporting schedule"@en ;
+  ops:recurrencePeriod "P1Y"^^xsd:duration ."""@en .
+
+ops:PeriodSchedule
+  a owl:Class ;
+  rdfs:label "Period Schedule"@en ;
+  skos:definition "A schedule specifying a bounded time window within which an operative rule applies or an action must be taken."@en ;
+  rdfs:subClassOf ops:Schedule ;
+  skos:scopeNote "MUST carry both ops:periodStart and ops:periodEnd (xsd:date). Examples: transition period, implementation grace period, preferential rate application window."@en ;
+  skos:example """
+ex:Sched_TransitionPeriod
+  a ops:PeriodSchedule ;
+  rdfs:label "3-year transition period"@en ;
+  ops:periodStart "2026-01-01"^^xsd:date ;
+  ops:periodEnd   "2028-12-31"^^xsd:date ."""@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# MEASUREMENT
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:Measurement
+  a owl:Class ;
+  rdfs:label "Measurement"@en ;
+  skos:definition """A quantitative specification pairing a numeric value with a unit of
+measure and a comparison operator. Used to express numeric thresholds in
+ThresholdTrigger and ThresholdCriterion instances."""@en ;
+  skos:scopeNote """Every Measurement MUST carry ops:numericValue (xsd:decimal), ops:unit
+(xsd:string, using a standard code such as ISO 4217 for currencies or SI unit symbols),
+and ops:hasComparator pointing to a Comparator named individual. Domain verticals may
+subclass Measurement to constrain the unit vocabulary via SHACL sh:pattern."""@en ;
+  skos:example """
+ex:Meas_MinRVC
+  a ops:Measurement ;
+  rdfs:label "Minimum regional value content — 60%"@en ;
+  ops:numericValue 60 ;
+  ops:unit "%" ;
+  ops:hasComparator ops:GreaterThanOrEqual ."""@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# COMPARATOR (named individuals)
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:Comparator
+  a owl:Class ;
+  rdfs:label "Comparator"@en ;
+  skos:definition "An enumerated comparison operator used in Measurement to express the relation between a measured value and a threshold."@en ;
+  skos:scopeNote """Use the six named individuals (ops:Equal, ops:NotEqual, ops:LessThan,
+ops:LessThanOrEqual, ops:GreaterThan, ops:GreaterThanOrEqual) rather than creating
+new Comparator instances."""@en ;
+  skos:example """
+ex:Meas_MinRVC  ops:hasComparator  ops:GreaterThanOrEqual .
+ex:Meas_MaxTariff  ops:hasComparator  ops:LessThanOrEqual ."""@en .
+
+ops:Equal
+  a ops:Comparator ;
+  rdfs:label "equal (=)"@en ;
+  skos:definition "The measured value equals the threshold exactly."@en .
+
+ops:NotEqual
+  a ops:Comparator ;
+  rdfs:label "not equal (≠)"@en ;
+  skos:definition "The measured value is not equal to the threshold."@en .
+
+ops:LessThan
+  a ops:Comparator ;
+  rdfs:label "less than (<)"@en ;
+  skos:definition "The measured value is strictly less than the threshold."@en .
+
+ops:LessThanOrEqual
+  a ops:Comparator ;
+  rdfs:label "less than or equal (≤)"@en ;
+  skos:definition "The measured value is less than or equal to the threshold."@en .
+
+ops:GreaterThan
+  a ops:Comparator ;
+  rdfs:label "greater than (>)"@en ;
+  skos:definition "The measured value is strictly greater than the threshold."@en .
+
+ops:GreaterThanOrEqual
+  a ops:Comparator ;
+  rdfs:label "greater than or equal (≥)"@en ;
+  skos:definition "The measured value is greater than or equal to the threshold."@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DOCUMENTARY REQUIREMENT
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:DocumentaryRequirement
+  a owl:Class ;
+  rdfs:label "Documentary Requirement"@en ;
+  skos:definition """A specification of documentary evidence that must be presented,
+submitted, or held on file in order to satisfy a criterion or activate a rule.
+Captures document type, issuing role, and validity period."""@en ;
+  skos:scopeNote """DocumentaryRequirement instances are referenced from OperativeRule
+via ops:hasDocumentaryRequirement and from DocumentaryCriterion via
+ops:hasDocumentaryRequirement (specialised as ops:requiresDocument). Every
+DocumentaryRequirement MUST carry ops:documentType (rdf:langString). The optional
+ops:issuedBy names the issuing role as a text label; ops:validityPeriod (xsd:duration)
+states how long the document remains valid after issuance."""@en ;
+  skos:example """
+ex:DocReq_ATACarnet
+  a ops:DocumentaryRequirement ;
+  rdfs:label "Valid ATA Carnet"@en ;
+  ops:documentType "ATA Carnet"@en ;
+  ops:issuedBy "Authorized Issuing Association"@en ;
+  ops:validityPeriod "P1Y"^^xsd:duration ."""@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# OBJECT PROPERTIES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:operativizes
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "operativizes"@en ;
+  skos:definition "Relates an operative rule to the normative statement (from LDSO-Semantics) that it implements as an executable procedure."@en ;
+  rdfs:range  leg:NormativeStatement ;
+  owl:inverseOf ops:operativizedBy ;
+  skos:scopeNote """This is the primary cross-layer link between LDSO-Operations (Layer 5)
+and LDSO-Semantics (Layer 4). Every OperativeRule SHOULD carry at least one
+ops:operativizes triple. An OperativeRule without ops:operativizes is a free-standing
+operational rule not grounded in a legal text; this is permitted but SHOULD be flagged
+by SHACL validation."""@en ;
+  skos:example "ex:Rule_TemporaryAdmission  ops:operativizes  ex:Oblig_AdmitGoods ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+
+ops:operativizedBy
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "operativized by"@en ;
+  skos:definition "Inverse of ops:operativizes. Relates a normative statement to all operative rules that implement it."@en ;
+  rdfs:range  ops:OperativeRule ;
+  owl:inverseOf ops:operativizes ;
+  skos:scopeNote """Use for navigation from a normative statement to its operational implementations.
+A single NormativeStatement may be operativized by multiple OperativeRules representing
+different jurisdictional implementations or procedural paths."""@en ;
+  skos:example "ex:Oblig_AdmitGoods  ops:operativizedBy  ex:Rule_TemporaryAdmission ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+
+ops:hasTrigger
+  a owl:ObjectProperty ;
+  rdfs:label "has trigger"@en ;
+  skos:definition "Associates an operative rule with the trigger condition that activates it."@en ;
+  rdfs:range  ops:Trigger ;
+  skos:scopeNote "Every OperativeRule MUST have at least one ops:hasTrigger assertion. Multiple triggers are interpreted disjunctively — the rule fires when any trigger condition is met."@en ;
+  skos:example "ex:Rule_TemporaryAdmission  ops:hasTrigger  ex:Trigger_CarnetPresented ."@en .
+
+ops:hasCriterion
+  a owl:ObjectProperty ;
+  rdfs:label "has criterion"@en ;
+  skos:definition "Associates an operative rule with a qualifying criterion that must be satisfied for the rule to apply."@en ;
+  rdfs:range  ops:Criterion ;
+  skos:scopeNote "Multiple criteria on the same rule are conjunctive — all must be met. Where disjunctive criteria are required, model them as separate OperativeRules sharing the same trigger."@en ;
+  skos:example "ex:Rule_TemporaryAdmission  ops:hasCriterion  ex:Crit_ValidCarnet ."@en .
+
+ops:hasProcedure
+  a owl:ObjectProperty, owl:FunctionalProperty ;
+  rdfs:label "has procedure"@en ;
+  skos:definition "Associates an operative rule with the procedure to be followed when the rule fires."@en ;
+  rdfs:range  ops:Procedure ;
+  skos:scopeNote "A rule SHOULD have at most one Procedure. Where multiple procedural paths exist, model them as separate OperativeRules or as a branching procedure with conditional steps."@en ;
+  skos:example "ex:Rule_TemporaryAdmission  ops:hasProcedure  ex:Proc_CarnetAdmission ."@en .
+
+ops:hasStep
+  a owl:ObjectProperty ;
+  rdfs:label "has step"@en ;
+  skos:definition "Relates a procedure to one of its constituent steps."@en ;
+  rdfs:range  ops:Step ;
+  skos:scopeNote "All Step instances belonging to the same Procedure MUST have unique stepOrder values. Use ops:stepOrder to establish execution sequence."@en ;
+  skos:example """
+ex:Proc_CarnetAdmission
+  ops:hasStep ex:Step_VerifyCarnet, ex:Step_StampCounterfoil ."""@en .
+
+ops:nextStep
+  a owl:ObjectProperty, owl:IrreflexiveProperty, owl:AsymmetricProperty ;
+  rdfs:label "next step"@en ;
+  skos:definition "Links a step to the immediately following step in the same procedure."@en ;
+  rdfs:range  ops:Step ;
+  skos:scopeNote "Use to make the procedure traversable as a linked list in addition to stepOrder ordering. The last step in a procedure carries no ops:nextStep. Declared Irreflexive and Asymmetric to prevent circular chains."@en ;
+  skos:example "ex:Step_VerifyCarnet  ops:nextStep  ex:Step_StampCounterfoil ."@en .
+
+ops:hasSchedule
+  a owl:ObjectProperty ;
+  rdfs:label "has schedule"@en ;
+  skos:definition "Associates an operative rule, criterion, or step with a temporal schedule governing when it applies or must be executed."@en ;
+  rdfs:range  ops:Schedule ;
+  skos:scopeNote "A rule may carry multiple schedules (e.g., a filing deadline and a recurring renewal). Schedules on individual steps constrain the timing of that step within the procedure."@en ;
+  skos:example "ex:Rule_ReExport  ops:hasSchedule  ex:Sched_6MonthDeadline ."@en .
+
+ops:hasDocumentaryRequirement
+  a owl:ObjectProperty ;
+  rdfs:label "has documentary requirement"@en ;
+  skos:definition "Relates an operative rule or documentary criterion to the documentary evidence required."@en ;
+  rdfs:range  ops:DocumentaryRequirement ;
+  skos:scopeNote "A rule or criterion may reference multiple documentary requirements. All referenced documents MUST be present unless the rule specifies a disjunctive alternative."@en ;
+  skos:example "ex:Rule_CarnetAdmission  ops:hasDocumentaryRequirement  ex:DocReq_ATACarnet ."@en .
+
+ops:requiresDocument
+  a owl:ObjectProperty ;
+  rdfs:label "requires document"@en ;
+  skos:definition "Relates a documentary criterion directly to the documentary requirement it demands."@en ;
+  rdfs:subPropertyOf ops:hasDocumentaryRequirement ;
+  rdfs:range  ops:DocumentaryRequirement ;
+  skos:scopeNote "Specializes ops:hasDocumentaryRequirement for use on DocumentaryCriterion instances, making the specificity of the relationship explicit."@en ;
+  skos:example "ex:Crit_ValidCarnet  ops:requiresDocument  ex:DocReq_ATACarnet ."@en .
+
+ops:hasMeasurement
+  a owl:ObjectProperty ;
+  rdfs:label "has measurement"@en ;
+  skos:definition "Associates a threshold trigger or threshold criterion with the quantitative measurement that defines its boundary."@en ;
+  rdfs:range  ops:Measurement ;
+  skos:scopeNote "A ThresholdTrigger or ThresholdCriterion MUST carry exactly one ops:hasMeasurement."@en ;
+  skos:example "ex:Trigger_QuotaExceeded  ops:hasMeasurement  ex:Meas_QuotaLimit ."@en .
+
+ops:hasComparator
+  a owl:ObjectProperty, owl:FunctionalProperty ;
+  rdfs:label "has comparator"@en ;
+  skos:definition "Relates a measurement to the comparison operator specifying how the measured value is compared to the threshold."@en ;
+  rdfs:range  ops:Comparator ;
+  skos:scopeNote "Declared owl:FunctionalProperty — every Measurement MUST carry exactly one ops:hasComparator. Use the named individuals: ops:Equal, ops:NotEqual, ops:LessThan, ops:LessThanOrEqual, ops:GreaterThan, ops:GreaterThanOrEqual."@en ;
+  skos:example "ex:Meas_QuotaLimit  ops:hasComparator  ops:GreaterThan ."@en .
+
+ops:performedBy
+  a owl:ObjectProperty ;
+  rdfs:label "performed by"@en ;
+  skos:definition "Identifies the named role responsible for executing a step or fulfilling an operative rule."@en ;
+  rdfs:range  ent:Role ;
+  skos:scopeNote "Links to an ent:Role instance from LDSO-Entities (Layer 2b). A step may carry multiple ops:performedBy assertions where joint action is required."@en ;
+  skos:example "ex:Step_VerifyCarnet  ops:performedBy  ex:competent_authority ."@en .
+
+ops:appliesTo
+  a owl:ObjectProperty ;
+  rdfs:label "applies to"@en ;
+  skos:definition "Relates an operative rule or criterion to the named entity or entity class that is its subject."@en ;
+  rdfs:range  ent:NamedEntity ;
+  skos:scopeNote "Use to scope a rule or criterion to a specific party, entity type, or location. Complements leg:normativeSubject from LDSO-Semantics at the operational layer."@en ;
+  skos:example "ex:Rule_TemporaryAdmission  ops:appliesTo  ex:carnet_holder ."@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DATATYPE PROPERTIES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:triggerDescription
+  a owl:DatatypeProperty ;
+  rdfs:label "trigger description"@en ;
+  skos:definition "A human-readable description of the condition or event that activates the trigger."@en ;
+  rdfs:range  rdf:langString ;
+  skos:scopeNote "Complement to rdfs:label — provides the full narrative activation condition. Always language-tagged."@en ;
+  skos:example """ex:Trigger_CarnetPresented
+  ops:triggerDescription "Fires when an ATA carnet holder presents the carnet at a customs post."@en ."""@en .
+
+ops:criterionDescription
+  a owl:DatatypeProperty ;
+  rdfs:label "criterion description"@en ;
+  skos:definition "A human-readable description of the qualifying condition expressed by a criterion."@en ;
+  rdfs:range  rdf:langString ;
+  skos:scopeNote "Complement to rdfs:label — provides the full narrative qualifying condition. Always language-tagged."@en ;
+  skos:example """ex:Crit_AuthorizedOperator
+  ops:criterionDescription "Applicant must hold a valid Authorized Economic Operator certificate."@en ."""@en .
+
+ops:stepOrder
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:label "step order"@en ;
+  skos:definition "The 1-based integer position of a step within its containing procedure."@en ;
+  rdfs:range  xsd:integer ;
+  skos:scopeNote "Declared owl:FunctionalProperty — every Step has exactly one stepOrder. MUST be unique within the same Procedure. Steps are executed in ascending stepOrder sequence."@en ;
+  skos:example """ex:Step_VerifyCarnet    ops:stepOrder 1 .
+ex:Step_StampCounterfoil  ops:stepOrder 2 ."""@en .
+
+ops:stepDescription
+  a owl:DatatypeProperty ;
+  rdfs:label "step description"@en ;
+  skos:definition "A human-readable description of the action required in this step."@en ;
+  rdfs:range  rdf:langString ;
+  skos:scopeNote "MUST be present on every Step. Language-tagged. Should be precise enough to guide an implementing agent or compliance officer."@en ;
+  skos:example """ex:Step_VerifyCarnet
+  ops:stepDescription "Verify that the ATA carnet is valid and covers the goods presented."@en ."""@en .
+
+ops:numericValue
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:label "numeric value"@en ;
+  skos:definition "The numeric threshold value of a measurement."@en ;
+  rdfs:range  xsd:decimal ;
+  skos:scopeNote "MUST be present on every Measurement. The semantics are determined by ops:unit and ops:hasComparator."@en ;
+  skos:example "ex:Meas_QuotaLimit  ops:numericValue  1000.0 ."@en .
+
+ops:unit
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:label "unit"@en ;
+  skos:definition "The unit of measure for a numeric threshold, expressed as a standard string code."@en ;
+  rdfs:range  xsd:string ;
+  skos:scopeNote """MUST be present on every Measurement. Use standard codes where available:
+ISO 4217 currency codes (USD, EUR), SI unit symbols (kg, km), percentage (%), or
+domain-specific codes. Domain verticals may constrain this value via SHACL sh:pattern."""@en ;
+  skos:example """ex:Meas_QuotaLimit    ops:unit "t" .     # metric tonnes
+ex:Meas_TransactionFee  ops:unit "USD" .  # ISO 4217 currency"""@en .
+
+ops:documentType
+  a owl:DatatypeProperty ;
+  rdfs:label "document type"@en ;
+  skos:definition "The type or name of the document required by a documentary requirement."@en ;
+  rdfs:range  rdf:langString ;
+  skos:scopeNote "Language-tagged. MUST be present on every DocumentaryRequirement. Examples: \"ATA Carnet\"@en, \"Certificate of Origin\"@en, \"Import Licence\"@en."@en ;
+  skos:example """ex:DocReq_ATACarnet  ops:documentType "ATA Carnet"@en, "Carnet ATA"@fr ."""@en .
+
+ops:issuedBy
+  a owl:DatatypeProperty ;
+  rdfs:label "issued by"@en ;
+  skos:definition "The name or label of the role or body responsible for issuing the required document."@en ;
+  rdfs:range  rdf:langString ;
+  skos:scopeNote "Language-tagged string. Use for text-form identification of the issuing authority. For a structured URI reference to an ent:Role, use ops:performedBy on the relevant verification Step."@en ;
+  skos:example """ex:DocReq_ATACarnet  ops:issuedBy "Issuing Association"@en ."""@en .
+
+ops:validityPeriod
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:label "validity period"@en ;
+  skos:definition "The duration for which a document remains valid after issuance, expressed as an ISO 8601 duration."@en ;
+  rdfs:range  xsd:duration ;
+  skos:scopeNote "Examples: 'P1Y' (one year), 'P6M' (six months). If absent, the document's validity is governed by the document's own terms."@en ;
+  skos:example "ex:DocReq_ATACarnet  ops:validityPeriod \"P1Y\"^^xsd:duration ."@en .
+
+ops:deadlineDate
+  a owl:DatatypeProperty ;
+  rdfs:label "deadline date"@en ;
+  skos:definition "The absolute calendar date by which a deadline-bound obligation must be fulfilled."@en ;
+  rdfs:range  xsd:date ;
+  skos:scopeNote "Use for fixed calendar dates. For relative deadlines (e.g., 30 days after trigger), use ops:deadlineDuration."@en ;
+  skos:example "ex:Sched_AnnualReport  ops:deadlineDate \"2027-03-31\"^^xsd:date ."@en .
+
+ops:deadlineDuration
+  a owl:DatatypeProperty ;
+  rdfs:label "deadline duration"@en ;
+  skos:definition "The duration from trigger firing within which a deadline-bound obligation must be fulfilled."@en ;
+  rdfs:range  xsd:duration ;
+  skos:scopeNote "ISO 8601 duration. Examples: 'P30D' (30 days), 'P6M' (6 months), 'P1Y' (1 year). A Deadline MAY carry both deadlineDate and deadlineDuration."@en ;
+  skos:example "ex:Sched_ReExport  ops:deadlineDuration \"P6M\"^^xsd:duration ."@en .
+
+ops:recurrencePeriod
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:label "recurrence period"@en ;
+  skos:definition "The interval at which a recurring schedule repeats."@en ;
+  rdfs:range  xsd:duration ;
+  skos:scopeNote "ISO 8601 duration. MUST be present on every RecurringSchedule. Examples: 'P1Y' (annual), 'P3M' (quarterly), 'P1M' (monthly)."@en ;
+  skos:example "ex:Sched_AnnualReview  ops:recurrencePeriod \"P1Y\"^^xsd:duration ."@en .
+
+ops:periodStart
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:label "period start"@en ;
+  skos:definition "The start date of the bounded time window defined by a period schedule."@en ;
+  rdfs:range  xsd:date ;
+  skos:scopeNote "MUST be present on every PeriodSchedule. MUST be earlier than ops:periodEnd."@en ;
+  skos:example "ex:Sched_TransitionPeriod  ops:periodStart \"2026-01-01\"^^xsd:date ."@en .
+
+ops:periodEnd
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:label "period end"@en ;
+  skos:definition "The end date of the bounded time window defined by a period schedule."@en ;
+  rdfs:range  xsd:date ;
+  skos:scopeNote "MUST be present on every PeriodSchedule. MUST be later than ops:periodStart."@en ;
+  skos:example "ex:Sched_TransitionPeriod  ops:periodEnd \"2028-12-31\"^^xsd:date ."@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DISJOINTNESS AXIOMS
+# ═════════════════════════════════════════════════════════════════════════════
+
+[ a owl:AllDisjointClasses ;
+  owl:members ( ops:EventTrigger ops:ThresholdTrigger ops:StatusTrigger
+                ops:TemporalTrigger ops:RequestTrigger ) ] .
+
+[ a owl:AllDisjointClasses ;
+  owl:members ( ops:EligibilityCriterion ops:ClassificationCriterion
+                ops:ThresholdCriterion ops:DocumentaryCriterion
+                ops:TemporalCriterion ) ] .
+
+[ a owl:AllDisjointClasses ;
+  owl:members ( ops:Deadline ops:RecurringSchedule ops:PeriodSchedule ) ] .
+
+ops:OperativeRule            owl:disjointWith ops:Trigger .
+ops:OperativeRule            owl:disjointWith ops:Criterion .
+ops:OperativeRule            owl:disjointWith ops:Procedure .
+ops:OperativeRule            owl:disjointWith ops:Schedule .
+ops:OperativeRule            owl:disjointWith ops:Measurement .
+ops:OperativeRule            owl:disjointWith ops:DocumentaryRequirement .
+ops:Trigger                  owl:disjointWith ops:Criterion .
+ops:Trigger                  owl:disjointWith ops:Procedure .
+ops:Criterion                owl:disjointWith ops:Procedure .
+ops:Procedure                owl:disjointWith ops:Step .
+ops:Step                     owl:disjointWith ops:Schedule .
+ops:Measurement              owl:disjointWith ops:Comparator .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# rdfs:isDefinedBy — applied to all LDSO-Operations terms
+# ═════════════════════════════════════════════════════════════════════════════
+
+ops:OperativeRule             rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:Trigger                   rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:EventTrigger              rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:ThresholdTrigger          rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:StatusTrigger             rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:TemporalTrigger           rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:RequestTrigger            rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:Criterion                 rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:EligibilityCriterion      rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:ClassificationCriterion   rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:ThresholdCriterion        rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:DocumentaryCriterion      rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:TemporalCriterion         rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:Procedure                 rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:Step                      rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:Schedule                  rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:Deadline                  rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:RecurringSchedule         rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:PeriodSchedule            rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:Measurement               rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:Comparator                rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:Equal                     rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:NotEqual                  rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:LessThan                  rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:LessThanOrEqual           rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:GreaterThan               rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:GreaterThanOrEqual        rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:DocumentaryRequirement    rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:operativizes              rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:hasTrigger                rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:hasCriterion              rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:hasProcedure              rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:hasStep                   rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:nextStep                  rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:hasSchedule               rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:hasDocumentaryRequirement rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:requiresDocument          rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:hasMeasurement            rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:hasComparator             rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:performedBy               rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:appliesTo                 rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:triggerDescription        rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:criterionDescription      rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:stepOrder                 rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:stepDescription           rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:numericValue              rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:unit                      rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:documentType              rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:issuedBy                  rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:validityPeriod            rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:deadlineDate              rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:deadlineDuration          rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:recurrencePeriod          rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:periodStart               rdfs:isDefinedBy <https://w3id.org/ldso/operations> .
+ops:periodEnd                 rdfs:isDefinedBy <https://w3id.org/ldso/operations> .

@@ -1,0 +1,10 @@
+# Claude Code project memory
+.claude/
+
+# Editor settings
+.vscode/
+.idea/
+
+# OS artifacts
+.DS_Store
+Thumbs.db

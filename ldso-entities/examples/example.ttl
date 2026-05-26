@@ -1,0 +1,59 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+@prefix ex:   <https://example.org/ata/> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Entities Example: Canonical Entity Catalogue
+#
+# Demonstrates:
+#   - ent:NamedEntity declarations with ent:entityType (SKOS taxonomy)
+#   - Multi-lingual ent:showAs and rdfs:label
+#   - ent:href canonical URIs
+#
+# Document annotation (linking elements to entities, NLP mention output) is
+# handled by the LDSO-Annotations module — see ldso-annotations/examples/.
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:wco
+  a ent:NamedEntity ;
+  ent:entityType ent:Organization ;
+  ent:href "https://www.wcoomd.org"^^xsd:anyURI ;
+  ent:showAs "World Customs Organization"@en ;
+  ent:showAs "Organisation mondiale des douanes"@fr ;
+  rdfs:label "World Customs Organization"@en .
+
+ex:temporary_admission
+  a ent:NamedEntity ;
+  ent:entityType ent:Concept ;
+  ent:href "https://example.org/legal/concepts/temporary-admission"^^xsd:anyURI ;
+  ent:showAs "temporary admission"@en ;
+  ent:showAs "admission temporaire"@fr ;
+  rdfs:label "temporary admission"@en .
+
+ex:competent_authority
+  a ent:NamedEntity ;
+  ent:entityType ent:Role ;
+  ent:href "https://example.org/roles/competent-authority"^^xsd:anyURI ;
+  ent:showAs "competent authority"@en ;
+  ent:showAs "autorité compétente"@fr ;
+  rdfs:label "competent authority"@en .
+
+ex:customs_territory
+  a ent:NamedEntity ;
+  ent:entityType ent:Location ;
+  ent:href "https://example.org/locations/customs-territory"^^xsd:anyURI ;
+  ent:showAs "customs territory"@en ;
+  ent:showAs "territoire douanier"@fr ;
+  rdfs:label "customs territory"@en .
+
+ex:ata_carnet
+  a ent:NamedEntity ;
+  ent:entityType ent:Concept ;
+  ent:href "https://example.org/legal/concepts/ata-carnet"^^xsd:anyURI ;
+  ent:showAs "ATA carnet"@en ;
+  ent:showAs "carnet ATA"@fr ;
+  rdfs:label "ATA carnet"@en .

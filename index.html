@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LDSO — Legal Document Structure Ontology</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: 16px; line-height: 1.6;
+      color: #1a1a1a; background: #fff;
+    }
+    a { color: #005a9c; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { font-family: "Consolas", "Courier New", monospace; font-size: 0.88em;
+           background: #f4f4f4; padding: 0.1em 0.35em; border-radius: 3px; }
+
+    /* ── Layout ── */
+    header { background: #003366; color: #fff; padding: 2.5rem 2rem 2rem; }
+    header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; }
+    header .subtitle { font-size: 1.05rem; opacity: 0.85; }
+    header .badge {
+      display: inline-block; margin-top: 0.75rem;
+      background: rgba(255,255,255,0.15); border-radius: 4px;
+      padding: 0.25rem 0.7rem; font-size: 0.82rem; letter-spacing: 0.03em;
+    }
+    nav.toc {
+      background: #f0f4f8; border-bottom: 1px solid #dce3ea;
+      padding: 0.6rem 2rem; font-size: 0.9rem;
+    }
+    nav.toc a { margin-right: 1.5rem; }
+    main { max-width: 1060px; margin: 0 auto; padding: 2rem; }
+    section { margin-bottom: 3rem; }
+    h2 { font-size: 1.4rem; font-weight: 600; color: #003366;
+         border-bottom: 2px solid #003366; padding-bottom: 0.35rem; margin-bottom: 1rem; }
+    h3 { font-size: 1.05rem; font-weight: 600; color: #1a1a1a; margin: 1.5rem 0 0.5rem; }
+
+    /* ── Disclaimer ── */
+    .disclaimer {
+      background: #fff8e1; border-left: 4px solid #f9a825;
+      padding: 0.8rem 1rem; margin: 1.5rem 0; font-size: 0.92rem;
+    }
+
+    /* ── Module Cards ── */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+    .module-card {
+      border: 1px solid #d0d7de; border-radius: 6px;
+      padding: 1.2rem 1.4rem; background: #fafbfc;
+      transition: box-shadow 0.15s;
+    }
+    .module-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .module-card .layer-badge {
+      display: inline-block; font-size: 0.75rem; font-weight: 600;
+      background: #003366; color: #fff; border-radius: 3px;
+      padding: 0.15rem 0.5rem; margin-bottom: 0.5rem; letter-spacing: 0.04em;
+    }
+    .module-card h3 { margin: 0.25rem 0 0.4rem; font-size: 1rem; }
+    .module-card .ns  { font-size: 0.8rem; color: #555; margin-bottom: 0.5rem; }
+    .module-card p    { font-size: 0.9rem; color: #333; margin-bottom: 0.75rem; }
+    .module-card .links { display: flex; gap: 0.6rem; flex-wrap: wrap; font-size: 0.85rem; }
+    .module-card .links a {
+      border: 1px solid #005a9c; border-radius: 3px;
+      padding: 0.15rem 0.55rem; color: #005a9c;
+    }
+    .module-card .links a:hover { background: #005a9c; color: #fff; text-decoration: none; }
+
+    /* ── Layer Stack Diagram ── */
+    .layer-stack { font-family: "Consolas", monospace; font-size: 0.88rem; }
+    .layer-row {
+      display: flex; align-items: center; padding: 0.45rem 1rem;
+      border: 1px solid #d0d7de; border-radius: 4px; margin-bottom: 4px;
+      background: #f6f8fa;
+    }
+    .layer-row.active { background: #dbeafe; border-color: #3b82f6; font-weight: 600; }
+    .layer-row .lnum { width: 6rem; color: #666; flex-shrink: 0; }
+    .layer-row .lname { flex: 1; }
+    .layer-row .llink { font-size: 0.8rem; }
+
+    /* ── Namespace Table ── */
+    table.ns-table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+    table.ns-table th, table.ns-table td {
+      border: 1px solid #d0d7de; padding: 0.5rem 0.75rem; text-align: left; vertical-align: top;
+    }
+    table.ns-table th { background: #f0f4f8; font-weight: 600; }
+    table.ns-table tr:nth-child(even) td { background: #fafbfc; }
+
+    /* ── Quick-start pre ── */
+    pre.quickstart {
+      background: #1e1e2e; color: #cdd6f4; border-radius: 6px;
+      padding: 1.2rem 1.4rem; overflow-x: auto; font-size: 0.85rem; line-height: 1.55;
+    }
+    pre.quickstart .kw { color: #89b4fa; }   /* keywords */
+    pre.quickstart .ns { color: #a6e3a1; }   /* prefixes */
+    pre.quickstart .cm { color: #6c7086; }   /* comments */
+    pre.quickstart .iri { color: #f5c2e7; }  /* IRIs */
+
+    footer {
+      border-top: 1px solid #d0d7de; padding: 1.5rem 2rem;
+      font-size: 0.85rem; color: #555; text-align: center;
+    }
+    footer a { color: #005a9c; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>LDSO — Legal Document Structure Ontology</h1>
+  <p class="subtitle">A modular RDF/OWL vocabulary stack for legal document structure, entities, lifecycle, semantics, and operational rules</p>
+  <span class="badge">Version 1.0.0 &nbsp;·&nbsp; 2026-05-25 &nbsp;·&nbsp; CC BY 4.0</span>
+</header>
+
+<nav class="toc">
+  <a href="#overview">Overview</a>
+  <a href="#modules">Modules</a>
+  <a href="#layers">Layer Stack</a>
+  <a href="#namespaces">Namespaces</a>
+  <a href="#quick-start">Quick Start</a>
+  <a href="#license">License</a>
+</nav>
+
+<main>
+
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> This is not an official W3C Standard or W3C Recommendation.
+    It is a community/project specification produced by
+    <a href="https://www.geoknoesis.com">Geoknoesis LLC</a> using W3C ReSpec formatting conventions.
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════════════════════ -->
+  <section id="overview">
+    <h2>Overview</h2>
+    <p>
+      The <strong>Legal Document Structure Ontology (LDSO)</strong> is a layered family of
+      RDF/OWL modules for representing legal documents in machine-readable form — from raw
+      structural hierarchy through named entity annotation, legal lifecycle management,
+      deontic semantic annotation, and operational rule execution.
+    </p>
+    <p>
+      The stack is designed for modular adoption: consume only the layers you need.
+      A simple document indexer needs only <a href="ldso-core/">LDSO-Core</a>.
+      A knowledge graph linking entities across a corpus adds
+      <a href="ldso-entities/">LDSO-Entities</a> and
+      <a href="ldso-annotations/">LDSO-Annotations</a>.
+      A compliance reasoning engine adds
+      <a href="ldso-semantics/">LDSO-Semantics</a> and
+      <a href="ldso-operations/">LDSO-Operations</a>.
+    </p>
+    <p>
+      All modules share the base IRI <code>https://w3id.org/ldso/</code>, use Dublin Core Terms
+      for metadata, SKOS for taxonomy, SHACL for data validation, and follow Semantic Versioning.
+      Source code is at <a href="https://github.com/geoknoesis/ldso">github.com/geoknoesis/ldso</a>.
+    </p>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════════ -->
+  <section id="modules">
+    <h2>Modules</h2>
+    <div class="module-grid">
+
+      <div class="module-card">
+        <span class="layer-badge">Layer 1</span>
+        <h3>LDSO-Core</h3>
+        <p class="ns">Prefix: <code>ldso:</code> &nbsp;·&nbsp; <code>https://w3id.org/ldso/core#</code></p>
+        <p>
+          Generic RDF/OWL vocabulary for the structural hierarchy of legal documents:
+          LegalResource, LegalExpression, Document, and 20+ element types (Chapter,
+          Article, Paragraph, Item, Annex, Table, …). Covers ordering, citation paths,
+          and the FRBR-inspired resource/expression identity model.
+        </p>
+        <div class="links">
+          <a href="ldso-core/">Spec</a>
+          <a href="ldso-core/ontology.ttl">ontology.ttl</a>
+          <a href="ldso-core/shapes.ttl">shapes.ttl</a>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <span class="layer-badge">Layer 2b</span>
+        <h3>LDSO-Entities</h3>
+        <p class="ns">Prefix: <code>ent:</code> &nbsp;·&nbsp; <code>https://w3id.org/ldso/entities#</code></p>
+        <p>
+          Named entity catalogue for legal documents. A single <code>ent:NamedEntity</code>
+          class with SKOS-based type taxonomy (Person, Organization, Location, Concept, Role,
+          Event, Process) and canonical URI linking via <code>ent:href</code>.
+          Extensible by domain verticals without modifying this ontology.
+        </p>
+        <div class="links">
+          <a href="ldso-entities/">Spec</a>
+          <a href="ldso-entities/ontology.ttl">ontology.ttl</a>
+          <a href="ldso-entities/shapes.ttl">shapes.ttl</a>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <span class="layer-badge">Layer 2c</span>
+        <h3>LDSO-Annotations</h3>
+        <p class="ns">Prefix: <code>ann:</code> &nbsp;·&nbsp; <code>https://w3id.org/ldso/annotations#</code></p>
+        <p>
+          Document annotation module linking structural elements to named entities.
+          Supports coarse annotation (<code>ann:refersToEntity</code>) and fine-grained
+          NER output (<code>ann:EntityMention</code>) with surface forms, character offsets,
+          and confidence scores.
+        </p>
+        <div class="links">
+          <a href="ldso-annotations/">Spec</a>
+          <a href="ldso-annotations/ontology.ttl">ontology.ttl</a>
+          <a href="ldso-annotations/shapes.ttl">shapes.ttl</a>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <span class="layer-badge">Layer 3</span>
+        <h3>LDSO-Lifecycle</h3>
+        <p class="ns">Prefix: <code>life:</code> &nbsp;·&nbsp; <code>https://w3id.org/ldso/lifecycle#</code></p>
+        <p>
+          Legal document lifecycle and amendment ontology. Models lifecycle events
+          (Entry, Suspension, Repeal, Expiry), amendment instructions, amendment effects,
+          version chains (<code>life:supersedes</code>), temporal applicability intervals,
+          and consolidated text provenance.
+        </p>
+        <div class="links">
+          <a href="lifecycle/">Spec</a>
+          <a href="lifecycle/ontology.ttl">ontology.ttl</a>
+          <a href="lifecycle/shapes.ttl">shapes.ttl</a>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <span class="layer-badge">Layer 4</span>
+        <h3>LDSO-Semantics</h3>
+        <p class="ns">Prefix: <code>leg:</code> &nbsp;·&nbsp; <code>https://w3id.org/ldso/semantics#</code></p>
+        <p>
+          Legal semantic annotation ontology. Provides first-class RDF nodes for
+          deontic norms — Obligation, Permission, Prohibition, Right, Discretion —
+          plus definitional content (Definition), scoping (Scope), and conditionality
+          (Condition, Exception, Exemption). Linked to structure via <code>leg:annotates</code>.
+        </p>
+        <div class="links">
+          <a href="ldso-semantics/">Spec</a>
+          <a href="ldso-semantics/ontology.ttl">ontology.ttl</a>
+          <a href="ldso-semantics/shapes.ttl">shapes.ttl</a>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <span class="layer-badge">Layer 5</span>
+        <h3>LDSO-Operations</h3>
+        <p class="ns">Prefix: <code>ops:</code> &nbsp;·&nbsp; <code>https://w3id.org/ldso/operations#</code></p>
+        <p>
+          Operational rule layer. Bridges deontic semantics to machine-executable rules.
+          Defines OperativeRule, five Trigger subtypes, five Criterion subtypes,
+          Procedure + ordered Steps, three Schedule types, Measurement with Comparators,
+          and DocumentaryRequirement. Domain-agnostic — designed for extension by
+          trade, environmental, and financial verticals.
+        </p>
+        <div class="links">
+          <a href="ldso-operations/">Spec</a>
+          <a href="ldso-operations/ontology.ttl">ontology.ttl</a>
+          <a href="ldso-operations/shapes.ttl">shapes.ttl</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════════ -->
+  <section id="layers">
+    <h2>Layer Stack</h2>
+    <p>
+      LDSO is organized in layers. Each module is self-contained and imports only
+      the layers below it. Domain vertical ontologies (trade, environment, finance)
+      extend Layer 5 without modifying core LDSO modules.
+    </p>
+    <div class="layer-stack" style="max-width:680px; margin-top:1rem;">
+      <div class="layer-row">
+        <span class="lnum">Layer 6</span>
+        <span class="lname">Evaluation — rule results, compliance scores</span>
+      </div>
+      <div class="layer-row">
+        <span class="lnum">Layer 5b</span>
+        <span class="lname">Domain Verticals — Trade Agreement Ontology, Environment, Finance, …</span>
+      </div>
+      <div class="layer-row active">
+        <span class="lnum">Layer 5</span>
+        <span class="lname"><a href="ldso-operations/">LDSO-Operations</a> — operative rules, triggers, criteria, procedures</span>
+      </div>
+      <div class="layer-row active">
+        <span class="lnum">Layer 4</span>
+        <span class="lname"><a href="ldso-semantics/">LDSO-Semantics</a> — obligations, permissions, definitions, conditions</span>
+      </div>
+      <div class="layer-row active">
+        <span class="lnum">Layer 3</span>
+        <span class="lname"><a href="lifecycle/">LDSO-Lifecycle</a> — amendments, versions, consolidation</span>
+      </div>
+      <div class="layer-row active">
+        <span class="lnum">Layer 2c</span>
+        <span class="lname"><a href="ldso-annotations/">LDSO-Annotations</a> — entity mentions, surface forms, NER output</span>
+      </div>
+      <div class="layer-row active">
+        <span class="lnum">Layer 2b</span>
+        <span class="lname"><a href="ldso-entities/">LDSO-Entities</a> — named entity catalogue</span>
+      </div>
+      <div class="layer-row active">
+        <span class="lnum">Layer 1</span>
+        <span class="lname"><a href="ldso-core/">LDSO-Core</a> — document structure, LegalResource/LegalExpression</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════════ -->
+  <section id="namespaces">
+    <h2>Namespaces &amp; Prefixes</h2>
+    <table class="ns-table">
+      <thead>
+        <tr>
+          <th>Prefix</th>
+          <th>Namespace IRI</th>
+          <th>Module</th>
+          <th>Version IRI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ldso:</code></td>
+          <td><code>https://w3id.org/ldso/core#</code></td>
+          <td><a href="ldso-core/">LDSO-Core</a></td>
+          <td><code>https://w3id.org/ldso/core/1.0.0</code></td>
+        </tr>
+        <tr>
+          <td><code>ent:</code></td>
+          <td><code>https://w3id.org/ldso/entities#</code></td>
+          <td><a href="ldso-entities/">LDSO-Entities</a></td>
+          <td><code>https://w3id.org/ldso/entities/1.0.0</code></td>
+        </tr>
+        <tr>
+          <td><code>ann:</code></td>
+          <td><code>https://w3id.org/ldso/annotations#</code></td>
+          <td><a href="ldso-annotations/">LDSO-Annotations</a></td>
+          <td><code>https://w3id.org/ldso/annotations/1.0.0</code></td>
+        </tr>
+        <tr>
+          <td><code>life:</code></td>
+          <td><code>https://w3id.org/ldso/lifecycle#</code></td>
+          <td><a href="lifecycle/">LDSO-Lifecycle</a></td>
+          <td><code>https://w3id.org/ldso/lifecycle/1.0.0</code></td>
+        </tr>
+        <tr>
+          <td><code>leg:</code></td>
+          <td><code>https://w3id.org/ldso/semantics#</code></td>
+          <td><a href="ldso-semantics/">LDSO-Semantics</a></td>
+          <td><code>https://w3id.org/ldso/semantics/1.0.0</code></td>
+        </tr>
+        <tr>
+          <td><code>ops:</code></td>
+          <td><code>https://w3id.org/ldso/operations#</code></td>
+          <td><a href="ldso-operations/">LDSO-Operations</a></td>
+          <td><code>https://w3id.org/ldso/operations/1.0.0</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════════ -->
+  <section id="quick-start">
+    <h2>Quick Start</h2>
+    <p>
+      The following Turtle snippet shows a minimal LDSO instance covering all six layers:
+      a legal resource with one document expression, an entity catalogue entry, an entity
+      mention annotation, a lifecycle event, a deontic obligation, and one operative rule.
+    </p>
+    <pre class="quickstart"><span class="kw">@prefix</span> <span class="ns">ldso:</span> &lt;https://w3id.org/ldso/core#&gt; .
+<span class="kw">@prefix</span> <span class="ns">ent:</span>  &lt;https://w3id.org/ldso/entities#&gt; .
+<span class="kw">@prefix</span> <span class="ns">ann:</span>  &lt;https://w3id.org/ldso/annotations#&gt; .
+<span class="kw">@prefix</span> <span class="ns">life:</span> &lt;https://w3id.org/ldso/lifecycle#&gt; .
+<span class="kw">@prefix</span> <span class="ns">leg:</span>  &lt;https://w3id.org/ldso/semantics#&gt; .
+<span class="kw">@prefix</span> <span class="ns">ops:</span>  &lt;https://w3id.org/ldso/operations#&gt; .
+<span class="kw">@prefix</span> <span class="ns">dct:</span>  &lt;http://purl.org/dc/terms/&gt; .
+<span class="kw">@prefix</span> <span class="ns">skos:</span> &lt;http://www.w3.org/2004/02/skos/core#&gt; .
+<span class="kw">@prefix</span> <span class="ns">ex:</span>   &lt;https://example.org/ata/&gt; .
+
+<span class="cm"># ── Layer 1: Document Structure ────────────────────────────────────────────</span>
+<span class="iri">ex:ata</span>
+  a ldso:LegalResource ;
+  dct:title "ATA Convention"@en ;
+  ldso:hasExpression <span class="iri">ex:ata_en</span> .
+
+<span class="iri">ex:ata_en</span>
+  a ldso:Document ;
+  dct:language "en" ;
+  dct:issued "1961-12-06"^^xsd:date ;
+  ldso:expressionOf <span class="iri">ex:ata</span> ;
+  ldso:contains <span class="iri">ex:art_1</span> .
+
+<span class="iri">ex:art_1</span>
+  a ldso:Article ;
+  ldso:notation "1" ;
+  ldso:citation "Article 1" ;
+  ldso:text "For the purposes of this Convention, the term..."@en .
+
+<span class="cm"># ── Layer 2b: Named Entity Catalogue ───────────────────────────────────────</span>
+<span class="iri">ex:wco</span>
+  a ent:NamedEntity ;
+  ent:entityType ent:Organization ;
+  ent:showAs "World Customs Organization"@en, "Organisation mondiale des douanes"@fr ;
+  ent:href &lt;https://www.wikidata.org/entity/Q186049&gt; .
+
+<span class="cm"># ── Layer 2c: Entity Annotation ────────────────────────────────────────────</span>
+<span class="iri">ex:art_1</span> ann:refersToEntity <span class="iri">ex:wco</span> .
+
+<span class="iri">ex:m1</span>
+  a ann:EntityMention ;
+  ann:mentionOf   <span class="iri">ex:wco</span> ;
+  ann:inElement   <span class="iri">ex:art_1</span> ;
+  ann:surfaceForm "World Customs Organization"@en ;
+  ann:startChar   23 ;
+  ann:endChar     51 ;
+  ann:confidence  0.98 .
+
+<span class="cm"># ── Layer 3: Lifecycle ──────────────────────────────────────────────────────</span>
+<span class="iri">ex:entry_1961</span>
+  a life:Entry ;
+  life:affects  <span class="iri">ex:ata_en</span> ;
+  life:eventDate "1963-07-30"^^xsd:date .
+
+<span class="iri">ex:ata_en</span> life:validFrom "1963-07-30"^^xsd:date .
+
+<span class="cm"># ── Layer 4: Legal Semantics ────────────────────────────────────────────────</span>
+<span class="iri">ex:oblig_present_carnet</span>
+  a leg:Obligation ;
+  leg:annotates <span class="iri">ex:art_1</span> ;
+  rdfs:label "Obligation to present carnet"@en .
+
+<span class="cm"># ── Layer 5: Operative Rule ─────────────────────────────────────────────────</span>
+<span class="iri">ex:rule_ta</span>
+  a ops:OperativeRule ;
+  ops:operativizes <span class="iri">ex:oblig_present_carnet</span> ;
+  ops:hasTrigger   <span class="iri">ex:trig_carnet</span> ;
+  rdfs:label "Rule: Temporary Admission — Carnet Presentation"@en .
+
+<span class="iri">ex:trig_carnet</span>
+  a ops:DocumentTrigger ;
+  rdfs:label "ATA Carnet presented at customs"@en .</pre>
+
+    <h3>Import Statement</h3>
+    <p>To import the full stack in a single OWL ontology:</p>
+    <pre class="quickstart"><span class="iri">&lt;https://example.org/my-ontology&gt;</span>
+  a owl:Ontology ;
+  <span class="kw">owl:imports</span> <span class="iri">&lt;https://w3id.org/ldso/core&gt;</span>,
+              <span class="iri">&lt;https://w3id.org/ldso/entities&gt;</span>,
+              <span class="iri">&lt;https://w3id.org/ldso/annotations&gt;</span>,
+              <span class="iri">&lt;https://w3id.org/ldso/lifecycle&gt;</span>,
+              <span class="iri">&lt;https://w3id.org/ldso/semantics&gt;</span>,
+              <span class="iri">&lt;https://w3id.org/ldso/operations&gt;</span> .</pre>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════════ -->
+  <section id="design-principles">
+    <h2>Design Principles</h2>
+    <ol style="padding-left:1.4rem; line-height:2;">
+      <li><strong>Strict layer separation.</strong> Structure, semantics, lifecycle, and operational
+          rules are represented in separate modules. No module mixes concerns from another layer.</li>
+      <li><strong>DC Terms for metadata.</strong> All document-level metadata uses Dublin Core Terms
+          (<code>dct:title</code>, <code>dct:language</code>, <code>dct:issued</code>, <code>dct:format</code>).
+          No custom LDSO metadata properties.</li>
+      <li><strong>SKOS for taxonomies.</strong> Entity type classification uses a SKOS
+          <code>ConceptScheme</code> — not OWL subclasses — enabling multi-dimensional typing
+          and domain extension without modifying core modules.</li>
+      <li><strong>SHACL for validation.</strong> Every module ships a companion
+          <code>shapes.ttl</code> with SHACL NodeShapes, property constraints, and
+          SPARQL-based integrity checks.</li>
+      <li><strong>IRI-first identity.</strong> Every meaningful resource is identified by an IRI.
+          Blank nodes are not used for primary entities.</li>
+      <li><strong>Modular adoption.</strong> Each module can be deployed independently.
+          A system consuming only Layer 1 has no dependency on Layers 2–5.</li>
+    </ol>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════════ -->
+  <section id="contributing">
+    <h2>Contributing</h2>
+    <p>
+      The LDSO project is maintained at
+      <a href="https://github.com/geoknoesis/ldso">github.com/geoknoesis/ldso</a>.
+      Bug reports, feature requests, and pull requests are welcome via the
+      <a href="https://github.com/geoknoesis/ldso/issues">issue tracker</a>.
+    </p>
+    <p>
+      When contributing ontology terms, follow the quality requirements in
+      <a href="ldso-core/">LDSO-Core §3</a>: every class and property must have
+      an IRI, <code>rdfs:label</code>, <code>skos:definition</code>,
+      <code>skos:scopeNote</code>, <code>skos:example</code>, and
+      <code>rdfs:isDefinedBy</code>.
+    </p>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════════ -->
+  <section id="license">
+    <h2>License</h2>
+    <p>
+      All LDSO ontology files (<code>ontology.ttl</code>, <code>shapes.ttl</code>,
+      example files, and HTML specifications) are published under the
+      <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0
+      International License (CC BY 4.0)</a>.
+    </p>
+    <p>
+      You are free to share and adapt the material for any purpose, provided appropriate
+      credit is given to <strong>Stephane Fellah, Geoknoesis LLC</strong> and a link to the
+      license is included.
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  <p>
+    LDSO v1.0.0 &nbsp;·&nbsp; Published 2026-05-25 &nbsp;·&nbsp;
+    <a href="https://www.geoknoesis.com">Geoknoesis LLC</a> &nbsp;·&nbsp;
+    <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> &nbsp;·&nbsp;
+    <a href="https://github.com/geoknoesis/ldso">GitHub</a>
+  </p>
+  <p style="margin-top:0.4rem; color:#777;">
+    This is not an official W3C Standard or W3C Recommendation.
+    It is a community/project specification using W3C ReSpec formatting conventions.
+  </p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,279 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Core Example: Article 2.5 — Temporary Admission of Goods
+#
+# Demonstrates:
+#   - LegalResource (abstract instrument) → LegalExpression (Document) model
+#   - ldso:expressionOf linking Document to abstract instrument
+#   - dct:title for titles throughout (Document, Chapter, Article, Table)
+#   - dct:language and dct:issued on the Document (LegalExpression)
+#   - Document → Body → Chapter → Article → Paragraph structure
+#   - Paragraph with BlockList and Items (a, b, c)
+#   - Doubly-linked ordering via ldso:next / ldso:previous
+#   - ldso:orderIndex on all sequence-bearing elements
+#   - ldso:notation for local labels ("5", "a", "2")
+#   - ldso:citation for full concatenated citation path ("2.5", "2.5.2.a")
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ABSTRACT LEGAL RESOURCE — the ATA Agreement as a concept
+# ═════════════════════════════════════════════════════════════════════════════
+
+<https://example.org/resource/temporary-admission>
+  a ldso:LegalResource ;
+  dct:title "Agreement on Temporary Admission of Goods"@en ;
+  ldso:hasExpression <https://example.org/doc/temporary-admission/EN> .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DOCUMENT — English expression of the Agreement
+# ldso:Document is a subClassOf ldso:LegalExpression, which is a subClassOf
+# ldso:LegalResource, so this node is simultaneously all three.
+# ═════════════════════════════════════════════════════════════════════════════
+
+<https://example.org/doc/temporary-admission/EN>
+  a ldso:Document ;
+  dct:title "Agreement on Temporary Admission of Goods"@en ;
+  dct:language "en" ;
+  dct:issued "2026-01-15"^^xsd:date ;
+  dct:format "text/turtle" ;
+  ldso:expressionOf <https://example.org/resource/temporary-admission> ;
+  ldso:contains <https://example.org/doc/temporary-admission/EN/body> .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# BODY
+# ═════════════════════════════════════════════════════════════════════════════
+
+<https://example.org/doc/temporary-admission/EN/body>
+  a ldso:Body ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN> ;
+  ldso:contains <https://example.org/doc/temporary-admission/EN/body/chp_2> .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CHAPTER 2 — Customs Facilitation
+# ═════════════════════════════════════════════════════════════════════════════
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2>
+  a ldso:Chapter ;
+  ldso:notation "2" ;
+  ldso:citation "2" ;
+  dct:title "Customs Facilitation"@en ;
+  ldso:orderIndex 2 ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body> ;
+  ldso:contains <https://example.org/doc/temporary-admission/EN/body/chp_2/art_4> ,
+               <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5> ,
+               <https://example.org/doc/temporary-admission/EN/body/chp_2/art_6> .
+
+# ─── Article 4 (stub — to demonstrate ordering) ──────────────────────────────
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_4>
+  a ldso:Article ;
+  ldso:notation "4" ;
+  ldso:citation "2.4" ;
+  dct:title "Customs Cooperation"@en ;
+  ldso:orderIndex 4 ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2> ;
+  ldso:next <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5> .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ARTICLE 5 — Temporary Admission of Goods
+# ═════════════════════════════════════════════════════════════════════════════
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5>
+  a ldso:Article ;
+  ldso:notation "5" ;
+  ldso:citation "2.5" ;
+  dct:title "Temporary Admission of Goods"@en ;
+  ldso:orderIndex 5 ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2> ;
+  ldso:previous <https://example.org/doc/temporary-admission/EN/body/chp_2/art_4> ;
+  ldso:next     <https://example.org/doc/temporary-admission/EN/body/chp_2/art_6> ;
+  ldso:contains
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_1> ,
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2> ,
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_3> .
+
+# ─── Paragraph 1 ──────────────────────────────────────────────────────────────
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_1>
+  a ldso:Paragraph ;
+  ldso:notation "1" ;
+  ldso:citation "2.5.1" ;
+  ldso:orderIndex 1 ;
+  ldso:text """Each Party shall allow the temporary admission of goods
+referred to in paragraph 2 of this Article without payment of customs
+duties and taxes."""@en ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5> ;
+  ldso:next   <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2> .
+
+# ─── Paragraph 2 (with BlockList) ─────────────────────────────────────────────
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2>
+  a ldso:Paragraph ;
+  ldso:notation "2" ;
+  ldso:citation "2.5.2" ;
+  ldso:orderIndex 2 ;
+  ldso:text "The following goods shall be eligible for temporary admission under this Article:"@en ;
+  ldso:partOf  <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5> ;
+  ldso:previous <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_1> ;
+  ldso:next     <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_3> ;
+  ldso:contains <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1> .
+
+# ─── BlockList ────────────────────────────────────────────────────────────────
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1>
+  a ldso:BlockList ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2> ;
+  ldso:contains
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_a> ,
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_b> ,
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_c> .
+
+# ─── Item (a) ─────────────────────────────────────────────────────────────────
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_a>
+  a ldso:Item ;
+  ldso:notation "a" ;
+  ldso:citation "2.5.2.a" ;
+  ldso:orderIndex 1 ;
+  ldso:text "goods for display or demonstration at exhibitions, fairs, or meetings;"@en ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1> ;
+  ldso:next   <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_b> .
+
+# ─── Item (b) ─────────────────────────────────────────────────────────────────
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_b>
+  a ldso:Item ;
+  ldso:notation "b" ;
+  ldso:citation "2.5.2.b" ;
+  ldso:orderIndex 2 ;
+  ldso:text "professional equipment and tools;"@en ;
+  ldso:partOf   <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1> ;
+  ldso:previous <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_a> ;
+  ldso:next     <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_c> .
+
+# ─── Item (c) ─────────────────────────────────────────────────────────────────
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_c>
+  a ldso:Item ;
+  ldso:notation "c" ;
+  ldso:citation "2.5.2.c" ;
+  ldso:orderIndex 3 ;
+  ldso:text "goods for testing, inspection, or quality control purposes."@en ;
+  ldso:partOf   <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1> ;
+  ldso:previous <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_b> .
+
+# ─── Paragraph 3 ──────────────────────────────────────────────────────────────
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_3>
+  a ldso:Paragraph ;
+  ldso:notation "3" ;
+  ldso:citation "2.5.3" ;
+  ldso:orderIndex 3 ;
+  ldso:text """Goods admitted under this Article shall be re-exported within
+the period specified by the importing Party, which shall not exceed
+twelve months from the date of admission."""@en ;
+  ldso:partOf   <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5> ;
+  ldso:previous <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2> .
+
+# ─── Article 6 (stub — to demonstrate ordering) ──────────────────────────────
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_6>
+  a ldso:Article ;
+  ldso:notation "6" ;
+  ldso:citation "2.6" ;
+  dct:title "Transit Procedures"@en ;
+  ldso:orderIndex 6 ;
+  ldso:partOf   <https://example.org/doc/temporary-admission/EN/body/chp_2> ;
+  ldso:previous <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5> .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# TABLE EXAMPLE — Duty Rates for Temporarily Admitted Goods
+# ═════════════════════════════════════════════════════════════════════════════
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1>
+  a ldso:Table ;
+  dct:title "Temporary Admission — Applicable Conditions"@en ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5> ;
+  ldso:hasRow
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1> ,
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2> ,
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3> .
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1>
+  a ldso:Row ;
+  ldso:orderIndex 1 ;
+  ldso:isHeader true ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1> ;
+  ldso:next   <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2> ;
+  ldso:hasCell
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_1> ,
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_2> ,
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_3> .
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_1>
+  a ldso:Cell ;
+  ldso:orderIndex 1 ;
+  ldso:text "Category"@en ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1> .
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_2>
+  a ldso:Cell ;
+  ldso:orderIndex 2 ;
+  ldso:text "Maximum Period"@en ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1> .
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_3>
+  a ldso:Cell ;
+  ldso:orderIndex 3 ;
+  ldso:text "Duty Treatment"@en ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1> .
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2>
+  a ldso:Row ;
+  ldso:orderIndex 2 ;
+  ldso:partOf   <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1> ;
+  ldso:previous <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1> ;
+  ldso:next     <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3> ;
+  ldso:hasCell
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_1> ,
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_2> ,
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_3> .
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_1>
+  a ldso:Cell ; ldso:orderIndex 1 ; ldso:text "Exhibition goods"@en ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2> .
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_2>
+  a ldso:Cell ; ldso:orderIndex 2 ; ldso:text "6 months"@en ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2> .
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_3>
+  a ldso:Cell ; ldso:orderIndex 3 ; ldso:text "Duty-free"@en ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2> .
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3>
+  a ldso:Row ;
+  ldso:orderIndex 3 ;
+  ldso:partOf   <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1> ;
+  ldso:previous <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2> ;
+  ldso:hasCell
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_1> ,
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_2> ,
+    <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_3> .
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_1>
+  a ldso:Cell ; ldso:orderIndex 1 ; ldso:text "Professional equipment"@en ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3> .
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_2>
+  a ldso:Cell ; ldso:orderIndex 2 ; ldso:text "12 months"@en ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3> .
+
+<https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_3>
+  a ldso:Cell ; ldso:orderIndex 3 ; ldso:text "Duty-free"@en ;
+  ldso:partOf <https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3> .

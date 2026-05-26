@@ -1,0 +1,57 @@
+{
+  "@context": {
+    "rdf":  "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd":  "http://www.w3.org/2001/XMLSchema#",
+    "dct":  "http://purl.org/dc/terms/",
+    "ent":  "https://w3id.org/ldso/entities#",
+    "ex":   "https://example.org/ata/",
+
+    "entityType": { "@id": "ent:entityType", "@type": "@id" },
+    "showAs":     { "@id": "ent:showAs",     "@container": "@language" },
+    "href":       { "@id": "ent:href",       "@type": "xsd:anyURI" },
+    "label":      { "@id": "rdfs:label",     "@container": "@language" }
+  },
+  "@graph": [
+    {
+      "@id": "ex:wco",
+      "@type": "ent:NamedEntity",
+      "entityType": "ent:Organization",
+      "href": "https://www.wcoomd.org",
+      "showAs": { "en": "World Customs Organization", "fr": "Organisation mondiale des douanes" },
+      "label": { "en": "World Customs Organization" }
+    },
+    {
+      "@id": "ex:temporary_admission",
+      "@type": "ent:NamedEntity",
+      "entityType": "ent:Concept",
+      "href": "https://example.org/legal/concepts/temporary-admission",
+      "showAs": { "en": "temporary admission", "fr": "admission temporaire" },
+      "label": { "en": "temporary admission" }
+    },
+    {
+      "@id": "ex:competent_authority",
+      "@type": "ent:NamedEntity",
+      "entityType": "ent:Role",
+      "href": "https://example.org/roles/competent-authority",
+      "showAs": { "en": "competent authority", "fr": "autorité compétente" },
+      "label": { "en": "competent authority" }
+    },
+    {
+      "@id": "ex:customs_territory",
+      "@type": "ent:NamedEntity",
+      "entityType": "ent:Location",
+      "href": "https://example.org/locations/customs-territory",
+      "showAs": { "en": "customs territory", "fr": "territoire douanier" },
+      "label": { "en": "customs territory" }
+    },
+    {
+      "@id": "ex:ata_carnet",
+      "@type": "ent:NamedEntity",
+      "entityType": "ent:Concept",
+      "href": "https://example.org/legal/concepts/ata-carnet",
+      "showAs": { "en": "ATA carnet", "fr": "carnet ATA" },
+      "label": { "en": "ATA carnet" }
+    }
+  ]
+}

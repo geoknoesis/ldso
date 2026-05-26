@@ -1,0 +1,215 @@
+{
+  "@context": {
+    "rdf":  "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd":  "http://www.w3.org/2001/XMLSchema#",
+    "dct":  "http://purl.org/dc/terms/",
+    "ent":  "https://w3id.org/ldso/entities#",
+    "leg":  "https://w3id.org/ldso/semantics#",
+    "ops":  "https://w3id.org/ldso/operations#",
+    "ex":   "https://example.org/ata-ops#",
+
+    "label":                  { "@id": "rdfs:label",                   "@container": "@language" },
+    "showAs":                 { "@id": "ent:showAs",                   "@container": "@language" },
+    "href":                   { "@id": "ent:href",                     "@type": "xsd:anyURI" },
+    "triggerDescription":     { "@id": "ops:triggerDescription",       "@container": "@language" },
+    "criterionDescription":   { "@id": "ops:criterionDescription",     "@container": "@language" },
+    "stepDescription":        { "@id": "ops:stepDescription",          "@container": "@language" },
+    "stepOrder":              { "@id": "ops:stepOrder",                "@type": "xsd:integer" },
+    "deadlineDuration":       { "@id": "ops:deadlineDuration",         "@type": "xsd:duration" },
+    "validityPeriod":         { "@id": "ops:validityPeriod",           "@type": "xsd:duration" },
+    "documentType":           { "@id": "ops:documentType",             "@container": "@language" },
+    "issuedBy":               { "@id": "ops:issuedBy" },
+    "operativizes":           { "@id": "ops:operativizes",             "@type": "@id" },
+    "hasTrigger":             { "@id": "ops:hasTrigger",               "@type": "@id" },
+    "hasCriterion":           { "@id": "ops:hasCriterion",             "@type": "@id" },
+    "hasProcedure":           { "@id": "ops:hasProcedure",             "@type": "@id" },
+    "hasSchedule":            { "@id": "ops:hasSchedule",              "@type": "@id" },
+    "hasDocumentaryRequirement":{ "@id": "ops:hasDocumentaryRequirement","@type": "@id" },
+    "performedBy":            { "@id": "ops:performedBy",              "@type": "@id" },
+    "hasStep":                { "@id": "ops:hasStep",                  "@type": "@id" },
+    "nextStep":               { "@id": "ops:nextStep",                 "@type": "@id" }
+  },
+  "@graph": [
+    {
+      "@id": "ex:CustomsOfficer",
+      "@type": "ent:Role",
+      "label": { "en": "Customs Officer" },
+      "showAs": { "en": "Customs Officer" },
+      "href": "https://www.wcoomd.org/roles/customs-officer"
+    },
+    {
+      "@id": "ex:CarnetHolder",
+      "@type": "ent:Role",
+      "label": { "en": "ATA Carnet Holder" },
+      "showAs": { "en": "ATA Carnet Holder" },
+      "href": "https://example.org/roles/carnet-holder"
+    },
+    {
+      "@id": "ex:IssuingAssociation",
+      "@type": "ent:Role",
+      "label": { "en": "Authorized Issuing Association" },
+      "showAs": { "en": "Authorized Issuing Association" },
+      "href": "https://example.org/roles/issuing-association"
+    },
+    {
+      "@id": "ex:Oblig_Para1_Admit",
+      "@type": "leg:Obligation",
+      "label": { "en": "Obligation to admit goods temporarily — ATA Art. 2.5 §1" }
+    },
+    {
+      "@id": "ex:Oblig_Para2_Present",
+      "@type": "leg:Obligation",
+      "label": { "en": "Obligation to accept presentation of goods for re-exportation — ATA Art. 2.5 §2" }
+    },
+    {
+      "@id": "ex:DocReq_ATACarnet",
+      "@type": "ops:DocumentaryRequirement",
+      "label": { "en": "Valid ATA Carnet" },
+      "documentType": { "en": "ATA Carnet" },
+      "issuedBy": "Authorized Issuing Association",
+      "validityPeriod": "P1Y"
+    },
+    {
+      "@id": "ex:Trigger_CarnetPresented",
+      "@type": "ops:RequestTrigger",
+      "label": { "en": "ATA carnet presented at customs post" },
+      "triggerDescription": { "en": "Activated when a carnet holder presents goods accompanied by a valid ATA carnet at a border crossing point of a Contracting Party." }
+    },
+    {
+      "@id": "ex:Trigger_GoodsForReExport",
+      "@type": "ops:RequestTrigger",
+      "label": { "en": "Goods presented for re-exportation under ATA carnet" },
+      "triggerDescription": { "en": "Activated when the carnet holder presents goods at a customs post for re-exportation, completing the temporary admission cycle." }
+    },
+    {
+      "@id": "ex:Crit_ValidCarnet",
+      "@type": "ops:DocumentaryCriterion",
+      "label": { "en": "Valid ATA carnet criterion" },
+      "criterionDescription": { "en": "The carnet holder must present a valid, unexpired ATA carnet issued by an authorized issuing association of a Contracting Party." },
+      "hasDocumentaryRequirement": "ex:DocReq_ATACarnet"
+    },
+    {
+      "@id": "ex:Crit_GoodsMatchCarnet",
+      "@type": "ops:EligibilityCriterion",
+      "label": { "en": "Goods match carnet description criterion" },
+      "criterionDescription": { "en": "The goods presented must correspond in description, quantity, and identifying marks to the entries on the ATA carnet importation counterfoil." }
+    },
+    {
+      "@id": "ex:Crit_WithinAdmissionPeriod",
+      "@type": "ops:TemporalCriterion",
+      "label": { "en": "Within authorized admission period criterion" },
+      "criterionDescription": { "en": "The goods must be presented before the expiry date shown on the ATA carnet." }
+    },
+    {
+      "@id": "ex:Crit_IdenticalGoods",
+      "@type": "ops:EligibilityCriterion",
+      "label": { "en": "Identical goods for re-exportation criterion" },
+      "criterionDescription": { "en": "The goods presented for re-exportation must be the same goods admitted under the carnet, in the same condition as at admission (normal depreciation excepted)." }
+    },
+    {
+      "@id": "ex:Crit_ReExportBeforeDeadline",
+      "@type": "ops:TemporalCriterion",
+      "label": { "en": "Re-exportation before admission deadline criterion" },
+      "criterionDescription": { "en": "The goods must be re-exported before the end of the authorized admission period." }
+    },
+    {
+      "@id": "ex:Step1_VerifyCarnet",
+      "@type": "ops:Step",
+      "label": { "en": "Step 1 — Verify carnet validity" },
+      "stepOrder": 1,
+      "stepDescription": { "en": "Check that the ATA carnet has not expired and has not been previously cancelled or fully discharged. Confirm the issuing association is authorised by a Contracting Party." },
+      "performedBy": "ex:CustomsOfficer",
+      "nextStep": "ex:Step2_InspectGoods"
+    },
+    {
+      "@id": "ex:Step2_InspectGoods",
+      "@type": "ops:Step",
+      "label": { "en": "Step 2 — Inspect goods against counterfoil" },
+      "stepOrder": 2,
+      "stepDescription": { "en": "Verify that the goods presented correspond in description, quantity, and identifying marks to the entries on the importation counterfoil." },
+      "performedBy": "ex:CustomsOfficer",
+      "nextStep": "ex:Step3_RecordEntry"
+    },
+    {
+      "@id": "ex:Step3_RecordEntry",
+      "@type": "ops:Step",
+      "label": { "en": "Step 3 — Record entry in customs register" },
+      "stepOrder": 3,
+      "stepDescription": { "en": "Record the temporary admission in the customs register, noting the carnet number, goods description, holder identity, and the authorized re-exportation date." },
+      "performedBy": "ex:CustomsOfficer",
+      "nextStep": "ex:Step4_StampCounterfoil"
+    },
+    {
+      "@id": "ex:Step4_StampCounterfoil",
+      "@type": "ops:Step",
+      "label": { "en": "Step 4 — Stamp and detach importation counterfoil" },
+      "stepOrder": 4,
+      "stepDescription": { "en": "Stamp and sign the importation counterfoil, detach it from the carnet, and return the carnet to the holder." },
+      "performedBy": "ex:CustomsOfficer"
+    },
+    {
+      "@id": "ex:Proc_CarnetAdmission",
+      "@type": "ops:Procedure",
+      "label": { "en": "ATA carnet temporary admission procedure" },
+      "hasStep": [
+        "ex:Step1_VerifyCarnet",
+        "ex:Step2_InspectGoods",
+        "ex:Step3_RecordEntry",
+        "ex:Step4_StampCounterfoil"
+      ]
+    },
+    {
+      "@id": "ex:StepR1_VerifyIdentity",
+      "@type": "ops:Step",
+      "label": { "en": "Step 1 — Verify goods identity for re-export" },
+      "stepOrder": 1,
+      "stepDescription": { "en": "Check that the goods presented for re-exportation match the importation counterfoil in description, quantity, and identifying marks." },
+      "performedBy": "ex:CustomsOfficer",
+      "nextStep": "ex:StepR2_StampReExport"
+    },
+    {
+      "@id": "ex:StepR2_StampReExport",
+      "@type": "ops:Step",
+      "label": { "en": "Step 2 — Stamp re-exportation counterfoil" },
+      "stepOrder": 2,
+      "stepDescription": { "en": "Stamp and sign the re-exportation counterfoil to discharge the temporary admission for this Contracting Party and return the carnet to the holder." },
+      "performedBy": "ex:CustomsOfficer"
+    },
+    {
+      "@id": "ex:Proc_CarnetReExportation",
+      "@type": "ops:Procedure",
+      "label": { "en": "ATA carnet re-exportation procedure" },
+      "hasStep": ["ex:StepR1_VerifyIdentity", "ex:StepR2_StampReExport"]
+    },
+    {
+      "@id": "ex:Sched_AdmissionDeadline",
+      "@type": "ops:Deadline",
+      "label": { "en": "Temporary admission re-exportation deadline" },
+      "deadlineDuration": "P6M"
+    },
+    {
+      "@id": "ex:Rule_TemporaryAdmission",
+      "@type": "ops:OperativeRule",
+      "label": { "en": "Temporary admission rule — ATA carnet goods" },
+      "operativizes":            "ex:Oblig_Para1_Admit",
+      "hasTrigger":              "ex:Trigger_CarnetPresented",
+      "hasCriterion":            ["ex:Crit_ValidCarnet", "ex:Crit_GoodsMatchCarnet", "ex:Crit_WithinAdmissionPeriod"],
+      "hasProcedure":            "ex:Proc_CarnetAdmission",
+      "hasSchedule":             "ex:Sched_AdmissionDeadline",
+      "hasDocumentaryRequirement": "ex:DocReq_ATACarnet",
+      "performedBy":             "ex:CustomsOfficer"
+    },
+    {
+      "@id": "ex:Rule_ReExportation",
+      "@type": "ops:OperativeRule",
+      "label": { "en": "Re-exportation rule — ATA carnet goods" },
+      "operativizes":  "ex:Oblig_Para2_Present",
+      "hasTrigger":    "ex:Trigger_GoodsForReExport",
+      "hasCriterion":  ["ex:Crit_IdenticalGoods", "ex:Crit_ReExportBeforeDeadline"],
+      "hasProcedure":  "ex:Proc_CarnetReExportation",
+      "hasSchedule":   "ex:Sched_AdmissionDeadline",
+      "performedBy":   "ex:CustomsOfficer"
+    }
+  ]
+}

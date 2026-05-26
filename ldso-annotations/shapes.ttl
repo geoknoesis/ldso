@@ -1,0 +1,199 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+@prefix ann:  <https://w3id.org/ldso/annotations#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Annotations SHACL Validation Shapes
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/annotations/shapes>
+  a owl:Ontology ;
+  dct:title "LDSO-Annotations SHACL Shapes"@en ;
+  dct:description "SHACL validation shapes for document annotation in LDSO."@en ;
+  dct:creator "Stephane Fellah" ;
+  dct:publisher "Geoknoesis LLC" ;
+  dct:created "2026-05-25"^^xsd:date ;
+  dct:modified "2026-05-25"^^xsd:date ;
+  owl:versionInfo "1.0.0" ;
+  vann:preferredNamespacePrefix "ann" ;
+  vann:preferredNamespaceUri "https://w3id.org/ldso/annotations#" ;
+  owl:imports <https://w3id.org/ldso/annotations> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ENTITY MENTION SHAPE
+# Validates every ann:EntityMention node produced by NLP parsing pipelines.
+# ═════════════════════════════════════════════════════════════════════════════
+
+ann:EntityMentionShape
+  a sh:NodeShape ;
+  sh:targetClass ann:EntityMention ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Entity Mention" ;
+  sh:description "Every entity mention must link to a canonical entity and a document element, and carry the surface form as it appeared in the source text." ;
+
+  sh:property [
+    sh:path ann:mentionOf ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class ent:NamedEntity ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "EntityMention MUST have exactly one ann:mentionOf pointing to an ent:NamedEntity." ;
+  ] ;
+
+  sh:property [
+    sh:path ann:inElement ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "EntityMention MUST have exactly one ann:inElement pointing to the containing document element." ;
+  ] ;
+
+  sh:property [
+    sh:path ann:surfaceForm ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "EntityMention MUST have exactly one ann:surfaceForm (language-tagged string matching the document language)." ;
+  ] ;
+
+  sh:property [
+    sh:path ann:startChar ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:nonNegativeInteger ;
+    sh:severity sh:Violation ;
+    sh:message "ann:startChar, when present, MUST be a xsd:nonNegativeInteger." ;
+  ] ;
+
+  sh:property [
+    sh:path ann:endChar ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:nonNegativeInteger ;
+    sh:severity sh:Violation ;
+    sh:message "ann:endChar, when present, MUST be a xsd:nonNegativeInteger." ;
+  ] ;
+
+  sh:property [
+    sh:path ann:confidence ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:decimal ;
+    sh:minInclusive 0.0 ;
+    sh:maxInclusive 1.0 ;
+    sh:severity sh:Violation ;
+    sh:message "ann:confidence MUST be a decimal in [0.0, 1.0]." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CHARACTER OFFSET CONSISTENCY
+# startChar and endChar must be asserted together; endChar must be > startChar.
+# ═════════════════════════════════════════════════════════════════════════════
+
+ann:EntityMentionOffsetShape
+  a sh:NodeShape ;
+  sh:targetClass ann:EntityMention ;
+  sh:nodeKind sh:IRI ;
+  sh:name "Entity Mention Offset Consistency" ;
+  sh:description "When startChar is asserted, endChar must be present and endChar > startChar." ;
+
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Violation ;
+    sh:message "ann:startChar is present but ann:endChar is missing — both must be asserted together." ;
+    sh:select """
+      PREFIX ann: <https://w3id.org/ldso/annotations#>
+      SELECT $this WHERE {
+        $this ann:startChar ?start .
+        FILTER NOT EXISTS { $this ann:endChar ?end . }
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Violation ;
+    sh:message "ann:endChar must be strictly greater than ann:startChar." ;
+    sh:select """
+      PREFIX ann: <https://w3id.org/ldso/annotations#>
+      SELECT $this WHERE {
+        $this ann:startChar ?start ;
+              ann:endChar   ?end .
+        FILTER (?end <= ?start)
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# COARSE REFERENCE SHAPE
+# ann:refersToEntity targets must be ent:NamedEntity instances.
+# ═════════════════════════════════════════════════════════════════════════════
+
+ann:RefersToEntityShape
+  a sh:NodeShape ;
+  sh:name "Refers To Entity" ;
+  sh:description "Validates that ann:refersToEntity values are typed as ent:NamedEntity." ;
+  sh:target [
+    a sh:SPARQLTarget ;
+    sh:select """
+      PREFIX ann: <https://w3id.org/ldso/annotations#>
+      SELECT ?this WHERE {
+        [] ann:refersToEntity ?this .
+      }
+    """ ;
+  ] ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Warning ;
+    sh:message "ann:refersToEntity target SHOULD be typed as ent:NamedEntity." ;
+    sh:select """
+      PREFIX ent: <https://w3id.org/ldso/entities#>
+      SELECT $this WHERE {
+        FILTER NOT EXISTS { $this a ent:NamedEntity . }
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# MENTION ↔ COARSE CONSISTENCY
+# If fine-grained mentions exist for an element, it SHOULD also declare
+# ann:refersToEntity for the same canonical entities (index completeness).
+# ═════════════════════════════════════════════════════════════════════════════
+
+ann:MentionCoarseConsistencyShape
+  a sh:NodeShape ;
+  sh:name "Mention-Coarse Consistency" ;
+  sh:description "An element with ann:hasMention nodes SHOULD carry corresponding ann:refersToEntity assertions for the same canonical entities." ;
+  sh:target [
+    a sh:SPARQLTarget ;
+    sh:select """
+      PREFIX ann: <https://w3id.org/ldso/annotations#>
+      SELECT ?this WHERE {
+        ?this ann:hasMention [] .
+      }
+    """ ;
+  ] ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:severity sh:Warning ;
+    sh:message "Element has ann:hasMention but is missing ann:refersToEntity for at least one mentioned entity — consider adding coarse references for indexing." ;
+    sh:select """
+      PREFIX ann: <https://w3id.org/ldso/annotations#>
+      SELECT $this WHERE {
+        $this ann:hasMention ?m .
+        ?m ann:mentionOf ?entity .
+        FILTER NOT EXISTS { $this ann:refersToEntity ?entity . }
+      }
+    """ ;
+  ] .

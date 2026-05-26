@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LDSO-Semantics: Legal Semantic Annotation Ontology</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus:    "unofficial",
+      shortName:     "ldso-semantics",
+      latestVersion: "https://w3id.org/ldso/semantics",
+      edDraftURI:    "https://w3id.org/ldso/semantics",
+      editors: [
+        { name: "Stephane Fellah", company: "Geoknoesis LLC", url: "https://www.geoknoesis.com" }
+      ],
+      publishDate: "2026-05-25",
+      license: "cc-by",
+      doJsonLd: true,
+      github: {
+        repoURL: "https://github.com/geoknoesis/ldso",
+        branch:  "main"
+      },
+      localBiblio: {
+        "LDSO-CORE": {
+          title:     "LDSO-Core: Legal Document Structure Ontology",
+          href:      "https://w3id.org/ldso/core",
+          publisher: "LDSO Project"
+        },
+        "LDSO-ENTITIES": {
+          title:     "LDSO-Entities: Named Entity Reference Module",
+          href:      "https://w3id.org/ldso/entities",
+          publisher: "LDSO Project"
+        },
+        "LDSO-LIFECYCLE": {
+          title:     "LDSO-Lifecycle: Legal Document Lifecycle and Amendment Ontology",
+          href:      "https://w3id.org/ldso/lifecycle",
+          publisher: "LDSO Project"
+        },
+        "LEGALRULEML": {
+          title:     "LegalRuleML Core Specification Version 1.0",
+          href:      "https://docs.oasis-open.org/legalruleml/legalruleml-core-spec/v1.0/legalruleml-core-spec-v1.0.html",
+          publisher: "OASIS"
+        },
+        "ODRL": {
+          title:     "ODRL Information Model 2.2",
+          href:      "https://www.w3.org/TR/odrl-model/",
+          publisher: "W3C"
+        },
+        "OWL2": {
+          title:     "OWL 2 Web Ontology Language Primer (Second Edition)",
+          href:      "https://www.w3.org/TR/owl2-primer/",
+          publisher: "W3C"
+        },
+        "SHACL": {
+          title:     "Shapes Constraint Language (SHACL)",
+          href:      "https://www.w3.org/TR/shacl/",
+          publisher: "W3C"
+        },
+        "SKOS": {
+          title:     "SKOS Simple Knowledge Organization System Reference",
+          href:      "https://www.w3.org/TR/skos-reference/",
+          publisher: "W3C"
+        },
+        "RFC2119": {
+          title:     "Key words for use in RFCs to Indicate Requirement Levels",
+          href:      "https://www.ietf.org/rfc/rfc2119.txt",
+          publisher: "IETF"
+        }
+      }
+    };
+  </script>
+  <style>
+    .ont-term   { font-family: monospace; color: #005a9c; }
+    .ont-prefix { font-family: monospace; color: #707070; }
+    table.ont-table { border-collapse: collapse; width: 100%; }
+    table.ont-table th, table.ont-table td {
+      border: 1px solid #ccc; padding: 0.4em 0.7em; text-align: left;
+      vertical-align: top;
+    }
+    table.ont-table th { background: #f0f0f0; }
+    .disclaimer { background: #fff3cd; border-left: 4px solid #ffc107;
+      padding: 0.7em 1em; margin: 1em 0; }
+    pre.example { background: #f8f8f8; border-left: 4px solid #005a9c;
+      padding: 1em; overflow: auto; }
+    .deontic-label { font-family: monospace; background: #eef; padding: 0 3px;
+      border: 1px solid #99c; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     Abstract
+     ============================================================ -->
+<section id="abstract">
+  <p>
+    LDSO-Semantics is an RDF/OWL ontology module that provides a vocabulary for
+    annotating the deontic and definitional content of legal provisions. It records
+    what provisions <strong>oblige</strong>, <strong>permit</strong>,
+    <strong>prohibit</strong>, <strong>entitle</strong>, <strong>define</strong>,
+    and <strong>scope</strong> — without encoding structural form (LDSO-Core) or
+    lifecycle state (LDSO-Lifecycle). Annotations are first-class nodes that point
+    to structural elements via <span class="ont-term">leg:annotates</span>, keeping
+    structure and meaning cleanly separated. LDSO-Semantics is part of the
+    <strong>Legal Document Structure Ontology (LDSO)</strong> family and extends
+    <a data-cite="LDSO-CORE">LDSO-Core</a>.
+  </p>
+  <p class="disclaimer">
+    <strong>Disclaimer:</strong> This document is not an official W3C Standard or
+    W3C Recommendation. It is a community/project specification using W3C ReSpec
+    formatting conventions.
+  </p>
+</section>
+
+<!-- ============================================================
+     Status
+     ============================================================ -->
+<section id="sotd">
+  <p class="disclaimer">
+    This document is not an official W3C Standard or W3C Recommendation. It is a
+    community/project specification produced by Geoknoesis LLC using W3C ReSpec
+    formatting conventions.
+  </p>
+  <p>
+    This specification is part of the Legal Document Structure Ontology (LDSO) family.
+    Feedback is welcome via the
+    <a href="https://github.com/geoknoesis/ldso/issues">GitHub issue tracker</a>.
+  </p>
+  <section id="version-iri">
+    <h3>Version IRI</h3>
+    <p>
+      The version IRI for this publication is
+      <code>https://w3id.org/ldso/semantics/1.0.0</code>.
+      The canonical namespace IRI is <code>https://w3id.org/ldso/semantics#</code>
+      (preferred prefix: <code>leg</code>). All LDSO-Semantics terms carry a
+      <code>rdfs:isDefinedBy</code> assertion pointing to
+      <code>https://w3id.org/ldso/semantics</code>.
+    </p>
+  </section>
+</section>
+
+<!-- ============================================================
+     1. Introduction
+     ============================================================ -->
+<section id="introduction">
+  <h2>Introduction</h2>
+  <p>
+    Legal provisions have both a structural form and a normative meaning. A paragraph
+    may be a structural unit in the sense of LDSO-Core; but it may also <em>oblige</em>
+    an entity to do something, <em>permit</em> a course of action, <em>prohibit</em> a
+    practice, or <em>define</em> a term. These are distinct levels of description that
+    benefit from being separately recorded and separately queried.
+  </p>
+  <p>
+    LDSO-Semantics provides the vocabulary for the semantic layer. Its central
+    concept is the <strong>legal annotation</strong>: a first-class RDF node that
+    captures the deontic or definitional meaning of a provision and is linked to
+    the provision's structural node via <span class="ont-term">leg:annotates</span>.
+    This design means:
+  </p>
+  <ul>
+    <li>the same provision may carry multiple annotations of different types
+      (e.g., an obligation <em>and</em> a definition in the same article);</li>
+    <li>semantic annotations may be loaded as a separate named graph without
+      altering the structural graph;</li>
+    <li>SPARQL queries can target structure, meaning, or both independently.</li>
+  </ul>
+
+  <section id="scope">
+    <h3>Scope and Out of Scope</h3>
+    <p>LDSO-Semantics is scoped to <em>semantic annotation of legal provisions</em>.</p>
+    <p>The following are <strong>out of scope</strong> and belong in other modules:</p>
+    <ul>
+      <li>Document structure, element hierarchy, citations — see <a data-cite="LDSO-CORE">LDSO-Core</a>.</li>
+      <li>Named entities (persons, organizations, roles, concepts) — see <a data-cite="LDSO-ENTITIES">LDSO-Entities</a>.</li>
+      <li>Amendments, versions, consolidation — see <a data-cite="LDSO-LIFECYCLE">LDSO-Lifecycle</a>.</li>
+      <li>Operational trade rules, HS triggers, tariff rates — see domain ontologies.</li>
+      <li>Compliance evaluation and execution results — see evaluation ontologies.</li>
+    </ul>
+  </section>
+
+  <section id="conventions">
+    <h3>Conventions</h3>
+    <p>
+      The key words <strong>MUST</strong>, <strong>MUST NOT</strong>,
+      <strong>SHOULD</strong>, <strong>SHOULD NOT</strong>, and <strong>MAY</strong>
+      are to be interpreted as described in [[RFC2119]].
+    </p>
+    <p>Namespace prefixes used throughout this document:</p>
+    <pre class="example">
+@prefix rdf:  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; .
+@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt; .
+@prefix owl:  &lt;http://www.w3.org/2002/07/owl#&gt; .
+@prefix xsd:  &lt;http://www.w3.org/2001/XMLSchema#&gt; .
+@prefix skos: &lt;http://www.w3.org/2004/02/skos/core#&gt; .
+@prefix dct:  &lt;http://purl.org/dc/terms/&gt; .
+@prefix sh:   &lt;http://www.w3.org/ns/shacl#&gt; .
+@prefix leg:  &lt;https://w3id.org/ldso/semantics#&gt; .
+@prefix ldso: &lt;https://w3id.org/ldso/core#&gt; .
+@prefix ent:  &lt;https://w3id.org/ldso/entities#&gt; .</pre>
+  </section>
+</section>
+
+<!-- ============================================================
+     2. Design Principles
+     ============================================================ -->
+<section id="design-principles">
+  <h2>Design Principles</h2>
+  <ol>
+    <li><strong>Structure is independent from meaning.</strong>
+      <span class="ont-term">ldso:Article</span> is a structural class.
+      <span class="ont-term">leg:Obligation</span> annotates that article. The two
+      are linked by <span class="ont-term">leg:annotates</span> in one direction
+      only (annotation → element), never the reverse.</li>
+    <li><strong>Annotations are first-class nodes.</strong>
+      Legal annotations have their own IRIs and carry their own properties. They
+      are not blank nodes or property bags attached to structural elements. This
+      enables annotations to be versioned, queried, and loaded independently.</li>
+    <li><strong>Deontic type is carried by the subclass.</strong>
+      The distinction between an obligation, permission, and prohibition is modelled
+      as an OWL class — not as a property value. SPARQL patterns over
+      <code>?x a leg:Obligation</code> are more efficient and compositional than
+      filtering on string values.</li>
+    <li><strong>Modal evidence is preserved verbatim.</strong>
+      The modal verb or construction from the source text (e.g., <em>shall</em>,
+      <em>may not</em>, <em>is entitled to</em>) is captured in
+      <span class="ont-term">leg:deonticModal</span> as a plain string. This supports
+      corpus linguistics, compliance review, and NLP pipelines without losing the
+      original linguistic evidence.</li>
+    <li><strong>Inverse properties are asserted explicitly.</strong>
+      Both directions of the condition pair
+      (<span class="ont-term">leg:conditionedBy</span> /
+      <span class="ont-term">leg:conditionOf</span>) and the exception pair
+      (<span class="ont-term">leg:exceptedBy</span> /
+      <span class="ont-term">leg:exceptionOf</span>) MUST be asserted in data.
+      Relying solely on OWL inference for inverse triples causes fragile SPARQL
+      results in RDF engines that do not perform forward-chaining.</li>
+    <li><strong>Conditions are reusable standalone nodes.</strong>
+      A <span class="ont-term">leg:Condition</span> is not itself a
+      <span class="ont-term">leg:LegalAnnotation</span>. It is a separate node
+      that may be referenced by multiple NormativeStatements — supporting shared
+      preconditions without duplication.</li>
+    <li><strong>Layered modeling.</strong>
+      Structural concerns (LDSO-Core), semantic annotations (this module), lifecycle
+      and effect (LDSO-Lifecycle), and domain rules are kept in separate ontology
+      layers linked by reference, not merged.</li>
+  </ol>
+</section>
+
+<!-- ============================================================
+     3. Annotation Model
+     ============================================================ -->
+<section id="annotation-model">
+  <h2>Annotation Model</h2>
+  <p>
+    The central pattern of LDSO-Semantics is:
+  </p>
+  <pre class="example">
+annotation ──leg:annotates──&gt; structural_element</pre>
+
+  <p>
+    A <span class="ont-term">leg:LegalAnnotation</span> is a separate resource from
+    the structural element it describes. The annotation does not modify or attach
+    to the element; it merely points to it. This allows the same element to carry
+    multiple annotations, and allows annotations to be queried, loaded, or removed
+    without touching the structural graph.
+  </p>
+
+  <section id="annotation-class-hierarchy">
+    <h3>Class Hierarchy</h3>
+    <pre class="example">
+leg:LegalAnnotation
+├── leg:NormativeStatement
+│   ├── leg:Obligation      (SHALL / MUST)
+│   ├── leg:Permission      (MAY / IS PERMITTED TO)
+│   ├── leg:Prohibition     (SHALL NOT / MUST NOT)
+│   ├── leg:Right           (IS ENTITLED TO / HAS THE RIGHT TO)
+│   └── leg:Discretion      (MAY AT ITS DISCRETION)
+├── leg:Definition          (defined term + definition text)
+├── leg:Exception           (carve-out from a norm)
+│   └── leg:Exemption       (named-subject exception)
+└── leg:Scope               (range of applicability)
+
+leg:Condition               (standalone prerequisite — NOT a LegalAnnotation)</pre>
+  </section>
+
+  <section id="annotation-pattern">
+    <h3>Core Pattern</h3>
+    <p>
+      Every legal annotation MUST carry at least one
+      <span class="ont-term">leg:annotates</span> triple pointing to the source
+      structural element. The following example shows an obligation linked to a
+      paragraph:
+    </p>
+    <pre class="example">
+ex:Oblig_Para1_Admit
+    a leg:Obligation ;
+    leg:annotates          ex:para_1 ;
+    leg:normativeSubject   ex:contracting_party ;
+    leg:normativeObject    ex:goods ;
+    leg:deonticModal       "shall" ;
+    leg:normativeText      """Goods shall be admitted temporarily into the customs
+territory of a Contracting Party without payment of import duties and
+taxes, provided that they are intended for re-exportation."""@en ;
+    leg:conditionedBy      ex:Cond_ReExport ;
+    leg:hasScopeAnnotation ex:Scope_Art2_5 .</pre>
+    <p>
+      The structural element <code>ex:para_1</code> is declared in the LDSO-Core graph.
+      The annotation <code>ex:Oblig_Para1_Admit</code> may reside in a separate named
+      graph. Neither graph is modified by the other.
+    </p>
+  </section>
+</section>
+
+<!-- ============================================================
+     4. Conformance
+     ============================================================ -->
+<section id="conformance">
+  <h2>Conformance</h2>
+  <p>
+    A conforming LDSO-Semantics implementation MUST:
+  </p>
+  <ol>
+    <li>Use the namespace <code>https://w3id.org/ldso/semantics#</code> for all
+        LDSO-Semantics terms.</li>
+    <li>Type every legal annotation node as the appropriate subclass of
+        <code>leg:LegalAnnotation</code> — one of <code>leg:Obligation</code>,
+        <code>leg:Permission</code>, <code>leg:Prohibition</code>, <code>leg:Right</code>,
+        <code>leg:Discretion</code>, <code>leg:Definition</code>, <code>leg:Condition</code>,
+        <code>leg:Exception</code>, <code>leg:Exemption</code>, or <code>leg:Scope</code>.</li>
+    <li>Link every legal annotation to its source document element via
+        <code>leg:annotates</code>.</li>
+    <li>Ensure that <code>leg:Condition</code> and <code>leg:Exception</code> nodes are
+        linked to their target annotation via <code>leg:conditionFor</code> or
+        <code>leg:exceptionTo</code> respectively.</li>
+    <li>Not embed obligation/permission/prohibition logic inside LDSO-Core structural
+        nodes — legal semantics MUST be represented as separate first-class nodes.</li>
+    <li>Pass all SHACL shapes defined in <code>shapes.ttl</code> without violations.</li>
+  </ol>
+  <p>
+    A conforming implementation SHOULD:
+  </p>
+  <ul>
+    <li>Link definitional annotations (<code>leg:Definition</code>) to the entity being
+        defined via <code>leg:defines</code>.</li>
+    <li>Record the legal provision in which an annotation is stated via
+        <code>leg:statedIn</code>.</li>
+  </ul>
+</section>
+
+<!-- ============================================================
+     5. Normative Statements
+     ============================================================ -->
+<section id="normative-statements">
+  <h2>Normative Statements</h2>
+  <p>
+    A <span class="ont-term">leg:NormativeStatement</span> is a legal annotation that
+    records a deontic norm expressed in a provision. All normative statements
+    MUST carry <span class="ont-term">leg:annotates</span> and
+    <span class="ont-term">leg:deonticModal</span>. They SHOULD also carry
+    <span class="ont-term">leg:normativeSubject</span> identifying who bears
+    the norm.
+  </p>
+
+  <section id="class-Obligation">
+    <h3><span class="ont-term">leg:Obligation</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/semantics#Obligation</code></p>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">leg:NormativeStatement</span></p>
+    <p><strong>Definition:</strong>
+      A normative statement imposing a duty on the normative subject to perform or
+      refrain from a specific act. Expressed in legal text by
+      <span class="deontic-label">SHALL</span>,
+      <span class="deontic-label">MUST</span>,
+      <span class="deontic-label">IS REQUIRED TO</span>,
+      <span class="deontic-label">IS OBLIGED TO</span>, or equivalent.</p>
+    <p><strong>Required properties:</strong>
+      <span class="ont-term">leg:annotates</span> (MUST),
+      <span class="ont-term">leg:deonticModal</span> (MUST),
+      <span class="ont-term">leg:normativeSubject</span> (SHOULD),
+      <span class="ont-term">leg:normativeObject</span> (SHOULD)</p>
+    <pre class="example">
+ex:Oblig_Para3_Grant
+    a leg:Obligation ;
+    leg:annotates        ex:para_3 ;
+    leg:normativeSubject ex:competent_authority ;
+    leg:normativeObject  ex:temporary_admission ;
+    leg:deonticModal     "shall" ;
+    leg:normativeText    """Where the competent authority is satisfied that the
+conditions set out in paragraphs 1 and 2 are fulfilled, it shall grant
+temporary admission."""@en ;
+    leg:conditionedBy    ex:Cond_SatisfiedConditions .</pre>
+  </section>
+
+  <section id="class-Permission">
+    <h3><span class="ont-term">leg:Permission</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/semantics#Permission</code></p>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">leg:NormativeStatement</span></p>
+    <p><strong>Definition:</strong>
+      A normative statement conferring on the normative subject a faculty to perform
+      an act that would otherwise be restricted or uncertain. Expressed in legal text
+      by <span class="deontic-label">MAY</span>,
+      <span class="deontic-label">IS PERMITTED TO</span>,
+      <span class="deontic-label">IS AUTHORIZED TO</span>, or equivalent.</p>
+    <p><strong>Usage note:</strong>
+      Distinguish from <span class="ont-term">leg:Discretion</span> (an explicit
+      operational power to an institutional actor) and from
+      <span class="ont-term">leg:Right</span> (an enforceable entitlement against a
+      duty-bearer). A Permission removes or relaxes a presumed restriction.</p>
+    <pre class="example">
+ex:Perm_VoluntaryDeclaration
+    a leg:Permission ;
+    leg:annotates        ex:art_6 ;
+    leg:normativeSubject ex:applicant ;
+    leg:deonticModal     "may" ;
+    leg:normativeText    "An applicant may file a voluntary declaration
+in lieu of an ATA carnet."@en .</pre>
+  </section>
+
+  <section id="class-Prohibition">
+    <h3><span class="ont-term">leg:Prohibition</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/semantics#Prohibition</code></p>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">leg:NormativeStatement</span></p>
+    <p><strong>Definition:</strong>
+      A normative statement forbidding the normative subject from performing a specific
+      act. Expressed in legal text by
+      <span class="deontic-label">SHALL NOT</span>,
+      <span class="deontic-label">MUST NOT</span>,
+      <span class="deontic-label">IS PROHIBITED FROM</span>,
+      <span class="deontic-label">MAY NOT</span>, or equivalent.</p>
+    <p><strong>Usage note:</strong>
+      A Prohibition is an explicit legal barrier, not merely the absence of a
+      Permission. <em>No Party shall impose any form of export price requirement.</em></p>
+    <pre class="example">
+ex:Prohib_ExportPriceReq
+    a leg:Prohibition ;
+    leg:annotates        ex:art_8 ;
+    leg:normativeSubject ex:contracting_party ;
+    leg:deonticModal     "shall not" ;
+    leg:normativeText    "No Contracting Party shall impose any form of export
+price requirement for goods admitted temporarily."@en .</pre>
+  </section>
+
+  <section id="class-Right">
+    <h3><span class="ont-term">leg:Right</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/semantics#Right</code></p>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">leg:NormativeStatement</span></p>
+    <p><strong>Definition:</strong>
+      A normative statement conferring on the normative subject a legal entitlement
+      against one or more duty-bearers. A Right correlates with a corresponding
+      Obligation on another party. Expressed by
+      <span class="deontic-label">IS ENTITLED TO</span>,
+      <span class="deontic-label">HAS THE RIGHT TO</span>,
+      <span class="deontic-label">SHALL BE ENTITLED TO</span>, or equivalent.</p>
+    <p><strong>Usage note:</strong>
+      Link the correlating Obligation on the duty-bearer via
+      <span class="ont-term">leg:correlatesTo</span> when that obligation is
+      separately annotated (Hohfeldian correlate structure).</p>
+    <pre class="example">
+ex:Right_Appeal
+    a leg:Right ;
+    leg:annotates      ex:art_11 ;
+    leg:normativeSubject ex:applicant ;
+    leg:deonticModal   "is entitled to" ;
+    leg:normativeText  "The applicant is entitled to appeal any decision of
+the competent authority within 30 days."@en ;
+    leg:correlatesTo   ex:Oblig_ProcessAppeal .</pre>
+  </section>
+
+  <section id="class-Discretion">
+    <h3><span class="ont-term">leg:Discretion</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/semantics#Discretion</code></p>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">leg:NormativeStatement</span></p>
+    <p><strong>Definition:</strong>
+      A normative statement conferring on the normative subject an operational power
+      to take action at its own judgment. Expressed by
+      <span class="deontic-label">MAY AT ITS DISCRETION</span>,
+      <span class="deontic-label">MAY DETERMINE</span>,
+      <span class="deontic-label">IS EMPOWERED TO</span>, or equivalent.</p>
+    <p><strong>Usage note:</strong>
+      A Discretion grants a positive operational capability — typically to an
+      administrative or institutional actor such as a competent authority or customs
+      administration. It differs from a Permission (which removes a restriction) and
+      a Right (which is an entitlement against a duty-bearer).</p>
+    <pre class="example">
+ex:Discr_ExtendPeriod
+    a leg:Discretion ;
+    leg:annotates        ex:art_5 ;
+    leg:normativeSubject ex:competent_authority ;
+    leg:normativeObject  ex:temporary_admission ;
+    leg:deonticModal     "may" ;
+    leg:normativeText    "The competent authority may extend the period of
+temporary admission beyond the period initially fixed."@en .</pre>
+  </section>
+</section>
+
+<!-- ============================================================
+     5. Definitions
+     ============================================================ -->
+<section id="definitions-section">
+  <h2>Definitions</h2>
+
+  <section id="class-Definition">
+    <h3><span class="ont-term">leg:Definition</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/semantics#Definition</code></p>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">leg:LegalAnnotation</span></p>
+    <p><strong>Definition:</strong>
+      A legal annotation recording a term formally defined within a provision.
+      The definition specifies the meaning of a named concept for the purposes of
+      the legal instrument. A Definition carries the term itself
+      (<span class="ont-term">leg:definedTerm</span>) and the definition text
+      (<span class="ont-term">leg:definitionText</span>).</p>
+    <p><strong>Required properties:</strong>
+      <span class="ont-term">leg:annotates</span> (MUST),
+      <span class="ont-term">leg:definedTerm</span> (MUST, language-tagged),
+      <span class="ont-term">leg:definitionText</span> (MUST, language-tagged)</p>
+    <p><strong>Optional properties:</strong>
+      <span class="ont-term">leg:definesEntity</span> (links to an
+      <code>ent:NamedEntity</code> in LDSO-Entities)</p>
+    <pre class="example">
+ex:Def_TemporaryAdmission
+    a leg:Definition ;
+    leg:annotates      ex:art_1 ;
+    leg:definedTerm    "temporary admission"@en ;
+    leg:definedTerm    "admission temporaire"@fr ;
+    leg:definitionText """The customs procedure under which certain goods can be
+brought into a customs territory conditionally relieved from payment of
+import duties and taxes, provided such goods are imported for a specific
+purpose and are intended for re-exportation within a specified period
+without having undergone any change except normal depreciation due to the
+use made of them."""@en ;
+    leg:definesEntity  ex:temporary_admission .</pre>
+    <p>
+      Multiple definitions in one article SHOULD each be captured as a separate
+      Definition instance. Where the official text exists in multiple languages,
+      each language version of the term and text SHOULD be added as a separate
+      language-tagged literal.
+    </p>
+  </section>
+</section>
+
+<!-- ============================================================
+     6. Conditions and Exceptions
+     ============================================================ -->
+<section id="conditions-exceptions">
+  <h2>Conditions and Exceptions</h2>
+
+  <section id="condition-exception-distinction">
+    <h3>Conditions vs. Exceptions</h3>
+    <p>
+      These two concepts are easily confused:
+    </p>
+    <dl>
+      <dt><strong>Condition</strong> (<span class="ont-term">leg:Condition</span>)</dt>
+      <dd>
+        Restricts <em>when</em> a norm applies. It is the 'if' in an if-then
+        normative structure. When a condition is not satisfied, the norm simply
+        does not engage. Conditions are linked to norms via
+        <span class="ont-term">leg:conditionedBy</span>.
+      </dd>
+      <dt><strong>Exception</strong> (<span class="ont-term">leg:Exception</span>)</dt>
+      <dd>
+        Carves out categories, circumstances, or named subjects from a norm that
+        would <em>otherwise apply</em>. The norm applies generally, but not to
+        the excepted cases. Exceptions are linked to norms via
+        <span class="ont-term">leg:exceptedBy</span>.
+      </dd>
+    </dl>
+  </section>
+
+  <section id="class-Condition">
+    <h3><span class="ont-term">leg:Condition</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/semantics#Condition</code></p>
+    <p><strong>Note:</strong>
+      <span class="ont-term">leg:Condition</span> is <em>not</em> a subclass of
+      <span class="ont-term">leg:LegalAnnotation</span>. It is a standalone reusable
+      node that may be shared by multiple NormativeStatements via
+      <span class="ont-term">leg:conditionedBy</span>.</p>
+    <p><strong>Required properties:</strong>
+      <span class="ont-term">leg:conditionText</span> (MUST, language-tagged)</p>
+    <p><strong>Optional properties:</strong>
+      <span class="ont-term">leg:statedIn</span> (the structural element stating
+      the condition, when different from the element carrying the annotated norm),
+      <span class="ont-term">leg:conditionOf</span> (inverse of
+      <span class="ont-term">leg:conditionedBy</span>, MUST be asserted)</p>
+    <pre class="example">
+ex:Cond_ReExport
+    a leg:Condition ;
+    leg:conditionText  """The goods are intended for re-exportation within the
+period specified in Article 7 without having undergone any change except
+normal depreciation due to use."""@en ;
+    leg:statedIn       ex:para_1 ;
+    leg:conditionOf    ex:Oblig_Para1_Admit .      # inverse — MUST be asserted
+
+ex:Oblig_Para1_Admit
+    leg:conditionedBy  ex:Cond_ReExport .         # forward — MUST be asserted</pre>
+    <p>
+      A single Condition may be referenced by multiple NormativeStatements —
+      for example, a re-exportation requirement that governs both an obligation
+      and a discretion in different paragraphs.
+    </p>
+  </section>
+
+  <section id="class-Exception">
+    <h3><span class="ont-term">leg:Exception</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/semantics#Exception</code></p>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">leg:LegalAnnotation</span></p>
+    <p><strong>Definition:</strong>
+      A legal annotation recording a carve-out from the general rule expressed by
+      a NormativeStatement. An Exception specifies circumstances, categories, or
+      cases to which the norm does not apply.</p>
+    <p><strong>Required properties:</strong>
+      <span class="ont-term">leg:annotates</span> (MUST),
+      <span class="ont-term">leg:exceptionOf</span> (SHOULD, pointing to the
+      NormativeStatement being excepted)</p>
+    <p><strong>Inverse consistency:</strong>
+      If <code>A leg:exceptedBy B</code>, then <code>B leg:exceptionOf A</code>
+      MUST also be asserted. Both directions are required in data; do not rely
+      on OWL inference alone.</p>
+    <pre class="example">
+ex:Exc_TransitGoods
+    a leg:Exception ;
+    leg:annotates    ex:para_2 ;
+    leg:exceptionOf  ex:Oblig_Para2_Present ;       # forward — MUST be asserted
+    leg:exceptionText """Goods in transit through a customs territory under
+customs supervision are not subject to the presentation requirement
+of paragraph 2."""@en .
+
+ex:Oblig_Para2_Present
+    leg:exceptedBy   ex:Exc_TransitGoods .         # inverse — MUST be asserted</pre>
+  </section>
+
+  <section id="class-Exemption">
+    <h3><span class="ont-term">leg:Exemption</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/semantics#Exemption</code></p>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">leg:Exception</span></p>
+    <p><strong>Definition:</strong>
+      A specific exception that releases a <em>named subject, category, or item</em>
+      from a norm that would otherwise bind it. An Exemption names who or what is
+      exempt, not merely the circumstances of inapplicability.</p>
+    <p><strong>Usage note:</strong>
+      Use when the legal text says <em>'X is exempt from Y'</em>,
+      <em>'Y shall not apply to X'</em>, or
+      <em>'X is excluded from the scope of this Article'</em>.</p>
+    <pre class="example">
+ex:Exemp_DiplomaticGoods
+    a leg:Exemption ;
+    leg:annotates    ex:art_3 ;
+    leg:exceptionOf  ex:Oblig_Para1_Admit ;
+    leg:exceptionText "Goods carried for diplomatic purposes are exempt
+from the temporary admission documentation requirements."@en .</pre>
+  </section>
+</section>
+
+<!-- ============================================================
+     7. Scope
+     ============================================================ -->
+<section id="scope-section">
+  <h2>Scope Annotations</h2>
+
+  <section id="class-Scope">
+    <h3><span class="ont-term">leg:Scope</span></h3>
+    <p><strong>IRI:</strong> <code>https://w3id.org/ldso/semantics#Scope</code></p>
+    <p><strong>SubclassOf:</strong> <span class="ont-term">leg:LegalAnnotation</span></p>
+    <p><strong>Definition:</strong>
+      A legal annotation describing the range of subjects, objects, or situations
+      to which a provision or group of provisions applies.</p>
+    <p><strong>Required properties:</strong>
+      <span class="ont-term">leg:annotates</span> (MUST),
+      <span class="ont-term">leg:scopeText</span> (SHOULD, language-tagged)</p>
+    <p><strong>Optional properties:</strong>
+      <span class="ont-term">leg:scopeOf</span> (points to specific
+      LegalAnnotations within the scope; inverse of
+      <span class="ont-term">leg:hasScopeAnnotation</span>)</p>
+    <p>
+      A Scope annotation may capture personal scope (who is bound), material scope
+      (what activities or goods), territorial scope (which jurisdictions), and
+      temporal scope (when the provision applies).
+    </p>
+    <pre class="example">
+ex:Scope_Art2_5
+    a leg:Scope ;
+    leg:annotates  ex:art_5 ;
+    leg:scopeText  """Applies to each Contracting Party with respect to the
+temporary admission of goods into its customs territory."""@en .
+
+# Link individual norms to this scope
+ex:Oblig_Para1_Admit
+    leg:hasScopeAnnotation ex:Scope_Art2_5 .
+
+ex:Oblig_Para2_Present
+    leg:hasScopeAnnotation ex:Scope_Art2_5 .</pre>
+  </section>
+</section>
+
+<!-- ============================================================
+     8. Object Properties
+     ============================================================ -->
+<section id="object-properties">
+  <h2>Object Properties</h2>
+  <table class="ont-table">
+    <thead>
+      <tr><th>Property</th><th>Domain</th><th>Range</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="ont-term">leg:annotates</span></td>
+        <td><span class="ont-term">leg:LegalAnnotation</span></td>
+        <td><span class="ont-term">ldso:LegalElement</span></td>
+        <td>Links a legal annotation to the structural element whose meaning it records. MUST be present on every LegalAnnotation.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:normativeSubject</span></td>
+        <td><span class="ont-term">leg:NormativeStatement</span></td>
+        <td>any</td>
+        <td>The entity, role, or category of persons who bear the obligation, enjoy the permission, or hold the right. Typically an <span class="ont-term">ent:Role</span> or <span class="ont-term">ent:Organization</span>.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:normativeObject</span></td>
+        <td><span class="ont-term">leg:NormativeStatement</span></td>
+        <td>any</td>
+        <td>The matter, action, thing, or situation the norm concerns — what is to be done, permitted, or forbidden.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:conditionedBy</span></td>
+        <td><span class="ont-term">leg:NormativeStatement</span></td>
+        <td><span class="ont-term">leg:Condition</span></td>
+        <td>Links a NormativeStatement to a prerequisite Condition. Inverse of <span class="ont-term">leg:conditionOf</span>. Both directions MUST be asserted.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:conditionOf</span></td>
+        <td><span class="ont-term">leg:Condition</span></td>
+        <td><span class="ont-term">leg:NormativeStatement</span></td>
+        <td>Inverse of <span class="ont-term">leg:conditionedBy</span>. Relates a Condition to the NormativeStatements it governs.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:exceptedBy</span></td>
+        <td><span class="ont-term">leg:NormativeStatement</span></td>
+        <td><span class="ont-term">leg:Exception</span></td>
+        <td>Links a NormativeStatement to an Exception that carves out cases where it does not apply. Inverse of <span class="ont-term">leg:exceptionOf</span>. Both directions MUST be asserted.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:exceptionOf</span></td>
+        <td><span class="ont-term">leg:Exception</span></td>
+        <td><span class="ont-term">leg:NormativeStatement</span></td>
+        <td>Inverse of <span class="ont-term">leg:exceptedBy</span>. Relates an Exception to the NormativeStatement from which it creates a carve-out.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:scopeOf</span></td>
+        <td><span class="ont-term">leg:Scope</span></td>
+        <td><span class="ont-term">leg:LegalAnnotation</span></td>
+        <td>Relates a Scope annotation to the LegalAnnotation(s) whose applicability it delimits. Inverse of <span class="ont-term">leg:hasScopeAnnotation</span>.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:hasScopeAnnotation</span></td>
+        <td><span class="ont-term">leg:LegalAnnotation</span></td>
+        <td><span class="ont-term">leg:Scope</span></td>
+        <td>Inverse of <span class="ont-term">leg:scopeOf</span>. Links a legal annotation to a Scope that delimits its applicability.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:statedIn</span></td>
+        <td><span class="ont-term">leg:Condition</span> / <span class="ont-term">leg:Exception</span></td>
+        <td><span class="ont-term">ldso:LegalElement</span></td>
+        <td>Links a Condition or Exception to the structural element where it is textually stated, when that element differs from the element carrying the annotated norm.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:correlatesTo</span></td>
+        <td><span class="ont-term">leg:Right</span></td>
+        <td><span class="ont-term">leg:Obligation</span></td>
+        <td>Relates a Right to its Hohfeldian correlate Obligation on the duty-bearer. Use when both annotations are separately declared.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:definesEntity</span></td>
+        <td><span class="ont-term">leg:Definition</span></td>
+        <td><span class="ont-term">ent:NamedEntity</span></td>
+        <td>Links a Definition to the named entity (from LDSO-Entities) that represents the concept being defined.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================================================
+     9. Datatype Properties
+     ============================================================ -->
+<section id="datatype-properties">
+  <h2>Datatype Properties</h2>
+  <table class="ont-table">
+    <thead>
+      <tr><th>Property</th><th>Domain</th><th>Range</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="ont-term">leg:deonticModal</span></td>
+        <td><span class="ont-term">leg:NormativeStatement</span></td>
+        <td><code>xsd:string</code></td>
+        <td>The modal verb or construction from the source text preserved verbatim (e.g., <code>"shall"</code>, <code>"may not"</code>, <code>"is entitled to"</code>). MUST be present on every NormativeStatement.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:normativeText</span></td>
+        <td><span class="ont-term">leg:NormativeStatement</span></td>
+        <td><code>rdf:langString</code></td>
+        <td>The verbatim normative sentence from the source provision, language-tagged. Capture the minimal self-contained sentence expressing the norm.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:definedTerm</span></td>
+        <td><span class="ont-term">leg:Definition</span></td>
+        <td><code>rdf:langString</code></td>
+        <td>The term being defined, exactly as it appears in the definition clause, language-tagged. MUST be present. Multiple language tags are permitted.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:definitionText</span></td>
+        <td><span class="ont-term">leg:Definition</span></td>
+        <td><code>rdf:langString</code></td>
+        <td>The verbatim text of the definition as it appears in the legal instrument, language-tagged. MUST be present.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:conditionText</span></td>
+        <td><span class="ont-term">leg:Condition</span></td>
+        <td><code>rdf:langString</code></td>
+        <td>The natural-language formulation of the condition, language-tagged. May be a direct quotation or a minimal paraphrase. MUST be present.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:scopeText</span></td>
+        <td><span class="ont-term">leg:Scope</span></td>
+        <td><code>rdf:langString</code></td>
+        <td>A natural-language description of the scope, language-tagged. SHOULD be present.</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:exceptionText</span></td>
+        <td><span class="ont-term">leg:Exception</span></td>
+        <td><code>rdf:langString</code></td>
+        <td>The verbatim or paraphrased text of the exception, language-tagged.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================================================
+     10. SHACL Validation
+     ============================================================ -->
+<section id="shacl-validation">
+  <h2>SHACL Validation</h2>
+  <p>
+    The file <code>shapes.ttl</code> provides SHACL shapes validating the constraints
+    summarised below. Run validation with:
+  </p>
+  <pre class="example">
+pyshacl -s shapes.ttl -sf turtle -df turtle examples/example.ttl</pre>
+
+  <table class="ont-table">
+    <thead>
+      <tr><th>Shape</th><th>Target</th><th>Validates</th><th>Severity</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="ont-term">leg:LegalAnnotationShape</span></td>
+        <td><span class="ont-term">leg:LegalAnnotation</span></td>
+        <td><span class="ont-term">leg:annotates</span> minCount 1, class <span class="ont-term">ldso:LegalElement</span></td>
+        <td>Violation</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:NormativeStatementShape</span></td>
+        <td><span class="ont-term">leg:NormativeStatement</span></td>
+        <td><span class="ont-term">leg:deonticModal</span> present (xsd:string); <span class="ont-term">leg:normativeSubject</span> present</td>
+        <td>Violation / Warning</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:ObligationShape</span></td>
+        <td><span class="ont-term">leg:Obligation</span></td>
+        <td>Modal matches obligatory pattern (shall, must, is required to, is obliged to)</td>
+        <td>Warning</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:PermissionShape</span></td>
+        <td><span class="ont-term">leg:Permission</span></td>
+        <td>Modal matches permissive pattern (may, is permitted to, is authorized to)</td>
+        <td>Warning</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:ProhibitionShape</span></td>
+        <td><span class="ont-term">leg:Prohibition</span></td>
+        <td>Modal matches prohibitive pattern (shall not, must not, is prohibited from, may not)</td>
+        <td>Warning</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:DefinitionShape</span></td>
+        <td><span class="ont-term">leg:Definition</span></td>
+        <td><span class="ont-term">leg:definedTerm</span> (rdf:langString, minCount 1); <span class="ont-term">leg:definitionText</span> (rdf:langString, minCount 1)</td>
+        <td>Violation</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:ExceptionShape</span></td>
+        <td><span class="ont-term">leg:Exception</span></td>
+        <td><span class="ont-term">leg:exceptionOf</span> pointing to a NormativeStatement</td>
+        <td>Warning</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:ConditionShape</span></td>
+        <td><span class="ont-term">leg:Condition</span></td>
+        <td><span class="ont-term">leg:conditionText</span> (rdf:langString, minCount 1)</td>
+        <td>Violation</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:ScopeShape</span></td>
+        <td><span class="ont-term">leg:Scope</span></td>
+        <td><span class="ont-term">leg:scopeText</span> (rdf:langString, minCount 1)</td>
+        <td>Warning</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:ExceptionInverseShape</span></td>
+        <td>subjects of <span class="ont-term">leg:exceptedBy</span></td>
+        <td>If A <span class="ont-term">leg:exceptedBy</span> B, then B MUST have <span class="ont-term">leg:exceptionOf</span> A</td>
+        <td>Violation</td>
+      </tr>
+      <tr>
+        <td><span class="ont-term">leg:ConditionInverseShape</span></td>
+        <td>subjects of <span class="ont-term">leg:conditionedBy</span></td>
+        <td>If A <span class="ont-term">leg:conditionedBy</span> B, then B MUST have <span class="ont-term">leg:conditionOf</span> A</td>
+        <td>Violation</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Example shape (inverse consistency check):</p>
+  <pre class="example">
+leg:ExceptionInverseShape
+    a sh:NodeShape ;
+    sh:targetSubjectsOf leg:exceptedBy ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "Exception chain broken: if A leg:exceptedBy B, then B must have leg:exceptionOf A." ;
+        sh:select """
+            PREFIX leg: &lt;https://w3id.org/ldso/semantics#&gt;
+            SELECT $this ?exc WHERE {
+                $this leg:exceptedBy ?exc .
+                FILTER NOT EXISTS { ?exc leg:exceptionOf $this }
+            }
+        """ ;
+    ] .</pre>
+</section>
+
+<!-- ============================================================
+     11. Usage Example: ATA Agreement Article 2.5
+     ============================================================ -->
+<section id="examples">
+  <h2>Usage Example</h2>
+  <p>
+    The following example annotates Article 2.5 of the Agreement on Temporary
+    Admission (ATA Convention). It demonstrates obligations with conditions, an
+    exception, a discretion, a definition linked to an entity, and a scope
+    annotation. The full example is in <code>examples/example.ttl</code>.
+  </p>
+
+  <section id="example-definition">
+    <h3>Definition (Article 1)</h3>
+    <pre class="example">
+ex:Def_TemporaryAdmission
+    a leg:Definition ;
+    rdfs:label         "Definition of temporary admission"@en ;
+    leg:annotates      ex:art_1 ;
+    leg:definedTerm    "temporary admission"@en ;
+    leg:definedTerm    "admission temporaire"@fr ;
+    leg:definitionText """The customs procedure under which certain goods can be
+brought into a customs territory conditionally relieved from payment of
+import duties and taxes, provided such goods are imported for a specific
+purpose and are intended for re-exportation within a specified period
+without having undergone any change except normal depreciation due to the
+use made of them."""@en ;
+    leg:definesEntity  ex:temporary_admission .  # links to ent:Concept</pre>
+  </section>
+
+  <section id="example-obligation-condition">
+    <h3>Obligation with Condition (Paragraph 1)</h3>
+    <pre class="example">
+# Condition (reusable standalone node)
+ex:Cond_ReExport
+    a leg:Condition ;
+    rdfs:label        "Condition: goods intended for re-exportation"@en ;
+    leg:conditionText """The goods are intended for re-exportation within the period
+specified in Article 7 without having undergone any change except normal
+depreciation due to use."""@en ;
+    leg:statedIn      ex:para_1 ;
+    leg:conditionOf   ex:Oblig_Para1_Admit .    # inverse — MUST be asserted
+
+# Obligation
+ex:Oblig_Para1_Admit
+    a leg:Obligation ;
+    rdfs:label         "Obligation: admit goods temporarily (para 1)"@en ;
+    leg:annotates      ex:para_1 ;
+    leg:normativeSubject ex:contracting_party ;
+    leg:normativeObject  ex:goods ;
+    leg:deonticModal   "shall" ;
+    leg:normativeText  """Goods shall be admitted temporarily into the customs territory
+of a Contracting Party without payment of import duties and taxes, provided
+that they are intended for re-exportation within the period specified in
+Article 7."""@en ;
+    leg:conditionedBy  ex:Cond_ReExport ;        # forward — MUST be asserted
+    leg:hasScopeAnnotation ex:Scope_Art2_5 .</pre>
+  </section>
+
+  <section id="example-obligation-exception">
+    <h3>Obligation with Exception (Paragraph 2)</h3>
+    <pre class="example">
+ex:Oblig_Para2_Present
+    a leg:Obligation ;
+    rdfs:label         "Obligation: present admission document (para 2)"@en ;
+    leg:annotates      ex:para_2 ;
+    leg:normativeSubject ex:applicant ;
+    leg:normativeObject  ex:ata_carnet ;
+    leg:deonticModal   "shall" ;
+    leg:normativeText  """The applicant for temporary admission shall present to the
+competent authority one of the following documents: (a) an ATA carnet;
+(b) a national customs document; (c) a declaration in accordance with Article 6."""@en ;
+    leg:hasScopeAnnotation ex:Scope_Art2_5 ;
+    leg:exceptedBy     ex:Exc_TransitGoods .     # inverse — MUST be asserted
+
+ex:Exc_TransitGoods
+    a leg:Exception ;
+    rdfs:label      "Exception: transit goods exempt from documentation requirement"@en ;
+    leg:annotates   ex:para_2 ;
+    leg:exceptionOf ex:Oblig_Para2_Present ;     # forward — MUST be asserted
+    leg:exceptionText """Goods in transit through a customs territory under customs
+supervision are not subject to the presentation requirement of paragraph 2."""@en .</pre>
+  </section>
+
+  <section id="example-discretion">
+    <h3>Discretion (Article 5)</h3>
+    <pre class="example">
+ex:Discr_ExtendPeriod
+    a leg:Discretion ;
+    rdfs:label         "Discretion: extend temporary admission period"@en ;
+    leg:annotates      ex:art_5 ;
+    leg:normativeSubject ex:competent_authority ;
+    leg:normativeObject  ex:temporary_admission ;
+    leg:deonticModal   "may" ;
+    leg:normativeText  """The competent authority may extend the period of temporary
+admission beyond the period initially fixed."""@en .</pre>
+  </section>
+
+  <section id="example-scope">
+    <h3>Scope (Article 5 header)</h3>
+    <pre class="example">
+ex:Scope_Art2_5
+    a leg:Scope ;
+    rdfs:label    "Scope of Article 2.5 — Admission Procedures"@en ;
+    leg:annotates ex:art_5 ;
+    leg:scopeText """Applies to each Contracting Party with respect to the temporary
+admission of goods into its customs territory."""@en .</pre>
+  </section>
+</section>
+
+<!-- ============================================================
+     12. SPARQL Queries
+     ============================================================ -->
+<section id="competency-questions">
+  <h2>Competency Questions</h2>
+  <p>
+    The following questions define what LDSO-Semantics is designed to answer.
+    Each is accompanied by a SPARQL query against a conformant dataset.
+  </p>
+
+  <section id="cq-s-01">
+    <h3>CQ-S-01 — What normative statements annotate a specific provision?</h3>
+    <pre class="example">
+PREFIX leg: &lt;https://w3id.org/ldso/semantics#&gt;
+
+SELECT ?annotation ?type ?modal WHERE {
+  ?annotation leg:annotates &lt;https://example.org/ata/para_1&gt; ;
+              a ?type .
+  OPTIONAL { ?annotation leg:deonticModal ?modal }
+  FILTER(STRSTARTS(STR(?type), "https://w3id.org/ldso/semantics#"))
+  FILTER(?type != leg:LegalAnnotation)
+}</pre>
+  </section>
+
+  <section id="cq-s-05">
+    <h3>CQ-S-05 — What norms apply to a specific normative subject?</h3>
+    <pre class="example">
+PREFIX leg: &lt;https://w3id.org/ldso/semantics#&gt;
+
+SELECT ?norm ?type ?modal ?element WHERE {
+  ?norm leg:normativeSubject &lt;https://example.org/ata/competent_authority&gt; ;
+        a ?type ;
+        leg:annotates ?element .
+  OPTIONAL { ?norm leg:deonticModal ?modal }
+  FILTER(STRSTARTS(STR(?type), "https://w3id.org/ldso/semantics#"))
+  FILTER(?type != leg:LegalAnnotation)
+  FILTER(?type != leg:NormativeStatement)
+}
+ORDER BY ?element</pre>
+  </section>
+
+  <section id="cq-s-09">
+    <h3>CQ-S-09 — What exceptions qualify a specific obligation?</h3>
+    <pre class="example">
+PREFIX leg: &lt;https://w3id.org/ldso/semantics#&gt;
+
+SELECT ?exception ?exceptionText WHERE {
+  &lt;https://example.org/ata/Oblig_Para2_Present&gt;
+    leg:exceptedBy ?exception .
+  OPTIONAL { ?exception leg:exceptionText ?exceptionText }
+}</pre>
+  </section>
+
+  <section id="cq-s-11">
+    <h3>CQ-S-11 — What terms are defined in the document?</h3>
+    <pre class="example">
+PREFIX leg: &lt;https://w3id.org/ldso/semantics#&gt;
+
+SELECT ?definition ?term ?definitionText WHERE {
+  ?definition a leg:Definition ;
+              leg:definedTerm ?term ;
+              leg:definitionText ?definitionText .
+  FILTER(LANG(?term) = "en")
+}
+ORDER BY ?term</pre>
+  </section>
+
+  <section id="cq-s-20">
+    <h3>CQ-S-20 — Integrity check: are there broken exception inverse chains?</h3>
+    <pre class="example">
+PREFIX leg: &lt;https://w3id.org/ldso/semantics#&gt;
+
+SELECT ?norm ?exc WHERE {
+  ?norm leg:exceptedBy ?exc .
+  FILTER NOT EXISTS { ?exc leg:exceptionOf ?norm }
+}
+# Expected result: no rows.</pre>
+  </section>
+
+  <section id="cq-s-25">
+    <h3>CQ-S-25 — What conditions must be satisfied before an obligation becomes operative?</h3>
+    <pre class="example" title="CQ-S-25">
+PREFIX leg: &lt;https://w3id.org/ldso/semantics#&gt;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+
+SELECT ?obligation ?condition ?conditionText WHERE {
+  ?obligation a leg:Obligation ;
+              leg:conditionedBy ?condition .
+  OPTIONAL { ?condition rdfs:label ?conditionText }
+}
+ORDER BY ?obligation</pre>
+  </section>
+
+  <section id="cq-s-30">
+    <h3>CQ-S-30 — What permissions apply within a given scope?</h3>
+    <pre class="example" title="CQ-S-30">
+PREFIX leg: &lt;https://w3id.org/ldso/semantics#&gt;
+
+SELECT ?permission ?element WHERE {
+  ?scope a leg:Scope ;
+         leg:annotates &lt;https://example.org/ata/chapter_2&gt; .
+  ?permission a leg:Permission ;
+              leg:annotates ?element .
+  &lt;https://example.org/ata/chapter_2&gt; ldso:contains+ ?element .
+}
+ORDER BY ?element</pre>
+  </section>
+</section>
+
+<!-- ============================================================
+     13. Alignment with External Standards
+     ============================================================ -->
+<section id="alignment">
+  <h2>Alignment with External Standards</h2>
+  <table class="ont-table">
+    <thead>
+      <tr><th>Standard</th><th>LDSO-Semantics term</th><th>Relationship</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>[[LEGALRULEML]]</td>
+        <td><span class="ont-term">leg:Obligation</span></td>
+        <td>≈ <code>lrml:Obligation</code></td>
+      </tr>
+      <tr>
+        <td>[[LEGALRULEML]]</td>
+        <td><span class="ont-term">leg:Permission</span></td>
+        <td>≈ <code>lrml:Permission</code></td>
+      </tr>
+      <tr>
+        <td>[[LEGALRULEML]]</td>
+        <td><span class="ont-term">leg:Prohibition</span></td>
+        <td>≈ <code>lrml:Prohibition</code></td>
+      </tr>
+      <tr>
+        <td>[[ODRL]]</td>
+        <td><span class="ont-term">leg:Permission</span></td>
+        <td>≈ <code>odrl:Permission</code></td>
+      </tr>
+      <tr>
+        <td>[[ODRL]]</td>
+        <td><span class="ont-term">leg:Prohibition</span></td>
+        <td>≈ <code>odrl:Prohibition</code></td>
+      </tr>
+      <tr>
+        <td>[[ODRL]]</td>
+        <td><span class="ont-term">leg:Obligation</span></td>
+        <td>≈ <code>odrl:Duty</code></td>
+      </tr>
+      <tr>
+        <td>Hohfeld (1913)</td>
+        <td><span class="ont-term">leg:Right</span> ↔ <span class="ont-term">leg:Obligation</span></td>
+        <td>Hohfeldian claim-right / duty correlate via <span class="ont-term">leg:correlatesTo</span></td>
+      </tr>
+      <tr>
+        <td>LKG / Metalex</td>
+        <td><span class="ont-term">leg:Definition</span></td>
+        <td>≈ <code>metalex:Definition</code></td>
+      </tr>
+      <tr>
+        <td>LKG / Metalex</td>
+        <td><span class="ont-term">leg:Condition</span></td>
+        <td>≈ <code>metalex:Condition</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================================================
+     14. References
+     ============================================================ -->
+<section id="references">
+  <h2>References</h2>
+
+  <section id="normative-references">
+    <h3>Normative References</h3>
+    <dl>
+      <dt>[[OWL2]]</dt><dd>OWL 2 Web Ontology Language Primer (Second Edition). W3C Recommendation.</dd>
+      <dt>[[SHACL]]</dt><dd>Shapes Constraint Language (SHACL). W3C Recommendation.</dd>
+      <dt>[[SKOS]]</dt><dd>SKOS Simple Knowledge Organization System Reference. W3C Recommendation.</dd>
+      <dt>[[RFC2119]]</dt><dd>Key words for use in RFCs to Indicate Requirement Levels. IETF.</dd>
+    </dl>
+  </section>
+
+  <section id="informative-references">
+    <h3>Informative References</h3>
+    <dl>
+      <dt>[[LDSO-CORE]]</dt><dd>LDSO-Core: Legal Document Structure Ontology.</dd>
+      <dt>[[LDSO-ENTITIES]]</dt><dd>LDSO-Entities: Named Entity Reference Module.</dd>
+      <dt>[[LDSO-LIFECYCLE]]</dt><dd>LDSO-Lifecycle: Legal Document Lifecycle and Amendment Ontology.</dd>
+      <dt>[[LEGALRULEML]]</dt><dd>LegalRuleML Core Specification Version 1.0. OASIS.</dd>
+      <dt>[[ODRL]]</dt><dd>ODRL Information Model 2.2. W3C.</dd>
+    </dl>
+  </section>
+</section>
+
+<!-- ============================================================
+     Appendix A — Full Ontology Turtle
+     ============================================================ -->
+<section class="appendix" id="appendix-ontology">
+  <h2>Appendix A: Full Ontology (Turtle)</h2>
+  <p>
+    The complete <code>ontology.ttl</code> is provided alongside this specification.
+    The namespace IRI is <code>https://w3id.org/ldso/semantics</code>.
+  </p>
+  <p>Key ontology declaration:</p>
+  <pre class="example">
+&lt;https://w3id.org/ldso/semantics&gt;
+    a owl:Ontology ;
+    owl:versionIRI &lt;https://w3id.org/ldso/semantics/1.0.0&gt; ;
+    owl:imports    &lt;https://w3id.org/ldso/core&gt; ;
+    dct:title      "LDSO-Semantics: Legal Semantic Annotation Ontology"@en ;
+    dct:creator    "Stephane Fellah" ;
+    dct:publisher  "Geoknoesis LLC" ;
+    dct:created    "2026-05-25"^^xsd:date ;
+    owl:versionInfo "1.0.0" .</pre>
+</section>
+
+<!-- ============================================================
+     Appendix B — SHACL Shapes Summary
+     ============================================================ -->
+<section class="appendix" id="appendix-shapes">
+  <h2>Appendix B: SHACL Shapes Summary</h2>
+  <p>
+    All shapes are in <code>shapes.ttl</code>. See
+    <a href="#shacl-validation">Section 10</a> for the complete constraint table.
+    The shapes file declares its own ontology header:
+  </p>
+  <pre class="example">
+&lt;https://w3id.org/ldso/semantics/shapes&gt;
+    a owl:Ontology ;
+    owl:imports &lt;https://w3id.org/ldso/semantics&gt; ;
+    dct:title   "LDSO-Semantics SHACL Shapes"@en .</pre>
+</section>
+
+<!-- ============================================================
+     Appendix C — JSON-LD Context
+     ============================================================ -->
+<section class="appendix" id="appendix-jsonld">
+  <h2>Appendix C: JSON-LD Context</h2>
+  <p>
+    The file <code>examples/example.jsonld</code> provides a JSON-LD context for
+    all <span class="ont-prefix">leg:</span> terms. A fragment:
+  </p>
+  <pre class="example">
+{
+  "@context": {
+    "leg":  "https://w3id.org/ldso/semantics#",
+    "ldso": "https://w3id.org/ldso/core#",
+    "ent":  "https://w3id.org/ldso/entities#",
+
+    "Obligation":   "leg:Obligation",
+    "Permission":   "leg:Permission",
+    "Prohibition":  "leg:Prohibition",
+    "Definition":   "leg:Definition",
+
+    "annotates":        { "@id": "leg:annotates",        "@type": "@id" },
+    "normativeSubject": { "@id": "leg:normativeSubject",  "@type": "@id" },
+    "conditionedBy":    { "@id": "leg:conditionedBy",     "@type": "@id" },
+    "exceptedBy":       { "@id": "leg:exceptedBy",        "@type": "@id",
+                          "@container": "@set" },
+
+    "deonticModal":     { "@id": "leg:deonticModal" },
+    "normativeText":    { "@id": "leg:normativeText",  "@container": "@language" },
+    "definedTerm":      { "@id": "leg:definedTerm",    "@container": "@language" }
+  }
+}</pre>
+</section>
+
+<!-- ============================================================
+     Appendix D — Namespace Summary
+     ============================================================ -->
+<section class="appendix" id="appendix-namespace">
+  <h2>Appendix D: Namespace Summary</h2>
+  <table class="ont-table">
+    <thead>
+      <tr><th>Prefix</th><th>Namespace IRI</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>leg:</code></td><td><code>https://w3id.org/ldso/semantics#</code></td><td>This ontology</td></tr>
+      <tr><td><code>ldso:</code></td><td><code>https://w3id.org/ldso/core#</code></td><td>LDSO-Core document structure</td></tr>
+      <tr><td><code>ent:</code></td><td><code>https://w3id.org/ldso/entities#</code></td><td>LDSO-Entities named entities</td></tr>
+      <tr><td><code>skos:</code></td><td><code>http://www.w3.org/2004/02/skos/core#</code></td><td>SKOS labels, definitions</td></tr>
+      <tr><td><code>dct:</code></td><td><code>http://purl.org/dc/terms/</code></td><td>Dublin Core metadata</td></tr>
+      <tr><td><code>sh:</code></td><td><code>http://www.w3.org/ns/shacl#</code></td><td>SHACL shapes</td></tr>
+      <tr><td><code>xsd:</code></td><td><code>http://www.w3.org/2001/XMLSchema#</code></td><td>XML Schema datatypes</td></tr>
+      <tr><td><code>owl:</code></td><td><code>http://www.w3.org/2002/07/owl#</code></td><td>OWL 2 vocabulary</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>

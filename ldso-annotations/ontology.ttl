@@ -1,0 +1,214 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+@prefix ann:  <https://w3id.org/ldso/annotations#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Annotations: Document Annotation Module
+# Version: 1.0.0
+# Namespace: https://w3id.org/ldso/annotations#
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/annotations>
+  a owl:Ontology ;
+  dct:title "LDSO-Annotations: Document Annotation Module"@en ;
+  dct:description """An RDF/OWL vocabulary for annotating legal document elements
+with references to named entities. Operates at two granularities:
+
+  (1) Coarse — ann:refersToEntity links a document element directly to a canonical
+      ent:NamedEntity. Used for human-curated annotation or simple entity indexing
+      where exact surface form and character offsets are not required.
+
+  (2) Fine — ann:EntityMention represents one specific occurrence of a named entity
+      in one document location, carrying the exact surface form as it appears in the
+      source text, character offsets into that element's text, and an optional NER
+      confidence score. This is the primary output unit of NLP parsing pipelines.
+
+This module imports LDSO-Core (document structure) and LDSO-Entities (canonical
+entity catalogue). It sits above both in the LDSO layer model."""@en ;
+  dct:creator "Stephane Fellah" ;
+  dct:publisher "Geoknoesis LLC" ;
+  dct:created "2026-05-25"^^xsd:date ;
+  dct:modified "2026-05-25"^^xsd:date ;
+  owl:versionIRI <https://w3id.org/ldso/annotations/1.0.0> ;
+  owl:versionInfo "1.0.0" ;
+  owl:imports <https://w3id.org/ldso/core> ;
+  owl:imports <https://w3id.org/ldso/entities> ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+  vann:preferredNamespacePrefix "ann" ;
+  vann:preferredNamespaceUri "https://w3id.org/ldso/annotations#" ;
+  rdfs:seeAlso <https://w3id.org/ldso/annotations/index.html> ;
+  rdfs:comment """DISCLAIMER: This ontology is not an official W3C Standard or W3C Recommendation.
+It is a community/project specification using W3C ReSpec formatting conventions."""@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ENTITY MENTION CLASS
+# ═════════════════════════════════════════════════════════════════════════════
+
+ann:EntityMention
+  a owl:Class ;
+  owl:disjointWith ldso:LegalElement ;
+  rdfs:label "Entity Mention"@en ;
+  skos:definition """A single occurrence of a named entity within a specific location
+in a legal document. Captures the exact surface form as it appears in the source text,
+the document element in which it occurs, optional character offsets for span-level
+highlighting, and an optional NER confidence score."""@en ;
+  skos:scopeNote """ann:EntityMention is the primary output unit of NLP/NER parsing
+pipelines. Each mention node is linked to its canonical ent:NamedEntity via
+ann:mentionOf and to its containing document element via ann:inElement.
+
+Multiple mentions in the same element are represented as separate ann:EntityMention
+nodes — one per distinct surface-form occurrence. The same canonical entity may
+appear multiple times in a single paragraph under different surface forms
+(e.g., \"WCO\" and \"the Organization\") — each occurrence is a separate mention.
+
+For coarse annotation without span-level detail, use ann:refersToEntity directly
+on the document element."""@en ;
+  skos:example """
+ex:m_wco_para2
+  a ann:EntityMention ;
+  ann:mentionOf   ex:wco ;
+  ann:inElement   ex:para_2 ;
+  ann:surfaceForm "World Customs Organization"@en ;
+  ann:startChar   23 ;
+  ann:endChar     51 ;
+  ann:confidence  0.98 ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# OBJECT PROPERTIES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ann:refersToEntity
+  a owl:ObjectProperty, owl:AsymmetricProperty ;
+  rdfs:label "refers to entity"@en ;
+  skos:definition "Coarse-grained link from a legal document element to a canonical named entity it mentions somewhere in its text."@en ;
+  rdfs:range ent:NamedEntity ;
+  skos:scopeNote """Use when mention-level granularity is not required — for example,
+human-curated annotation at the article or paragraph level, or simple entity
+indexing across a document corpus. A single element may carry multiple
+ann:refersToEntity assertions, one per distinct canonical entity mentioned.
+
+For NLP pipeline output with surface form, character offsets, and confidence,
+use the fine-grained pattern instead:
+  element  ann:hasMention  ex:m1 .
+  ex:m1    ann:mentionOf   ex:wco ;
+           ann:surfaceForm "WCO"@en ."""@en ;
+  skos:example """
+ex:art_5  ann:refersToEntity ex:temporary_admission, ex:competent_authority .
+ex:para_1 ann:refersToEntity ex:customs_territory ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+
+ann:mentionOf
+  a owl:ObjectProperty, owl:FunctionalProperty ;
+  rdfs:label "mention of"@en ;
+  skos:definition "Links an entity mention to the canonical named entity it is an occurrence of."@en ;
+  rdfs:range  ent:NamedEntity ;
+  skos:scopeNote """Every ann:EntityMention MUST carry exactly one ann:mentionOf triple
+pointing to the canonical ent:NamedEntity in the shared entity catalogue.
+Declared owl:FunctionalProperty — a mention is always an occurrence of exactly
+one canonical entity."""@en ;
+  skos:example "ex:m_wco_para2  ann:mentionOf  ex:wco ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+
+ann:inElement
+  a owl:ObjectProperty, owl:FunctionalProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "in element"@en ;
+  skos:definition "Links an entity mention to the document element (paragraph, item, article, etc.) in which it occurs."@en ;
+  owl:inverseOf ann:hasMention ;
+  skos:scopeNote """The target is typically an ldso:Paragraph, ldso:Item, or another
+fine-grained structural element from LDSO-Core. Declared owl:FunctionalProperty —
+a mention occurs in exactly one document element. The inverse is ann:hasMention."""@en ;
+  skos:example "ex:m_wco_para2  ann:inElement  ex:para_2 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+
+ann:hasMention
+  a owl:ObjectProperty, owl:AsymmetricProperty, owl:IrreflexiveProperty ;
+  rdfs:label "has mention"@en ;
+  skos:definition "Links a document element to an entity mention occurring within it."@en ;
+  rdfs:range  ann:EntityMention ;
+  owl:inverseOf ann:inElement ;
+  skos:scopeNote """Inverse of ann:inElement. Navigate from a document element to all
+entity mentions it contains. An element may carry multiple ann:hasMention assertions —
+one per distinct occurrence of any entity in its text."""@en ;
+  skos:example """
+ex:para_2
+  ann:hasMention ex:m_wco_para2, ex:m_authority_para2 ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DATATYPE PROPERTIES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ann:surfaceForm
+  a owl:DatatypeProperty ;
+  rdfs:label "surface form"@en ;
+  skos:definition "The exact textual string of the entity mention as it appears in the source document, with a BCP 47 language tag matching the document language."@en ;
+  rdfs:range  rdf:langString ;
+  skos:scopeNote """Always language-tagged to match the document expression language
+(e.g., \"WCO\"@en, \"OMD\"@fr). Distinct from ent:showAs on ent:NamedEntity, which
+carries the canonical preferred display form; ann:surfaceForm records exactly what
+the parser found — abbreviations, inflected forms, and partial names are all valid."""@en ;
+  skos:example """
+ex:m_wco_p2   ann:surfaceForm "World Customs Organization"@en .
+ex:m_wco_ia   ann:surfaceForm "WCO"@en .          # abbreviated form
+ex:m_wco_p3   ann:surfaceForm "the Organization"@en .  # anaphoric form"""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+
+ann:startChar
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:label "start character"@en ;
+  skos:definition "Zero-based character offset of the first character of the entity mention span within the plain-text content of its containing element."@en ;
+  rdfs:range  xsd:nonNegativeInteger ;
+  skos:scopeNote """Offsets are relative to the string value of ldso:text on the
+ann:inElement node (i.e., the plain-text content of that structural element).
+A SHACL constraint requires ann:endChar to be present and strictly greater than
+ann:startChar whenever ann:startChar is asserted."""@en ;
+  skos:example "ex:m_wco_para2  ann:startChar  23 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+
+ann:endChar
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:label "end character"@en ;
+  skos:definition "Exclusive character offset of the character immediately following the last character of the entity mention span."@en ;
+  rdfs:range  xsd:nonNegativeInteger ;
+  skos:scopeNote """Exclusive upper bound — the mention span is text[startChar:endChar]
+in Python slice notation. ann:endChar MUST be strictly greater than ann:startChar
+(enforced by SHACL). Assert only when ann:startChar is also present."""@en ;
+  skos:example "ex:m_wco_para2  ann:endChar  51 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+
+ann:confidence
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:label "confidence"@en ;
+  skos:definition "The NER model confidence score for this entity mention, expressed as a decimal in the range [0.0, 1.0]."@en ;
+  rdfs:range  xsd:decimal ;
+  skos:scopeNote """Optional. Populated by NLP pipelines; omit for human-curated
+annotations where confidence is implicitly 1.0. A SHACL constraint enforces
+the [0.0, 1.0] range."""@en ;
+  skos:example "ex:m_wco_para2  ann:confidence  0.98 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# rdfs:isDefinedBy — all LDSO-Annotations terms
+# ═════════════════════════════════════════════════════════════════════════════
+
+ann:EntityMention   rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+ann:refersToEntity  rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+ann:mentionOf       rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+ann:inElement       rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+ann:hasMention      rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+ann:surfaceForm     rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+ann:startChar       rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+ann:endChar         rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .
+ann:confidence      rdfs:isDefinedBy <https://w3id.org/ldso/annotations> .

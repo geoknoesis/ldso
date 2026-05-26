@@ -1,0 +1,321 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Entities: Named Entity Reference Module
+# Version: 1.2.0
+# Namespace: https://w3id.org/ldso/entities#
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/entities>
+  a owl:Ontology ;
+  dct:title "LDSO-Entities: Named Entity Reference Module"@en ;
+  dct:description """A lightweight RDF/OWL vocabulary for classifying and linking
+named real-world entities referenced within legal documents — persons, organizations,
+locations, legal concepts, roles, events, and processes.
+
+Entity types are expressed via a SKOS taxonomy (ent:EntityTypeScheme) rather than
+OWL subclasses. This keeps the OWL hierarchy flat while allowing open-ended,
+multi-dimensional classification: domain verticals extend the vocabulary by adding
+skos:narrower concepts without modifying this ontology.
+
+This module covers the canonical entity catalogue only. Document-level annotation
+(entity mentions, span offsets, NER confidence, coarse entity references) is
+defined in the LDSO-Annotations module (https://w3id.org/ldso/annotations)."""@en ;
+  dct:creator "Stephane Fellah" ;
+  dct:publisher "Geoknoesis LLC" ;
+  dct:created "2026-05-24"^^xsd:date ;
+  dct:modified "2026-05-25"^^xsd:date ;
+  owl:versionIRI <https://w3id.org/ldso/entities/1.0.0> ;
+  owl:versionInfo "1.0.0" ;
+  owl:imports <https://w3id.org/ldso/core> ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+  vann:preferredNamespacePrefix "ent" ;
+  vann:preferredNamespaceUri "https://w3id.org/ldso/entities#" ;
+  rdfs:seeAlso <https://w3id.org/ldso/entities/index.html> ;
+  rdfs:comment """DISCLAIMER: This ontology is not an official W3C Standard or W3C Recommendation.
+It is a community/project specification using W3C ReSpec formatting conventions."""@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# NAMED ENTITY CLASS
+# ═════════════════════════════════════════════════════════════════════════════
+
+ent:NamedEntity
+  a owl:Class ;
+  rdfs:label "Named Entity"@en ;
+  skos:definition """A named, referenceable real-world entity mentioned or invoked
+within a legal document — a person, organization, place, concept, role, event, or
+process. Named entities are identified by a canonical URI (ent:href) and carry a
+display form (ent:showAs) as they appear in the source text."""@en ;
+  skos:scopeNote """Every NamedEntity MUST carry ent:href (a canonical URI),
+ent:showAs (the human-readable display form), and at least one ent:entityType
+pointing to a concept from ent:EntityTypeScheme. Named entities are declared in
+a catalogue separate from the document graph and linked by URI — they are reusable
+across all documents that mention the same real-world entity. Document annotation
+(linking elements to entities, recording surface forms and offsets) is handled by
+the LDSO-Annotations module via ann:EntityMention and ann:refersToEntity."""@en ;
+  skos:example """
+ex:wco
+  a ent:NamedEntity ;
+  ent:entityType ent:Organization ;
+  ent:href "https://www.wcoomd.org"^^xsd:anyURI ;
+  ent:showAs "World Customs Organization"@en,
+             "Organisation mondiale des douanes"@fr ;
+  rdfs:label "World Customs Organization"@en ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ENTITY TYPE PROPERTY
+# ═════════════════════════════════════════════════════════════════════════════
+
+ent:entityType
+  a owl:ObjectProperty ;
+  rdfs:label "entity type"@en ;
+  skos:definition """Classifies a NamedEntity along one or more dimensions using
+SKOS concepts. At least one concept from ent:EntityTypeScheme SHOULD be present
+to identify the primary category. Additional ent:entityType assertions classify
+the entity along supplementary dimensions defined by domain-specific SKOS schemes."""@en ;
+  rdfs:range skos:Concept ;
+  skos:scopeNote """Multiple ent:entityType values are permitted and expected.
+The Entity Type Vocabulary (ent:EntityTypeScheme) supplies seven top-level concepts
+for primary classification. Domain verticals define their own ConceptSchemes with
+skos:broader links to those top-level concepts and add further ent:entityType
+triples on the entity node — no subclassing required.
+
+Example: a World Customs Organization entity carries both
+  ent:entityType ent:Organization    (primary dimension, from core scheme)
+  ent:entityType trade:IGO           (secondary dimension, from trade scheme)"""@en ;
+  skos:example """
+ex:wco  ent:entityType ent:Organization .        # primary category
+ex:wco  ent:entityType trade:IntergoverOrg .     # trade-domain classification"""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ENTITY TYPE VOCABULARY  (SKOS ConceptScheme)
+# ═════════════════════════════════════════════════════════════════════════════
+
+ent:EntityTypeScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Entity Type Vocabulary"@en ;
+  skos:definition """A controlled SKOS vocabulary of seven primary entity categories
+for the LDSO-Entities module. These top-level concepts replace what would otherwise
+be a fixed OWL subclass hierarchy, keeping the class model flat and enabling
+open-ended extension: domain verticals add narrower SKOS concepts with
+skos:broader pointing to one of these seven primaries without touching the core ontology."""@en ;
+  skos:scopeNote """To add a domain-specific entity type, declare a new skos:Concept
+in a domain ConceptScheme with skos:broader pointing to the appropriate primary concept
+here. Instances then receive additional ent:entityType assertions for the domain concept
+alongside the primary category assertion."""@en ;
+  skos:hasTopConcept
+    ent:Person, ent:Organization, ent:Location,
+    ent:Concept, ent:Role, ent:Event, ent:Process ;
+  skos:example """
+ent:EntityTypeScheme
+  skos:hasTopConcept
+    ent:Organization, ent:Person, ent:Location,
+    ent:Concept, ent:Role, ent:Event, ent:Process .
+
+# Domain extension — adds a narrower concept without touching this ontology:
+trade:TariffAuthority
+  a skos:Concept ;
+  skos:broader ent:Organization ;
+  skos:inScheme trade:EntityTypeScheme ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PRIMARY ENTITY TYPE CONCEPTS
+# (formerly OWL subclasses of ent:NamedEntity)
+# ─────────────────────────────────────────────────────────────────────────────
+
+ent:Person
+  a skos:Concept ;
+  rdfs:label "Person"@en ;
+  skos:prefLabel "Person"@en ;
+  skos:definition "A named natural person referenced in a legal document."@en ;
+  skos:scopeNote "Examples: signatories, authors, individual parties to a contract or treaty."@en ;
+  skos:example """
+ex:Jane_Doe
+  a ent:NamedEntity ;
+  ent:entityType ent:Person ;
+  ent:href "https://www.wikidata.org/wiki/Q12345"^^xsd:anyURI ;
+  ent:showAs "Jane Doe"@en ;
+  rdfs:label "Jane Doe"@en ."""@en ;
+  skos:topConceptOf ent:EntityTypeScheme ;
+  skos:inScheme ent:EntityTypeScheme ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+
+ent:Organization
+  a skos:Concept ;
+  rdfs:label "Organization"@en ;
+  skos:prefLabel "Organization"@en ;
+  skos:definition """A named legal person, governmental body, intergovernmental
+organization, or collective body referenced in a legal document."""@en ;
+  skos:scopeNote """Examples: governments, international organizations, courts, standards
+bodies, parties to a treaty. Domain verticals add narrower concepts such as
+trade:CustomsAdministration or trade:IssuingAssociation via skos:broader."""@en ;
+  skos:example """
+ex:wco
+  a ent:NamedEntity ;
+  ent:entityType ent:Organization ;
+  ent:href "https://www.wcoomd.org"^^xsd:anyURI ;
+  ent:showAs "World Customs Organization"@en,
+             "Organisation mondiale des douanes"@fr ;
+  rdfs:label "World Customs Organization"@en ."""@en ;
+  skos:topConceptOf ent:EntityTypeScheme ;
+  skos:inScheme ent:EntityTypeScheme ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+
+ent:Location
+  a skos:Concept ;
+  rdfs:label "Location"@en ;
+  skos:prefLabel "Location"@en ;
+  skos:definition "A named geographic or jurisdictional location referenced in a legal document."@en ;
+  skos:scopeNote """Examples: countries, territories, customs zones, ports, designated areas.
+Domain verticals may narrow this to trade:CustomsTerritory, trade:PortOfEntry, etc."""@en ;
+  skos:example """
+ex:customs_territory
+  a ent:NamedEntity ;
+  ent:entityType ent:Location ;
+  ent:href "https://example.org/locations/customs-territory"^^xsd:anyURI ;
+  ent:showAs "customs territory"@en, "territoire douanier"@fr ;
+  rdfs:label "customs territory"@en ."""@en ;
+  skos:topConceptOf ent:EntityTypeScheme ;
+  skos:inScheme ent:EntityTypeScheme ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+
+ent:Concept
+  a skos:Concept ;
+  rdfs:label "Concept"@en ;
+  skos:prefLabel "Concept"@en ;
+  skos:definition "A named legal concept or term of art referenced in a legal document."@en ;
+  skos:scopeNote """Examples: 'originating goods', 'temporary admission', 'customs duty', 'ATA carnet'.
+Distinct from a defined term (LDSO-Semantics leg:Definition) — ent:Concept is the
+real-world referent; the textual definition lives in the semantic layer."""@en ;
+  skos:example """
+ex:temporary_admission
+  a ent:NamedEntity ;
+  ent:entityType ent:Concept ;
+  ent:href "https://example.org/legal/concepts/temporary-admission"^^xsd:anyURI ;
+  ent:showAs "temporary admission"@en, "admission temporaire"@fr ;
+  rdfs:label "temporary admission"@en ."""@en ;
+  skos:topConceptOf ent:EntityTypeScheme ;
+  skos:inScheme ent:EntityTypeScheme ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+
+ent:Role
+  a skos:Concept ;
+  rdfs:label "Role"@en ;
+  skos:prefLabel "Role"@en ;
+  skos:definition "A named legal or institutional role referenced in a legal document."@en ;
+  skos:scopeNote """Examples: 'customs officer', 'competent authority', 'importer of record',
+'contracting party'. A Role describes a function that may be filled by different
+organizations or persons in different documents. Domain verticals add narrower
+concepts such as trade:CarnetHolder, trade:IssuingAssociation."""@en ;
+  skos:example """
+ex:competent_authority
+  a ent:NamedEntity ;
+  ent:entityType ent:Role ;
+  ent:href "https://example.org/roles/competent-authority"^^xsd:anyURI ;
+  ent:showAs "competent authority"@en, "autorité compétente"@fr ;
+  rdfs:label "competent authority"@en ."""@en ;
+  skos:topConceptOf ent:EntityTypeScheme ;
+  skos:inScheme ent:EntityTypeScheme ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+
+ent:Event
+  a skos:Concept ;
+  rdfs:label "Event"@en ;
+  skos:prefLabel "Event"@en ;
+  skos:definition "A named legal or historical event referenced in a legal document."@en ;
+  skos:scopeNote "Examples: 'entry into force', 'ratification', 'signing ceremony', 'accession'."@en ;
+  skos:example """
+ex:EIF_ATA_Convention
+  a ent:NamedEntity ;
+  ent:entityType ent:Event ;
+  ent:href "https://example.org/events/ata-convention-eif"^^xsd:anyURI ;
+  ent:showAs "entry into force of the ATA Convention"@en ;
+  rdfs:label "ATA Convention entry into force"@en ."""@en ;
+  skos:topConceptOf ent:EntityTypeScheme ;
+  skos:inScheme ent:EntityTypeScheme ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+
+ent:Process
+  a skos:Concept ;
+  rdfs:label "Process"@en ;
+  skos:prefLabel "Process"@en ;
+  skos:definition "A named legal or administrative process referenced in a legal document."@en ;
+  skos:scopeNote "Examples: 'customs clearance', 'dispute settlement', 'legislative procedure', 'appeal'."@en ;
+  skos:example """
+ex:customs_clearance
+  a ent:NamedEntity ;
+  ent:entityType ent:Process ;
+  ent:href "https://example.org/processes/customs-clearance"^^xsd:anyURI ;
+  ent:showAs "customs clearance"@en, "dédouanement"@fr ;
+  rdfs:label "customs clearance"@en ."""@en ;
+  skos:topConceptOf ent:EntityTypeScheme ;
+  skos:inScheme ent:EntityTypeScheme ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DATATYPE PROPERTIES
+# ═════════════════════════════════════════════════════════════════════════════
+
+ent:showAs
+  a owl:DatatypeProperty ;
+  rdfs:label "show as"@en ;
+  skos:definition "The human-readable display form of a named entity, as it appears in the source legal text."@en ;
+  rdfs:range  rdf:langString ;
+  skos:scopeNote """Always assert with a BCP 47 language tag (e.g., \"World Customs Organization\"@en,
+\"Organisation mondiale des douanes\"@fr). The same entity may carry multiple
+ent:showAs values for different language versions. Consistent with ldso:text and
+dct:title — all use rdf:langString for multilingual support."""@en ;
+  skos:example """
+ex:wco  ent:showAs "World Customs Organization"@en,
+                   "Organisation mondiale des douanes"@fr .
+ex:customs_territory  ent:showAs "customs territory"@en,
+                                 "territoire douanier"@fr ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+
+ent:href
+  a owl:DatatypeProperty, owl:FunctionalProperty ;
+  rdfs:label "href"@en ;
+  skos:definition "The canonical URI identifying a named entity."@en ;
+  rdfs:range  xsd:anyURI ;
+  skos:scopeNote """Use a persistent, resolvable URI from an authoritative register
+(GeoNames for locations, Wikidata, national entity registers) or a project-internal
+URI. Declared owl:FunctionalProperty — every NamedEntity has exactly one canonical URI.
+Example: 'https://www.wcoomd.org', 'https://www.wikidata.org/wiki/Q7809'."""@en ;
+  skos:example """
+ex:wco                ent:href "https://www.wcoomd.org"^^xsd:anyURI .
+ex:customs_territory  ent:href "https://example.org/locations/customs-territory"^^xsd:anyURI ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# rdfs:isDefinedBy — all LDSO-Entities terms
+# ═════════════════════════════════════════════════════════════════════════════
+
+ent:NamedEntity       rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+ent:entityType        rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+ent:EntityTypeScheme  rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+ent:Person            rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+ent:Organization      rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+ent:Location          rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+ent:Concept           rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+ent:Role              rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+ent:Event             rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+ent:Process           rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+ent:showAs            rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
+ent:href              rdfs:isDefinedBy <https://w3id.org/ldso/entities> .
