@@ -1,0 +1,38 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix ann:  <https://w3id.org/ldso/annotations#> .
+@prefix epi:  <https://w3id.org/ldso/epistemic#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Epistemic alignments to PROV-O, LDSO-Annotations and RDF 1.2
+#
+# SKOS mapping properties only: nothing here imports or constrains the
+# external vocabularies. epi:confidence is NOT declared equivalent to
+# ann:confidence: LDSO-Annotations reads an absent score as 1.0 for human-curated
+# annotations, while the epistemic layer reads an absent score as not stated and
+# never invents a number. The subproperty and subclass links to PROV-O are in
+# ontology.ttl.
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/epistemic/alignments>
+  a owl:Ontology ;
+  dct:title "LDSO-Epistemic alignments to PROV-O, LDSO-Annotations and RDF 1.2"@en ;
+  dct:description "SKOS mappings from LDSO-Epistemic terms to PROV-O, LDSO-Annotations and RDF 1.2 triple terms."@en ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+  owl:imports <https://w3id.org/ldso/epistemic> .
+
+# Same intent, different meaning for an absent value: close, not equivalent.
+epi:confidence  skos:closeMatch ann:confidence .
+
+# The time the claim was made, as a generation instant of the claim entity.
+epi:claimedAt   skos:closeMatch prov:generatedAtTime .
+
+# RDF 1.2 triple terms (<<( s p o )>>) denote a triple without a node, and rdf:reifies links
+# a reifier to one. A claim keeps its own node, so that source, confidence and time attach
+# to it in RDF 1.1: related, not a match.
+epi:Claim       skos:relatedMatch <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> .

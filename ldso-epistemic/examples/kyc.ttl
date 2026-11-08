@@ -1,0 +1,212 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix epi:  <https://w3id.org/ldso/epistemic#> .
+@prefix ex:   <https://example.org/kyc/> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# KYC onboarding of Acme: five sources disagree about one company.
+# This is the executable example: it conforms to shapes.ttl and to
+# hydradl-profile-shapes.ttl, and it is the scenario of the Rust test
+# crates/hydradl-epistemic/tests/kyc.rs (13 claims, one retraction, one correction).
+# DISCLAIMER: not an official W3C Standard or W3C Recommendation; a DRAFT (0.1.0).
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# The trusted ontology (TBox), as OWL 2 DL
+# ═════════════════════════════════════════════════════════════════════════════
+
+ex:dateOfIncorporation a owl:DatatypeProperty , owl:FunctionalProperty .
+ex:registeredAddress   a owl:DatatypeProperty , owl:FunctionalProperty .
+ex:incorporatedIn      a owl:ObjectProperty , owl:FunctionalProperty .
+ex:controlledBy        a owl:ObjectProperty .
+
+ex:ActiveCompany    a owl:Class .
+ex:DissolvedCompany a owl:Class .
+ex:ShellCompany     a owl:Class .
+ex:SanctionedPerson a owl:Class .
+ex:SanctionsExposed a owl:Class .
+ex:ClearedEntity    a owl:Class .
+
+ex:UK owl:differentFrom ex:CY .
+ex:ActiveCompany owl:disjointWith ex:DissolvedCompany .
+ex:SanctionsExposed owl:disjointWith ex:ClearedEntity .
+
+# anything controlled by a sanctioned person is sanctions-exposed
+[ a owl:Restriction ;
+  owl:onProperty ex:controlledBy ;
+  owl:someValuesFrom ex:SanctionedPerson ] rdfs:subClassOf ex:SanctionsExposed .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Sources and their tiers
+# ═════════════════════════════════════════════════════════════════════════════
+
+ex:registry       a epi:Source ; epi:tier 3 .
+ex:sanctionsList  a epi:Source ; epi:tier 3 .
+ex:onboardingForm a epi:Source ; epi:tier 2 .
+ex:newsA          a epi:Source ; epi:tier 1 .
+ex:newsB          a epi:Source ; epi:tier 1 .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Claims
+# ═════════════════════════════════════════════════════════════════════════════
+
+# Date of incorporation: the registry against a news extraction.
+ex:regDoi a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate ex:dateOfIncorporation ;
+  rdf:object "2011-03-04T00:00:00Z"^^xsd:dateTime ;
+  epi:claimedBy ex:registry .
+
+ex:nerDoi a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate ex:dateOfIncorporation ;
+  rdf:object "2012-03-04T00:00:00Z"^^xsd:dateTime ;
+  epi:claimedBy ex:newsA ; epi:confidence 0.8 .
+
+# Country of incorporation: two news items of the same tier, no criterion decides.
+ex:newsUk a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate ex:incorporatedIn ; rdf:object ex:UK ;
+  epi:claimedBy ex:newsA ; epi:confidence 0.91 .
+
+ex:newsCy a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate ex:incorporatedIn ; rdf:object ex:CY ;
+  epi:claimedBy ex:newsB ; epi:confidence 0.88 .
+
+# Registered address: the form corrects itself, the registry's address is older.
+ex:formAddrOld a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate ex:registeredAddress ; rdf:object "1 Old St" ;
+  epi:claimedBy ex:onboardingForm ;
+  epi:claimedAt "2024-05-01T00:00:00Z"^^xsd:dateTime .
+
+ex:formAddrNew a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate ex:registeredAddress ; rdf:object "2 New St" ;
+  epi:claimedBy ex:onboardingForm ;
+  epi:claimedAt "2025-02-01T00:00:00Z"^^xsd:dateTime ;
+  epi:supersedes ex:formAddrOld .
+
+ex:regAddr a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate ex:registeredAddress ; rdf:object "9 Registry Rd" ;
+  epi:claimedBy ex:registry ;
+  epi:claimedAt "2023-06-01T00:00:00Z"^^xsd:dateTime .
+
+# Status of the company: the news item is retracted; the shell claim is below the floor.
+ex:regActive a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate rdf:type ; rdf:object ex:ActiveCompany ;
+  epi:claimedBy ex:registry .
+
+ex:newsDissolved a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate rdf:type ; rdf:object ex:DissolvedCompany ;
+  epi:claimedBy ex:newsB ; epi:confidence 0.7 .
+
+ex:nerShell a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate rdf:type ; rdf:object ex:ShellCompany ;
+  epi:claimedBy ex:newsA ; epi:confidence 0.4 .
+
+# Sanctions: control by a sanctioned person contradicts the cleared status.
+ex:sancIvan a epi:Claim ;
+  rdf:subject ex:ivan ; rdf:predicate rdf:type ; rdf:object ex:SanctionedPerson ;
+  epi:claimedBy ex:sanctionsList .
+
+ex:formCleared a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate rdf:type ; rdf:object ex:ClearedEntity ;
+  epi:claimedBy ex:onboardingForm .
+
+ex:newsControl a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate ex:controlledBy ; rdf:object ex:ivan ;
+  epi:claimedBy ex:newsA ; epi:confidence 0.9 .
+
+ex:newsBRetract a epi:Retraction ;
+  epi:claimedBy ex:newsB ;
+  epi:retracts ex:newsDissolved .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# The resolution policy
+# ═════════════════════════════════════════════════════════════════════════════
+
+ex:policy a epi:ResolutionPolicy ;
+  epi:admissionFloor 0.5 ;
+  epi:confidenceMargin 0.05 ;
+  epi:criteria ( epi:ByTier epi:ByConfidence epi:ByRecency ) ;
+  epi:hasScopedChain ex:chain_address .
+
+# For the registered address the latest statement wins, then the higher tier.
+ex:chain_address a epi:ScopedChain ;
+  epi:appliesTo ex:registeredAddress ;
+  epi:criteria ( epi:ByRecency epi:ByTier ) .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Stored result (Layer 6): what the engine printed for this belief
+# ═════════════════════════════════════════════════════════════════════════════
+
+ex:a_formAddrNew a epi:Assessment ; epi:assesses ex:formAddrNew ; epi:status epi:Accepted ;
+  epi:reason "in conflict 0" .
+ex:a_formAddrOld a epi:Assessment ; epi:assesses ex:formAddrOld ; epi:status epi:NotAdmitted ;
+  epi:reason "superseded by https://example.org/kyc/formAddrNew" .
+ex:a_formCleared a epi:Assessment ; epi:assesses ex:formCleared ; epi:status epi:Accepted ;
+  epi:reason "in conflict 1" .
+ex:a_nerDoi a epi:Assessment ; epi:assesses ex:nerDoi ; epi:status epi:Rejected ;
+  epi:reason "in conflict 2" .
+ex:a_nerShell a epi:Assessment ; epi:assesses ex:nerShell ; epi:status epi:NotAdmitted ;
+  epi:reason "confidence 0.4 below floor 0.5" .
+ex:a_newsControl a epi:Assessment ; epi:assesses ex:newsControl ; epi:status epi:Rejected ;
+  epi:reason "in conflict 1" .
+ex:a_newsCy a epi:Assessment ; epi:assesses ex:newsCy ; epi:status epi:Contested ;
+  epi:reason "in conflict 3" .
+ex:a_newsDissolved a epi:Assessment ; epi:assesses ex:newsDissolved ; epi:status epi:NotAdmitted ;
+  epi:reason "retracted by https://example.org/kyc/newsBRetract" .
+ex:a_newsUk a epi:Assessment ; epi:assesses ex:newsUk ; epi:status epi:Contested ;
+  epi:reason "in conflict 3" .
+ex:a_regActive a epi:Assessment ; epi:assesses ex:regActive ; epi:status epi:Accepted ;
+  epi:reason "no conflict" .
+ex:a_regAddr a epi:Assessment ; epi:assesses ex:regAddr ; epi:status epi:Rejected ;
+  epi:reason "in conflict 0" .
+ex:a_regDoi a epi:Assessment ; epi:assesses ex:regDoi ; epi:status epi:Accepted ;
+  epi:reason "in conflict 2" .
+ex:a_sancIvan a epi:Assessment ; epi:assesses ex:sancIvan ; epi:status epi:Accepted ;
+  epi:reason "in conflict 1" .
+
+# The four conflicts, in the engine's order.
+ex:conflict_0 a epi:Conflict ; epi:involves ex:formAddrNew , ex:regAddr .
+ex:conflict_1 a epi:Conflict ; epi:involves ex:formCleared , ex:newsControl , ex:sancIvan .
+ex:conflict_2 a epi:Conflict ; epi:involves ex:nerDoi , ex:regDoi .
+ex:conflict_3 a epi:Conflict ; epi:involves ex:newsCy , ex:newsUk .
+
+# Every decision names the two claims it compared (epi:compares); only a decided one names a
+# winner, a loser and the criterion that decided.
+
+# Decisions of the address conflict (conflict 0): recency, by the scoped chain.
+ex:d_address a epi:Decision ;
+  epi:compares ex:formAddrNew , ex:regAddr ;
+  epi:winner ex:formAddrNew ; epi:loser ex:regAddr ;
+  epi:decidedBy epi:ByRecency ;
+  epi:comparedValues "claimed at 1738368000, after 1685577600" .
+
+# Decisions of the sanctions conflict (conflict 1): tier, by the default chain.
+ex:d_cleared_over_control a epi:Decision ;
+  epi:compares ex:formCleared , ex:newsControl ;
+  epi:winner ex:formCleared ; epi:loser ex:newsControl ;
+  epi:decidedBy epi:ByTier ;
+  epi:comparedValues "tier 2 over tier 1" .
+
+ex:d_sanctioned_over_cleared a epi:Decision ;
+  epi:compares ex:sancIvan , ex:formCleared ;
+  epi:winner ex:sancIvan ; epi:loser ex:formCleared ;
+  epi:decidedBy epi:ByTier ;
+  epi:comparedValues "tier 3 over tier 2" .
+
+ex:d_sanctioned_over_control a epi:Decision ;
+  epi:compares ex:sancIvan , ex:newsControl ;
+  epi:winner ex:sancIvan ; epi:loser ex:newsControl ;
+  epi:decidedBy epi:ByTier ;
+  epi:comparedValues "tier 3 over tier 1" .
+
+# The decision of the country conflict (conflict 3): undecided. Same tier, confidences 0.91 and
+# 0.88 within the margin, no claim time: no winner, no loser, no epi:decidedBy.
+ex:d_country a epi:Decision ;
+  epi:compares ex:newsCy , ex:newsUk ;
+  epi:comparedValues "undecided after tier, confidence, recency" .

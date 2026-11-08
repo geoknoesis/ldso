@@ -1,0 +1,262 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix epi:  <https://w3id.org/ldso/epistemic#> .
+@prefix epix: <https://w3id.org/ldso/epistemic/hydradl-profile#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Epistemic HydraDL Profile
+#
+# The executable subset: data that conforms to shapes.ttl AND to these shapes
+# compiles to a hydradl-epistemic Belief that passes Belief::validate().
+# Each Violation message starts with the gap it stands for ("E1 " ... "E6 ", see
+# README.md), with "validate: " when it mirrors a check of Belief::validate
+# (the EpistemicError is named at the end), or with "result: " when it checks a
+# stored result against what the engine writes. Run these shapes after shapes.ttl;
+# the compiler still calls validate(), which also catches what SPARQL cannot see
+# (the trusted ontology being inconsistent or undecided).
+# Like shapes.ttl, these shapes assume the data is merged with the TBox (ontology.ttl) and validated
+# with RDFS inference. Unknown supersede and retract targets are caught structurally through it.
+# DISCLAIMER: not an official W3C Standard or W3C Recommendation; a DRAFT (0.1.0).
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/epistemic/hydradl-profile>
+  a owl:Ontology ;
+  dct:title "LDSO-Epistemic HydraDL Profile Shapes"@en ;
+  dct:description "SHACL shapes restricting LDSO-Epistemic data to what the HydraDL belief-revision engine (hydradl-epistemic) evaluates."@en ;
+  owl:imports <https://w3id.org/ldso/epistemic/shapes> ;
+  sh:declare [
+    sh:prefix "epi" ;
+    sh:namespace "https://w3id.org/ldso/epistemic#"^^xsd:anyURI ;
+  ] , [
+    sh:prefix "rdf" ;
+    sh:namespace "http://www.w3.org/1999/02/22-rdf-syntax-ns#"^^xsd:anyURI ;
+  ] , [
+    sh:prefix "rdfs" ;
+    sh:namespace "http://www.w3.org/2000/01/rdf-schema#"^^xsd:anyURI ;
+  ] , [
+    sh:prefix "owl" ;
+    sh:namespace "http://www.w3.org/2002/07/owl#"^^xsd:anyURI ;
+  ] , [
+    sh:prefix "xsd" ;
+    sh:namespace "http://www.w3.org/2001/XMLSchema#"^^xsd:anyURI ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Gaps E1-E6: valid LDSO-Epistemic that the engine does not run
+# ═════════════════════════════════════════════════════════════════════════════
+
+epix:NestedAttributionProfile
+  a sh:NodeShape ;
+  sh:targetSubjectsOf epi:claimedBy ;
+  sh:sparql [
+    sh:message "E1 nested attribution: {$this} is claimed by the claim {?value}; the engine attributes a claim to a source only. State the claim against the source that made it." ;
+    sh:prefixes <https://w3id.org/ldso/epistemic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this epi:claimedBy ?value .
+        ?value a epi:Claim .
+      }
+    """ ;
+  ] .
+
+epix:CorroborationProfile
+  a sh:NodeShape ;
+  sh:targetSubjectsOf epi:corroborates ;
+  sh:property [
+    sh:path epi:corroborates ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "E2 corroboration: the engine does not count agreement between independent sources (epi:corroborates); it compares claims only when they conflict." ;
+  ] .
+
+epix:ValidTimeProfile
+  a sh:NodeShape ;
+  sh:targetSubjectsOf epi:validFrom , epi:validUntil ;
+  sh:property [
+    sh:path epi:validFrom ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "E3 valid time: the engine ignores the time a claimed fact holds (epi:validFrom); a change over time is a conflict. Select the claims valid at one instant before compiling." ;
+  ] ;
+  sh:property [
+    sh:path epi:validUntil ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "E3 valid time: the engine ignores the time a claimed fact holds (epi:validUntil); a change over time is a conflict. Select the claims valid at one instant before compiling." ;
+  ] .
+
+epix:OntologyClaimProfile
+  a sh:NodeShape ;
+  sh:targetClass epi:Claim ;
+  sh:sparql [
+    sh:message "E4 claim about the ontology: {$this} asserts {?value}, an axiom or a declaration of the trusted ontology; the engine revises assertions (individuals) only. Change the ontology instead." ;
+    sh:prefixes <https://w3id.org/ldso/epistemic/hydradl-profile> ;
+    sh:select """
+      SELECT DISTINCT $this ?value WHERE {
+        { $this rdf:predicate ?value .
+          FILTER (?value IN (rdfs:subClassOf, rdfs:subPropertyOf, rdfs:domain, rdfs:range,
+                             owl:equivalentClass, owl:equivalentProperty, owl:disjointWith,
+                             owl:propertyDisjointWith, owl:inverseOf, owl:propertyChainAxiom,
+                             owl:hasKey, owl:disjointUnionOf, owl:complementOf, owl:unionOf,
+                             owl:intersectionOf, owl:oneOf, owl:onProperty)) }
+        UNION
+        { $this rdf:predicate rdf:type ; rdf:object ?value .
+          FILTER (?value IN (owl:Class, rdfs:Class, rdf:Property, owl:ObjectProperty, owl:DatatypeProperty,
+                             owl:AnnotationProperty, owl:FunctionalProperty, owl:InverseFunctionalProperty,
+                             owl:TransitiveProperty, owl:SymmetricProperty, owl:AsymmetricProperty,
+                             owl:ReflexiveProperty, owl:IrreflexiveProperty, owl:Restriction,
+                             owl:AllDisjointClasses, owl:AllDifferent, owl:Ontology)) }
+      }
+    """ ;
+  ] .
+
+epix:ContextualTrustProfile
+  a sh:NodeShape ;
+  sh:targetSubjectsOf epi:trustedFor ;
+  sh:property [
+    sh:path epi:trustedFor ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "E5 contextual trust: the engine gives a source one tier (epi:trustedFor is not run). Scope the comparison with a scoped chain (epi:appliesTo) instead." ;
+  ] .
+
+epix:GradedTrustProfile
+  a sh:NodeShape ;
+  sh:targetSubjectsOf epi:trustLevel , epi:tier ;
+  sh:property [
+    sh:path epi:trustLevel ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "E6 graded trust: the engine reads an integer epi:tier only, not a concept of a trust scale (epi:trustLevel). Map the scale to tiers before compiling." ;
+  ] ;
+  sh:sparql [
+    sh:message "E6 graded trust: epi:tier {?value} is not a non-negative integer that fits in 32 bits; the engine ranks sources by an integer tier only. Map the scale to tiers before compiling." ;
+    sh:prefixes <https://w3id.org/ldso/epistemic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this epi:tier ?value .
+        FILTER (!isLiteral(?value)
+                || !(datatype(?value) IN (xsd:integer, xsd:nonNegativeInteger, xsd:positiveInteger,
+                                          xsd:int, xsd:long, xsd:unsignedInt, xsd:unsignedLong,
+                                          xsd:short, xsd:unsignedShort, xsd:byte, xsd:unsignedByte))
+                || ?value < 0 || ?value > 4294967295)
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Checks that mirror Belief::validate
+# ═════════════════════════════════════════════════════════════════════════════
+
+epix:SourceProfile
+  a sh:NodeShape ;
+  sh:targetSubjectsOf epi:claimedBy ;
+  sh:sparql [
+    sh:message "validate: claimedBy {?value} of {$this} is not an epi:Source; every claim and retraction names a declared source (EpistemicError::UnknownSource)." ;
+    sh:prefixes <https://w3id.org/ldso/epistemic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this epi:claimedBy ?value .
+        FILTER NOT EXISTS { ?value a epi:Source }
+      }
+    """ ;
+  ] .
+
+epix:SupersedeProfile
+  a sh:NodeShape ;
+  sh:targetSubjectsOf epi:supersedes ;
+  sh:sparql [
+    sh:message "validate: epi:supersedes MUST NOT be cyclic: {$this} supersedes itself, directly or through other claims (EpistemicError::SupersedeCycle)." ;
+    sh:prefixes <https://w3id.org/ldso/epistemic/hydradl-profile> ;
+    sh:select """
+      SELECT $this WHERE { $this epi:supersedes+ $this . }
+    """ ;
+  ] .
+
+# Covers retraction targets only: with RDFS inference an unknown target is typed epi:Claim by the
+# range of epi:supersedes / epi:retracts, and shapes.ttl reports it (ClaimShape).
+epix:TargetProfile
+  a sh:NodeShape ;
+  sh:targetSubjectsOf epi:supersedes , epi:retracts ;
+  sh:sparql [
+    sh:message "validate: a retraction counts as no claim: {$this} names the retraction {?value} through epi:supersedes or epi:retracts; only claims can be corrected or retracted (EpistemicError::UnknownTarget)." ;
+    sh:prefixes <https://w3id.org/ldso/epistemic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this epi:supersedes|epi:retracts ?value .
+        ?value a epi:Retraction .
+      }
+    """ ;
+  ] .
+
+epix:AssertionProfile
+  a sh:NodeShape ;
+  sh:targetClass epi:Claim ;
+  sh:sparql [
+    sh:message "validate: the engine cannot hold claim {$this}: {?value} must be an IRI, so that the claim is a class, property or identity assertion about named individuals (EpistemicError::UnsupportedAssertion)." ;
+    sh:prefixes <https://w3id.org/ldso/epistemic/hydradl-profile> ;
+    sh:select """
+      SELECT DISTINCT $this ?value WHERE {
+        { $this rdf:subject ?value . FILTER (!isIRI(?value)) }
+        UNION
+        { $this rdf:predicate ?value . FILTER (!isIRI(?value)) }
+        UNION
+        { $this rdf:predicate ?p ; rdf:object ?value .
+          FILTER ((?p IN (rdf:type, owl:sameAs, owl:differentFrom) && !isIRI(?value))
+                  || (?p NOT IN (rdf:type, owl:sameAs, owl:differentFrom) && isBlank(?value))) }
+      }
+    """ ;
+  ] .
+
+epix:ConfidencePrecisionProfile
+  a sh:NodeShape ;
+  sh:targetSubjectsOf epi:confidence , epi:admissionFloor , epi:confidenceMargin ;
+  sh:sparql [
+    sh:message "validate: more than six decimals in {?value}: the engine keeps confidences, floors and margins exactly to six places (EpistemicError::ConfidenceOutOfRange)." ;
+    sh:prefixes <https://w3id.org/ldso/epistemic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this epi:confidence|epi:admissionFloor|epi:confidenceMargin ?value .
+        FILTER (CONTAINS(STR(?value), ".") && STRLEN(STRAFTER(STR(?value), ".")) > 6)
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Stored results as the engine writes them
+# ═════════════════════════════════════════════════════════════════════════════
+
+# shapes.ttl already requires two epi:compares and all or none of epi:winner, epi:loser and
+# epi:decidedBy. The engine also writes one epi:comparedValues for every decision, and for an
+# undecided pair (no epi:decidedBy) only, its text starts "undecided after".
+epix:DecisionResultProfile
+  a sh:NodeShape ;
+  sh:targetClass epi:Decision ;
+  sh:property [
+    sh:path epi:comparedValues ;
+    sh:minCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "result: the engine writes exactly one epi:comparedValues for every decision." ;
+  ] ;
+  # $PATH, not the property's name: pyshacl reads "...Values" followed by a space as a VALUES clause.
+  sh:property [
+    sh:path epi:comparedValues ;
+    sh:sparql [
+      sh:message "result: epi:comparedValues {?value} of {$this}: the engine starts it with \"undecided after\" if and only if the pair is undecided (no epi:decidedBy, epi:winner or epi:loser)." ;
+      sh:prefixes <https://w3id.org/ldso/epistemic/hydradl-profile> ;
+      sh:select """
+        SELECT $this ?value WHERE {
+          $this $PATH ?value .
+          BIND (EXISTS { $this epi:decidedBy|epi:winner|epi:loser ?any } AS ?decided)
+          FILTER (?decided = STRSTARTS(STR(?value), "undecided after"))
+        }
+      """ ;
+    ] ;
+  ] .

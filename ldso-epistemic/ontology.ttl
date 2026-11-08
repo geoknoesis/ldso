@@ -1,0 +1,601 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix epi:  <https://w3id.org/ldso/epistemic#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Epistemic: Claims, Sources, Trust and Conflict Resolution
+# Version: 0.1.0 (draft)
+# Namespace: https://w3id.org/ldso/epistemic#
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/epistemic>
+  a owl:Ontology ;
+  dct:title "LDSO-Epistemic: Claims, Sources, Trust and Conflict Resolution"@en ;
+  dct:description """LDSO-Epistemic provides a vocabulary for what sources claim, as opposed
+to what is true: claims (one asserted triple, possibly denied) with their source,
+confidence and time, corrections and retractions, the trust a source carries (a
+tier, an admission floor), the policy that resolves conflicts between claims
+(an ordered list of criteria, optionally per property or class), and the result of
+an assessment (a status per claim, the conflicts found, the decisions taken). It
+reuses PROV-O for provenance and is designed so that claims, sources and a policy
+compile to the belief-revision engine of HydraDL (hydradl-epistemic), which
+decides against a trusted OWL 2 DL ontology which claims to accept, reject or
+leave contested, with an explanation for each."""@en ;
+  dct:creator "Stephane Fellah" ;
+  dct:publisher "Geoknoesis LLC" ;
+  dct:created "2026-10-25"^^xsd:date ;
+  dct:modified "2026-11-08"^^xsd:date ;
+  skos:changeNote """2026-11-08: an undecided pair no longer carries a winner and a loser. New
+property epi:compares names the two claims of every epi:Decision; epi:winner, epi:loser and
+epi:decidedBy are present, each exactly once, only when a criterion decided the pair, and
+absent together when none did (previously the smaller id was reported as epi:winner).
+epi:winner and epi:loser are sub-properties of epi:compares; epi:decidedBy is functional."""@en ;
+  owl:versionIRI <https://w3id.org/ldso/epistemic/0.1.0> ;
+  owl:versionInfo "0.1.0" ;
+  owl:imports <https://w3id.org/ldso/core> ,
+              <http://www.w3.org/ns/prov-o#> ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+  vann:preferredNamespacePrefix "epi" ;
+  vann:preferredNamespaceUri "https://w3id.org/ldso/epistemic#" ;
+  rdfs:comment """DISCLAIMER: This ontology is not an official W3C Standard or W3C Recommendation.
+It is a community/project specification using W3C ReSpec formatting conventions.
+This is a DRAFT (0.1.0) for review."""@en .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CLAIMS
+# ═════════════════════════════════════════════════════════════════════════════
+
+epi:Claim
+  a owl:Class ;
+  rdfs:subClassOf rdf:Statement , prov:Entity ;
+  owl:disjointWith epi:Retraction ;
+  rdfs:label "Claim"@en ;
+  skos:definition """One triple asserted by a source, which may be denied (epi:negated),
+carried by rdf:subject, rdf:predicate and rdf:object."""@en ;
+  skos:scopeNote """A claim is not a fact: the trusted ontology and other claims decide whether
+it is accepted. With rdf:type as predicate it is a class assertion; with owl:sameAs or
+owl:differentFrom it is an identity claim; with any other predicate it is an object
+property assertion when the object is an IRI and a data property assertion when it is a
+literal. A claim has exactly one subject, predicate and object, and one epi:claimedBy.
+RDF 1.2 triple terms are the closest standard counterpart (see alignments.ttl); a claim
+node is used so that confidence, source and time attach to it in RDF 1.1."""@en ;
+  skos:example """
+ex:c_registry
+  a epi:Claim ;
+  rdf:subject ex:acme ;
+  rdf:predicate ex:registeredIn ;
+  rdf:object ex:Ireland ;
+  epi:claimedBy ex:src_registry ;
+  epi:confidence 1.0 ;
+  epi:claimedAt "2026-03-04T00:00:00Z"^^xsd:dateTime ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:negated
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:domain epi:Claim ;
+  rdfs:range  xsd:boolean ;
+  rdfs:label "negated"@en ;
+  skos:definition "Whether the claim denies its triple. Absent: false."@en ;
+  skos:scopeNote """A denied object or data property assertion is a negative property
+assertion in the engine. A denied rdf:type claim is the assertion of the complement class
+(ClassAssertion of ObjectComplementOf C); it is compared by the default chain, not by a
+scoped chain for C. A denied owl:sameAs claim is an owl:differentFrom claim
+(DifferentIndividuals) and a denied owl:differentFrom claim is an owl:sameAs claim
+(SameIndividual)."""@en ;
+  skos:example "ex:c_not_sanctioned epi:negated true ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:claimedBy
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:subPropertyOf prov:wasAttributedTo ;
+  rdfs:label "claimed by"@en ;
+  skos:definition "The source that makes the claim or the retraction."@en ;
+  skos:scopeNote """Points at an epi:Source in the executable profile. Nested attribution
+("the broker reports that the insured said ...") points at an epi:Claim instead; the
+range is therefore left open and the profile shapes report the nesting as gap E1. A
+builder may align the property differently (for example with prov:wasAttributedTo
+directly)."""@en ;
+  skos:example "ex:c_registry epi:claimedBy ex:src_registry ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:confidence
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:domain epi:Claim ;
+  rdfs:range  xsd:decimal ;
+  rdfs:label "confidence"@en ;
+  skos:definition "How sure the source is of the claim, a decimal in [0, 1]."@en ;
+  skos:scopeNote """Optional. An absent score means not stated, not 1.0: the epistemic layer
+does not invent a number, and a claim with no confidence is never below a floor and
+never decides a comparison by confidence. LDSO-Annotations reads an absent ann:confidence
+as 1.0 for human-curated annotations; the two properties are therefore related by
+skos:closeMatch and not declared equivalent. A claim derived from an ann:EntityMention
+copies its confidence when the mention states one and states none otherwise. The engine
+keeps six decimal places exactly."""@en ;
+  skos:example "ex:c_news epi:confidence 0.91 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:claimedAt
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:range  xsd:dateTime ;
+  rdfs:label "claimed at"@en ;
+  skos:definition "The instant at which the source made the claim or the retraction."@en ;
+  skos:scopeNote """Used by the recency criterion. Value type xsd:dateTime, in UTC: the
+HydraDL engine reads whole seconds and does not support xsd:date. Not the time at which
+the claimed fact holds (see epi:validFrom)."""@en ;
+  skos:example "ex:c_registry epi:claimedAt \"2026-03-04T00:00:00Z\"^^xsd:dateTime ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:supersedes
+  a owl:ObjectProperty ;
+  rdfs:domain epi:Claim ;
+  rdfs:range  epi:Claim ;
+  rdfs:label "supersedes"@en ;
+  skos:definition "The claim is a correction that replaces the claim it points at."@en ;
+  skos:scopeNote """The replaced claim is not admitted (status not admitted) whatever its
+conflicts, unless its replacement is itself not admitted (retracted or below the floor).
+A superseding cycle is invalid; a claim that supersedes a retraction or an unknown claim
+is invalid."""@en ;
+  skos:example "ex:c_corrected epi:supersedes ex:c_old ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# RETRACTIONS
+# ═════════════════════════════════════════════════════════════════════════════
+
+epi:Retraction
+  a owl:Class ;
+  rdfs:subClassOf prov:Entity ;
+  rdfs:label "Retraction"@en ;
+  skos:definition "A source's withdrawal of earlier claims. It asserts nothing itself."@en ;
+  skos:scopeNote """Has epi:claimedBy and optionally epi:claimedAt. Disjoint with epi:Claim.
+A retracted claim is not admitted. Only claims can be retracted, not retractions."""@en ;
+  skos:example """
+ex:ret_form
+  a epi:Retraction ;
+  epi:claimedBy ex:src_form ;
+  epi:claimedAt "2026-05-01T00:00:00Z"^^xsd:dateTime ;
+  epi:retracts ex:c_form_address ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:retracts
+  a owl:ObjectProperty ;
+  rdfs:domain epi:Retraction ;
+  rdfs:range  epi:Claim ;
+  rdfs:label "retracts"@en ;
+  skos:definition "The claim the retraction withdraws."@en ;
+  skos:scopeNote "A retraction may name several claims."@en ;
+  skos:example "ex:ret_form epi:retracts ex:c_form_address ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SOURCES AND TRUST
+# ═════════════════════════════════════════════════════════════════════════════
+
+epi:Source
+  a owl:Class ;
+  rdfs:subClassOf prov:Entity ;
+  rdfs:label "Source"@en ;
+  skos:definition "A document, registry, model or person that claims come from."@en ;
+  skos:scopeNote """Carries the trust: an epi:tier and an optional epi:admissionFloor. Corresponds
+to a HydraDL Source. A source with no tier is the least trusted in a comparison by tier."""@en ;
+  skos:example """
+ex:src_registry
+  a epi:Source ;
+  epi:tier 3 ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:tier
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:domain epi:Source ;
+  rdfs:range  xsd:nonNegativeInteger ;
+  rdfs:label "tier"@en ;
+  skos:definition "The trust rank of a source: a higher tier is more trusted."@en ;
+  skos:scopeNote """Only the order matters. A tier that is not a non-negative integer (a SKOS trust
+scale, one source rating another) is gap E6; trust depending on topic or jurisdiction is
+gap E5."""@en ;
+  skos:example "ex:src_news epi:tier 1 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:admissionFloor
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:domain [ a owl:Class ; owl:unionOf ( epi:Source epi:ResolutionPolicy ) ] ;
+  rdfs:range  xsd:decimal ;
+  rdfs:label "admission floor"@en ;
+  skos:definition "The lowest confidence, a decimal in [0, 1], at which a claim is admitted."@en ;
+  skos:scopeNote """On a source it applies to that source's claims; on a policy it applies to every
+source without a floor of its own. A claim whose confidence is below the floor is not
+admitted. A claim with no confidence is not below any floor."""@en ;
+  skos:example "ex:src_news epi:admissionFloor 0.7 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:trustLevel
+  a owl:ObjectProperty ;
+  rdfs:domain epi:Source ;
+  rdfs:range  skos:Concept ;
+  rdfs:label "trust level"@en ;
+  skos:definition "A graded trust given as a concept of a trust scale instead of an integer tier."@en ;
+  skos:scopeNote "Outside the executable profile (gap E6): the engine reads only epi:tier."@en ;
+  skos:example "ex:src_analyst epi:trustLevel ex:HighTrust ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:trustedFor
+  a owl:ObjectProperty ;
+  rdfs:domain epi:Source ;
+  rdfs:label "trusted for"@en ;
+  skos:definition "A topic or jurisdiction for which the source is trusted at its tier."@en ;
+  skos:scopeNote """Contextual trust beyond the per-property and per-class scopes of a policy (gap
+E5). The engine does not run it."""@en ;
+  skos:example "ex:src_registry epi:trustedFor ex:Ireland ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# RESOLUTION POLICY
+# ═════════════════════════════════════════════════════════════════════════════
+
+epi:ResolutionPolicy
+  a owl:Class ;
+  rdfs:subClassOf prov:Entity ;
+  rdfs:label "Resolution Policy"@en ;
+  skos:definition """How conflicts between claims are settled: an admission floor, a confidence
+margin, a default chain of criteria and chains for particular properties or classes."""@en ;
+  skos:scopeNote """Corresponds to a HydraDL Policy. The default chain is tier, then confidence, then
+recency when no epi:criteria is stated; the default margin is 0.05."""@en ;
+  skos:example """
+ex:policy
+  a epi:ResolutionPolicy ;
+  epi:admissionFloor 0.5 ;
+  epi:confidenceMargin 0.05 ;
+  epi:criteria ( epi:ByTier epi:ByConfidence epi:ByRecency ) ;
+  epi:hasScopedChain ex:chain_address ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:ScopedChain
+  a owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:label "Scoped Chain"@en ;
+  skos:definition "A chain of criteria that replaces the default chain for one property or one class."@en ;
+  skos:scopeNote """Has one epi:appliesTo and one epi:criteria. Claims in a conflict that fall under
+different scopes are compared with the default chain."""@en ;
+  skos:example """
+ex:chain_address
+  a epi:ScopedChain ;
+  epi:appliesTo ex:registeredAddress ;
+  epi:criteria ( epi:ByRecency epi:ByTier ) ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:Criterion
+  a owl:Class ;
+  rdfs:subClassOf skos:Concept ;
+  rdfs:label "Criterion"@en ;
+  skos:definition "A way to prefer one claim over another."@en ;
+  skos:scopeNote "Three individuals: epi:ByTier, epi:ByConfidence and epi:ByRecency."@en ;
+  skos:example "epi:ByTier a epi:Criterion ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:ByTier
+  a epi:Criterion ;
+  rdfs:label "by tier"@en ;
+  skos:definition "Prefer the claim whose source has the higher tier."@en ;
+  skos:scopeNote "A source with no tier ranks below every source with one; equal tiers do not decide."@en ;
+  skos:example "ex:policy epi:criteria ( epi:ByTier ) ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:ByConfidence
+  a epi:Criterion ;
+  rdfs:label "by confidence"@en ;
+  skos:definition "Prefer the claim with the higher confidence, if it leads by more than the margin."@en ;
+  skos:scopeNote "A claim with no confidence does not decide; a lead no larger than the margin does not decide."@en ;
+  skos:example "ex:policy epi:criteria ( epi:ByConfidence ) ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:ByRecency
+  a epi:Criterion ;
+  rdfs:label "by recency"@en ;
+  skos:definition "Prefer the claim claimed later."@en ;
+  skos:scopeNote "A claim with no epi:claimedAt does not decide; equal instants do not decide."@en ;
+  skos:example "ex:policy epi:criteria ( epi:ByRecency ) ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:criteria
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:domain [ a owl:Class ; owl:unionOf ( epi:ResolutionPolicy epi:ScopedChain ) ] ;
+  rdfs:range  rdf:List ;
+  rdfs:label "criteria"@en ;
+  skos:definition "The ordered list of epi:Criterion individuals tried in turn until one decides."@en ;
+  skos:scopeNote """A pair no criterion decides is left undecided, and the claims stay contested:
+its epi:Decision names the two claims (epi:compares) but no epi:winner, epi:loser or
+epi:decidedBy."""@en ;
+  skos:example "ex:policy epi:criteria ( epi:ByTier epi:ByConfidence epi:ByRecency ) ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:appliesTo
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:domain epi:ScopedChain ;
+  rdfs:label "applies to"@en ;
+  skos:definition "The property or class IRI whose claims a scoped chain governs."@en ;
+  skos:scopeNote """A property IRI scopes claims whose predicate it is; a class IRI scopes claims
+that assert membership of the class. No range is declared because the value is a property
+or a class used as a value."""@en ;
+  skos:example "ex:chain_address epi:appliesTo ex:registeredAddress ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:confidenceMargin
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:domain epi:ResolutionPolicy ;
+  rdfs:range  xsd:decimal ;
+  rdfs:label "confidence margin"@en ;
+  skos:definition "How far apart two confidences must be, in [0, 1], for confidence to decide."@en ;
+  skos:scopeNote "A difference equal to the margin does not decide."@en ;
+  skos:example "ex:policy epi:confidenceMargin 0.05 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:hasScopedChain
+  a owl:ObjectProperty ;
+  rdfs:domain epi:ResolutionPolicy ;
+  rdfs:range  epi:ScopedChain ;
+  rdfs:label "has scoped chain"@en ;
+  skos:definition "A chain of criteria for one property or class that the policy uses."@en ;
+  skos:scopeNote "Several scoped chains may be given, at most one per property or class."@en ;
+  skos:example "ex:policy epi:hasScopedChain ex:chain_address ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# RESULTS (Layer 6)
+# ═════════════════════════════════════════════════════════════════════════════
+
+epi:ClaimStatus
+  a owl:Class ;
+  rdfs:subClassOf skos:Concept ;
+  rdfs:label "Claim Status"@en ;
+  skos:definition "What an assessment concluded about a claim."@en ;
+  skos:scopeNote "Five individuals: epi:Accepted, epi:Rejected, epi:Contested, epi:Undetermined and epi:NotAdmitted."@en ;
+  skos:example "epi:Accepted a epi:ClaimStatus ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:Accepted
+  a epi:ClaimStatus ;
+  rdfs:label "accepted"@en ;
+  skos:definition "The claim is in every optimal repair: it holds however the conflicts are resolved."@en ;
+  skos:scopeNote "Includes a claim in no conflict (reason: no conflict)."@en ;
+  skos:example "ex:a_registry epi:status epi:Accepted ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:Rejected
+  a epi:ClaimStatus ;
+  rdfs:label "rejected"@en ;
+  skos:definition "The claim is in no optimal repair: a preferred claim wins against it."@en ;
+  skos:scopeNote "The decisions that rejected it are listed in its conflicts."@en ;
+  skos:example "ex:a_news epi:status epi:Rejected ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:Contested
+  a epi:ClaimStatus ;
+  rdfs:label "contested"@en ;
+  skos:definition "The claim is in some optimal repairs but not all: the policy cannot choose."@en ;
+  skos:scopeNote "A claim is contested when no criterion of the chain decides between it and a conflicting claim."@en ;
+  skos:example "ex:a_form epi:status epi:Contested ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:Undetermined
+  a epi:ClaimStatus ;
+  rdfs:label "undetermined"@en ;
+  skos:definition "The claim's group could not be settled: the reasoner answered unknown or a budget was exceeded."@en ;
+  skos:scopeNote "The assessment reason carries the message."@en ;
+  skos:example "ex:a_x epi:status epi:Undetermined ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:NotAdmitted
+  a epi:ClaimStatus ;
+  rdfs:label "not admitted"@en ;
+  skos:definition "The claim was left out before conflicts were considered: retracted, below the floor or superseded."@en ;
+  skos:scopeNote "The assessment reason says which."@en ;
+  skos:example "ex:a_old epi:status epi:NotAdmitted ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:Assessment
+  a owl:Class ;
+  rdfs:subClassOf prov:Entity ;
+  rdfs:label "Assessment"@en ;
+  skos:definition "The outcome for one claim: its status and why."@en ;
+  skos:scopeNote "Corresponds to a HydraDL Assessment. Stored results are Layer 6 data; the engine returns them, it does not read them."@en ;
+  skos:example """
+ex:a_news
+  a epi:Assessment ;
+  epi:assesses ex:c_news ;
+  epi:status epi:Rejected ;
+  epi:reason "in conflict 0" ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:assesses
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:domain epi:Assessment ;
+  rdfs:range  epi:Claim ;
+  rdfs:label "assesses"@en ;
+  skos:definition "The claim an assessment is about."@en ;
+  skos:scopeNote "Exactly one claim per assessment."@en ;
+  skos:example "ex:a_news epi:assesses ex:c_news ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:status
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:domain epi:Assessment ;
+  rdfs:range  epi:ClaimStatus ;
+  rdfs:label "status"@en ;
+  skos:definition "The status an assessment gives its claim."@en ;
+  skos:scopeNote "One of the five epi:ClaimStatus individuals."@en ;
+  skos:example "ex:a_news epi:status epi:Rejected ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:reason
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:domain epi:Assessment ;
+  rdfs:range  xsd:string ;
+  rdfs:label "reason"@en ;
+  skos:definition "The plain-language reason for the status."@en ;
+  skos:scopeNote """The engine's wording is: no conflict; retracted by R; confidence C below floor F;
+superseded by X; in conflict N, M; undetermined: message."""@en ;
+  skos:example "ex:a_old epi:reason \"superseded by c_new\" ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:Conflict
+  a owl:Class ;
+  rdfs:subClassOf prov:Entity ;
+  rdfs:label "Conflict"@en ;
+  skos:definition """A minimal set of admitted claims that the trusted ontology cannot hold
+together. A conflict of one claim is a claim that contradicts the ontology on its own."""@en ;
+  skos:scopeNote "Corresponds to a HydraDL Conflict. Claims are linked with epi:involves."@en ;
+  skos:example """
+ex:conflict_0
+  a epi:Conflict ;
+  epi:involves ex:c_registry , ex:c_news ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:involves
+  a owl:ObjectProperty ;
+  rdfs:domain epi:Conflict ;
+  rdfs:range  epi:Claim ;
+  rdfs:label "involves"@en ;
+  skos:definition "A claim that takes part in a conflict."@en ;
+  skos:scopeNote "A conflict involves one claim or more."@en ;
+  skos:example "ex:conflict_0 epi:involves ex:c_news ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:Decision
+  a owl:Class ;
+  rdfs:subClassOf prov:Entity ;
+  rdfs:label "Decision"@en ;
+  skos:definition """How two conflicting claims were compared: the two claims (epi:compares) and,
+when a criterion decided, which one won, which one lost, and by which criterion."""@en ;
+  skos:scopeNote """Corresponds to a HydraDL Decision. Every decision has exactly two epi:compares
+values, the claims compared, decided or not. epi:winner, epi:loser and epi:decidedBy are
+present, each exactly once, only when a criterion of the chain decided the pair; the winner
+and the loser are then the two compared claims. When no criterion decides, the pair is
+undecided: the decision has none of the three, and its epi:comparedValues starts
+"undecided after" and lists the criteria tried. A decision prefers one claim only when it
+has an epi:decidedBy."""@en ;
+  skos:example """
+ex:d_0
+  a epi:Decision ;
+  epi:compares ex:c_registry , ex:c_news ;
+  epi:winner ex:c_registry ;
+  epi:loser ex:c_news ;
+  epi:decidedBy epi:ByTier ;
+  epi:comparedValues "tier 3 over tier 1" .
+
+# Undecided: same tier, confidences within the margin, no claim time.
+ex:d_1
+  a epi:Decision ;
+  epi:compares ex:c_uk , ex:c_cy ;
+  epi:comparedValues "undecided after tier, confidence, recency" ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:compares
+  a owl:ObjectProperty ;
+  rdfs:domain epi:Decision ;
+  rdfs:range  epi:Claim ;
+  rdfs:label "compares"@en ;
+  skos:definition "One of the two claims a decision compared."@en ;
+  skos:scopeNote """Every decision compares exactly two claims, whether a criterion decided the pair
+or not; it does not say which claim is preferred. When a criterion decided, the two are the
+decision's epi:winner and epi:loser."""@en ;
+  skos:example "ex:d_1 epi:compares ex:c_uk , ex:c_cy ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:winner
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:subPropertyOf epi:compares ;
+  rdfs:domain epi:Decision ;
+  rdfs:range  epi:Claim ;
+  rdfs:label "winner"@en ;
+  skos:definition "The claim a decision preferred."@en ;
+  skos:scopeNote """Present only when a criterion decided the pair, together with epi:loser and
+epi:decidedBy; an undecided decision has no winner. The winner is one of the two claims the
+decision epi:compares."""@en ;
+  skos:example "ex:d_0 epi:winner ex:c_registry ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:loser
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:subPropertyOf epi:compares ;
+  rdfs:domain epi:Decision ;
+  rdfs:range  epi:Claim ;
+  rdfs:label "loser"@en ;
+  skos:definition "The claim a decision set aside."@en ;
+  skos:scopeNote """Present only when a criterion decided the pair, together with epi:winner and
+epi:decidedBy; an undecided decision has no loser. The loser is the other of the two claims
+the decision epi:compares."""@en ;
+  skos:example "ex:d_0 epi:loser ex:c_news ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:decidedBy
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:domain epi:Decision ;
+  rdfs:range  epi:Criterion ;
+  rdfs:label "decided by"@en ;
+  skos:definition "The criterion that decided the comparison."@en ;
+  skos:scopeNote """Present exactly once, with epi:winner and epi:loser, when a criterion of the
+chain decided the pair; absent, with both of them, when none did."""@en ;
+  skos:example "ex:d_0 epi:decidedBy epi:ByTier ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:comparedValues
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:domain epi:Decision ;
+  rdfs:range  xsd:string ;
+  rdfs:label "compared values"@en ;
+  skos:definition "The values the deciding criterion compared, in plain language."@en ;
+  skos:scopeNote """The engine's wording is: tier A over tier B; confidence A over B (margin M);
+claimed at A, after B; or, for an undecided pair, "undecided after" and the criteria tried
+(undecided after tier, confidence, recency), with " (preference cycle)" appended when the
+pair was dropped from a cycle of preferences. A scoped chain appends " [chain for P]"."""@en ;
+  skos:example "ex:d_0 epi:comparedValues \"tier 3 over tier 1\" ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# GAP TERMS (valid LDSO-Epistemic that the HydraDL engine does not run)
+# ═════════════════════════════════════════════════════════════════════════════
+
+epi:corroborates
+  a owl:ObjectProperty ;
+  rdfs:domain epi:Claim ;
+  rdfs:range  epi:Claim ;
+  rdfs:label "corroborates"@en ;
+  skos:definition "The claim agrees with another claim from an independent source."@en ;
+  skos:scopeNote """Agreement between independent sources should raise belief (gap E2). The engine
+does not count agreement: it compares claims only when they conflict."""@en ;
+  skos:example "ex:c_news epi:corroborates ex:c_registry ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:validFrom
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:domain epi:Claim ;
+  rdfs:range  xsd:dateTime ;
+  rdfs:label "valid from"@en ;
+  skos:definition "The instant from which the claimed fact holds."@en ;
+  skos:scopeNote """Valid time of the fact, not the time of the claim (gap E3): with it, a change over
+time would not be a conflict. The engine ignores it."""@en ;
+  skos:example "ex:c_old_address epi:validFrom \"2010-01-01T00:00:00Z\"^^xsd:dateTime ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .
+
+epi:validUntil
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:domain epi:Claim ;
+  rdfs:range  xsd:dateTime ;
+  rdfs:label "valid until"@en ;
+  skos:definition "The instant until which the claimed fact holds."@en ;
+  skos:scopeNote "See epi:validFrom (gap E3)."@en ;
+  skos:example "ex:c_old_address epi:validUntil \"2012-03-04T00:00:00Z\"^^xsd:dateTime ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/epistemic> .

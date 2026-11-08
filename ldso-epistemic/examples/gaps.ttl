@@ -1,0 +1,51 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix epi:  <https://w3id.org/ldso/epistemic#> .
+@prefix ex:   <https://example.org/gaps/> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# One hit for each gap E1-E6: valid LDSO-Epistemic that the HydraDL engine does
+# not run. The data conforms to shapes.ttl; hydradl-profile-shapes.ttl reports
+# each gap once (E1 also lacks a source, which the profile reports as well).
+# DISCLAIMER: not an official W3C Standard or W3C Recommendation; a DRAFT (0.1.0).
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:registry a epi:Source ; epi:tier 3 .
+ex:broker   a epi:Source ; epi:tier 2 .
+
+ex:c_registered a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate ex:registeredIn ; rdf:object ex:Ireland ;
+  epi:claimedBy ex:registry ; epi:confidence 1.0 .
+
+# E1 nested attribution: the broker reports what the registry claimed.
+ex:c_reported a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate ex:registeredIn ; rdf:object ex:Ireland ;
+  epi:claimedBy ex:c_registered .
+
+# E2 corroboration: a second source agrees with the first.
+ex:c_agrees a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate ex:registeredIn ; rdf:object ex:Ireland ;
+  epi:claimedBy ex:broker ;
+  epi:corroborates ex:c_registered .
+
+# E3 valid time: the address held until 2012.
+ex:c_old_address a epi:Claim ;
+  rdf:subject ex:acme ; rdf:predicate ex:registeredAddress ; rdf:object "1 Old St" ;
+  epi:claimedBy ex:registry ;
+  epi:validUntil "2012-03-04T00:00:00Z"^^xsd:dateTime .
+
+# E4 claim about the ontology: a source asserts a subclass axiom.
+ex:c_axiom a epi:Claim ;
+  rdf:subject ex:Company ; rdf:predicate rdfs:subClassOf ; rdf:object ex:LegalEntity ;
+  epi:claimedBy ex:broker .
+
+# E5 contextual trust: the registry is trusted for one jurisdiction.
+ex:registry epi:trustedFor ex:Ireland .
+
+# E6 graded trust: an analyst is rated on a trust scale instead of a tier.
+ex:analyst a epi:Source ;
+  epi:trustLevel ex:HighTrust .
+ex:HighTrust a skos:Concept .

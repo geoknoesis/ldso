@@ -1,0 +1,729 @@
+{
+  "@context": {
+    "brick": "https://brickschema.org/schema/Brick#",
+    "csvw": "http://www.w3.org/ns/csvw#",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcam": "http://purl.org/dc/dcam/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dcmitype": "http://purl.org/dc/dcmitype/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "doap": "http://usefulinc.com/ns/doap#",
+    "epi": "https://w3id.org/ldso/epistemic#",
+    "ex": "https://example.org/kyc/",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "geo": "http://www.opengis.net/ont/geosparql#",
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "org": "http://www.w3.org/ns/org#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "prof": "http://www.w3.org/ns/dx/prof/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "qb": "http://purl.org/linked-data/cube#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "https://schema.org/",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "ssn": "http://www.w3.org/ns/ssn/",
+    "time": "http://www.w3.org/2006/time#",
+    "vann": "http://purl.org/vocab/vann/",
+    "void": "http://rdfs.org/ns/void#",
+    "wgs": "https://www.w3.org/2003/01/geo/wgs84_pos#",
+    "xml": "http://www.w3.org/XML/1998/namespace",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "ex:regActive",
+      "@type": "epi:Claim",
+      "epi:claimedBy": {
+        "@id": "ex:registry"
+      },
+      "rdf:object": {
+        "@id": "ex:ActiveCompany"
+      },
+      "rdf:predicate": {
+        "@id": "rdf:type"
+      },
+      "rdf:subject": {
+        "@id": "ex:acme"
+      }
+    },
+    {
+      "@id": "ex:conflict_0",
+      "@type": "epi:Conflict",
+      "epi:involves": [
+        {
+          "@id": "ex:formAddrNew"
+        },
+        {
+          "@id": "ex:regAddr"
+        }
+      ]
+    },
+    {
+      "@id": "ex:a_newsCy",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:newsCy"
+      },
+      "epi:reason": "in conflict 3",
+      "epi:status": {
+        "@id": "epi:Contested"
+      }
+    },
+    {
+      "@id": "ex:newsA",
+      "@type": "epi:Source",
+      "epi:tier": 1
+    },
+    {
+      "@id": "ex:controlledBy",
+      "@type": "owl:ObjectProperty"
+    },
+    {
+      "@id": "ex:newsCy",
+      "@type": "epi:Claim",
+      "epi:claimedBy": {
+        "@id": "ex:newsB"
+      },
+      "epi:confidence": {
+        "@type": "xsd:decimal",
+        "@value": "0.88"
+      },
+      "rdf:object": {
+        "@id": "ex:CY"
+      },
+      "rdf:predicate": {
+        "@id": "ex:incorporatedIn"
+      },
+      "rdf:subject": {
+        "@id": "ex:acme"
+      }
+    },
+    {
+      "@id": "ex:DissolvedCompany",
+      "@type": "owl:Class"
+    },
+    {
+      "@id": "ex:onboardingForm",
+      "@type": "epi:Source",
+      "epi:tier": 2
+    },
+    {
+      "@id": "ex:newsControl",
+      "@type": "epi:Claim",
+      "epi:claimedBy": {
+        "@id": "ex:newsA"
+      },
+      "epi:confidence": {
+        "@type": "xsd:decimal",
+        "@value": "0.9"
+      },
+      "rdf:object": {
+        "@id": "ex:ivan"
+      },
+      "rdf:predicate": {
+        "@id": "ex:controlledBy"
+      },
+      "rdf:subject": {
+        "@id": "ex:acme"
+      }
+    },
+    {
+      "@id": "ex:SanctionedPerson",
+      "@type": "owl:Class"
+    },
+    {
+      "@id": "_:n742acc68739c4b0abc3b7ac435b23454b1",
+      "@type": "owl:Restriction",
+      "owl:onProperty": {
+        "@id": "ex:controlledBy"
+      },
+      "owl:someValuesFrom": {
+        "@id": "ex:SanctionedPerson"
+      },
+      "rdfs:subClassOf": {
+        "@id": "ex:SanctionsExposed"
+      }
+    },
+    {
+      "@id": "ex:ShellCompany",
+      "@type": "owl:Class"
+    },
+    {
+      "@id": "ex:a_nerDoi",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:nerDoi"
+      },
+      "epi:reason": "in conflict 2",
+      "epi:status": {
+        "@id": "epi:Rejected"
+      }
+    },
+    {
+      "@id": "ex:ClearedEntity",
+      "@type": "owl:Class"
+    },
+    {
+      "@id": "ex:registeredAddress",
+      "@type": [
+        "owl:DatatypeProperty",
+        "owl:FunctionalProperty"
+      ]
+    },
+    {
+      "@id": "ex:conflict_1",
+      "@type": "epi:Conflict",
+      "epi:involves": [
+        {
+          "@id": "ex:formCleared"
+        },
+        {
+          "@id": "ex:newsControl"
+        },
+        {
+          "@id": "ex:sancIvan"
+        }
+      ]
+    },
+    {
+      "@id": "ex:UK",
+      "owl:differentFrom": {
+        "@id": "ex:CY"
+      }
+    },
+    {
+      "@id": "ex:d_sanctioned_over_control",
+      "@type": "epi:Decision",
+      "epi:comparedValues": "tier 3 over tier 1",
+      "epi:compares": [
+        {
+          "@id": "ex:newsControl"
+        },
+        {
+          "@id": "ex:sancIvan"
+        }
+      ],
+      "epi:decidedBy": {
+        "@id": "epi:ByTier"
+      },
+      "epi:loser": {
+        "@id": "ex:newsControl"
+      },
+      "epi:winner": {
+        "@id": "ex:sancIvan"
+      }
+    },
+    {
+      "@id": "ex:newsBRetract",
+      "@type": "epi:Retraction",
+      "epi:claimedBy": {
+        "@id": "ex:newsB"
+      },
+      "epi:retracts": {
+        "@id": "ex:newsDissolved"
+      }
+    },
+    {
+      "@id": "ex:a_formCleared",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:formCleared"
+      },
+      "epi:reason": "in conflict 1",
+      "epi:status": {
+        "@id": "epi:Accepted"
+      }
+    },
+    {
+      "@id": "ex:newsUk",
+      "@type": "epi:Claim",
+      "epi:claimedBy": {
+        "@id": "ex:newsA"
+      },
+      "epi:confidence": {
+        "@type": "xsd:decimal",
+        "@value": "0.91"
+      },
+      "rdf:object": {
+        "@id": "ex:UK"
+      },
+      "rdf:predicate": {
+        "@id": "ex:incorporatedIn"
+      },
+      "rdf:subject": {
+        "@id": "ex:acme"
+      }
+    },
+    {
+      "@id": "ex:nerDoi",
+      "@type": "epi:Claim",
+      "epi:claimedBy": {
+        "@id": "ex:newsA"
+      },
+      "epi:confidence": {
+        "@type": "xsd:decimal",
+        "@value": "0.8"
+      },
+      "rdf:object": {
+        "@type": "xsd:dateTime",
+        "@value": "2012-03-04T00:00:00+00:00"
+      },
+      "rdf:predicate": {
+        "@id": "ex:dateOfIncorporation"
+      },
+      "rdf:subject": {
+        "@id": "ex:acme"
+      }
+    },
+    {
+      "@id": "ex:a_sancIvan",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:sancIvan"
+      },
+      "epi:reason": "in conflict 1",
+      "epi:status": {
+        "@id": "epi:Accepted"
+      }
+    },
+    {
+      "@id": "ex:a_newsDissolved",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:newsDissolved"
+      },
+      "epi:reason": "retracted by https://example.org/kyc/newsBRetract",
+      "epi:status": {
+        "@id": "epi:NotAdmitted"
+      }
+    },
+    {
+      "@id": "ex:newsB",
+      "@type": "epi:Source",
+      "epi:tier": 1
+    },
+    {
+      "@id": "ex:nerShell",
+      "@type": "epi:Claim",
+      "epi:claimedBy": {
+        "@id": "ex:newsA"
+      },
+      "epi:confidence": {
+        "@type": "xsd:decimal",
+        "@value": "0.4"
+      },
+      "rdf:object": {
+        "@id": "ex:ShellCompany"
+      },
+      "rdf:predicate": {
+        "@id": "rdf:type"
+      },
+      "rdf:subject": {
+        "@id": "ex:acme"
+      }
+    },
+    {
+      "@id": "ex:a_formAddrNew",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:formAddrNew"
+      },
+      "epi:reason": "in conflict 0",
+      "epi:status": {
+        "@id": "epi:Accepted"
+      }
+    },
+    {
+      "@id": "ex:regAddr",
+      "@type": "epi:Claim",
+      "epi:claimedAt": {
+        "@type": "xsd:dateTime",
+        "@value": "2023-06-01T00:00:00+00:00"
+      },
+      "epi:claimedBy": {
+        "@id": "ex:registry"
+      },
+      "rdf:object": "9 Registry Rd",
+      "rdf:predicate": {
+        "@id": "ex:registeredAddress"
+      },
+      "rdf:subject": {
+        "@id": "ex:acme"
+      }
+    },
+    {
+      "@id": "ex:conflict_2",
+      "@type": "epi:Conflict",
+      "epi:involves": [
+        {
+          "@id": "ex:nerDoi"
+        },
+        {
+          "@id": "ex:regDoi"
+        }
+      ]
+    },
+    {
+      "@id": "ex:a_regDoi",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:regDoi"
+      },
+      "epi:reason": "in conflict 2",
+      "epi:status": {
+        "@id": "epi:Accepted"
+      }
+    },
+    {
+      "@id": "ex:registry",
+      "@type": "epi:Source",
+      "epi:tier": 3
+    },
+    {
+      "@id": "ex:chain_address",
+      "@type": "epi:ScopedChain",
+      "epi:appliesTo": {
+        "@id": "ex:registeredAddress"
+      },
+      "epi:criteria": {
+        "@list": [
+          {
+            "@id": "epi:ByRecency"
+          },
+          {
+            "@id": "epi:ByTier"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "ex:sanctionsList",
+      "@type": "epi:Source",
+      "epi:tier": 3
+    },
+    {
+      "@id": "ex:a_regAddr",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:regAddr"
+      },
+      "epi:reason": "in conflict 0",
+      "epi:status": {
+        "@id": "epi:Rejected"
+      }
+    },
+    {
+      "@id": "ex:formAddrNew",
+      "@type": "epi:Claim",
+      "epi:claimedAt": {
+        "@type": "xsd:dateTime",
+        "@value": "2025-02-01T00:00:00+00:00"
+      },
+      "epi:claimedBy": {
+        "@id": "ex:onboardingForm"
+      },
+      "epi:supersedes": {
+        "@id": "ex:formAddrOld"
+      },
+      "rdf:object": "2 New St",
+      "rdf:predicate": {
+        "@id": "ex:registeredAddress"
+      },
+      "rdf:subject": {
+        "@id": "ex:acme"
+      }
+    },
+    {
+      "@id": "ex:d_cleared_over_control",
+      "@type": "epi:Decision",
+      "epi:comparedValues": "tier 2 over tier 1",
+      "epi:compares": [
+        {
+          "@id": "ex:formCleared"
+        },
+        {
+          "@id": "ex:newsControl"
+        }
+      ],
+      "epi:decidedBy": {
+        "@id": "epi:ByTier"
+      },
+      "epi:loser": {
+        "@id": "ex:newsControl"
+      },
+      "epi:winner": {
+        "@id": "ex:formCleared"
+      }
+    },
+    {
+      "@id": "ex:a_nerShell",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:nerShell"
+      },
+      "epi:reason": "confidence 0.4 below floor 0.5",
+      "epi:status": {
+        "@id": "epi:NotAdmitted"
+      }
+    },
+    {
+      "@id": "ex:newsDissolved",
+      "@type": "epi:Claim",
+      "epi:claimedBy": {
+        "@id": "ex:newsB"
+      },
+      "epi:confidence": {
+        "@type": "xsd:decimal",
+        "@value": "0.7"
+      },
+      "rdf:object": {
+        "@id": "ex:DissolvedCompany"
+      },
+      "rdf:predicate": {
+        "@id": "rdf:type"
+      },
+      "rdf:subject": {
+        "@id": "ex:acme"
+      }
+    },
+    {
+      "@id": "ex:a_newsUk",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:newsUk"
+      },
+      "epi:reason": "in conflict 3",
+      "epi:status": {
+        "@id": "epi:Contested"
+      }
+    },
+    {
+      "@id": "ex:regDoi",
+      "@type": "epi:Claim",
+      "epi:claimedBy": {
+        "@id": "ex:registry"
+      },
+      "rdf:object": {
+        "@type": "xsd:dateTime",
+        "@value": "2011-03-04T00:00:00+00:00"
+      },
+      "rdf:predicate": {
+        "@id": "ex:dateOfIncorporation"
+      },
+      "rdf:subject": {
+        "@id": "ex:acme"
+      }
+    },
+    {
+      "@id": "ex:formAddrOld",
+      "@type": "epi:Claim",
+      "epi:claimedAt": {
+        "@type": "xsd:dateTime",
+        "@value": "2024-05-01T00:00:00+00:00"
+      },
+      "epi:claimedBy": {
+        "@id": "ex:onboardingForm"
+      },
+      "rdf:object": "1 Old St",
+      "rdf:predicate": {
+        "@id": "ex:registeredAddress"
+      },
+      "rdf:subject": {
+        "@id": "ex:acme"
+      }
+    },
+    {
+      "@id": "ex:d_sanctioned_over_cleared",
+      "@type": "epi:Decision",
+      "epi:comparedValues": "tier 3 over tier 2",
+      "epi:compares": [
+        {
+          "@id": "ex:formCleared"
+        },
+        {
+          "@id": "ex:sancIvan"
+        }
+      ],
+      "epi:decidedBy": {
+        "@id": "epi:ByTier"
+      },
+      "epi:loser": {
+        "@id": "ex:formCleared"
+      },
+      "epi:winner": {
+        "@id": "ex:sancIvan"
+      }
+    },
+    {
+      "@id": "ex:a_newsControl",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:newsControl"
+      },
+      "epi:reason": "in conflict 1",
+      "epi:status": {
+        "@id": "epi:Rejected"
+      }
+    },
+    {
+      "@id": "ex:a_formAddrOld",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:formAddrOld"
+      },
+      "epi:reason": "superseded by https://example.org/kyc/formAddrNew",
+      "epi:status": {
+        "@id": "epi:NotAdmitted"
+      }
+    },
+    {
+      "@id": "ex:sancIvan",
+      "@type": "epi:Claim",
+      "epi:claimedBy": {
+        "@id": "ex:sanctionsList"
+      },
+      "rdf:object": {
+        "@id": "ex:SanctionedPerson"
+      },
+      "rdf:predicate": {
+        "@id": "rdf:type"
+      },
+      "rdf:subject": {
+        "@id": "ex:ivan"
+      }
+    },
+    {
+      "@id": "ex:policy",
+      "@type": "epi:ResolutionPolicy",
+      "epi:admissionFloor": {
+        "@type": "xsd:decimal",
+        "@value": "0.5"
+      },
+      "epi:confidenceMargin": {
+        "@type": "xsd:decimal",
+        "@value": "0.05"
+      },
+      "epi:criteria": {
+        "@list": [
+          {
+            "@id": "epi:ByTier"
+          },
+          {
+            "@id": "epi:ByConfidence"
+          },
+          {
+            "@id": "epi:ByRecency"
+          }
+        ]
+      },
+      "epi:hasScopedChain": {
+        "@id": "ex:chain_address"
+      }
+    },
+    {
+      "@id": "ex:d_address",
+      "@type": "epi:Decision",
+      "epi:comparedValues": "claimed at 1738368000, after 1685577600",
+      "epi:compares": [
+        {
+          "@id": "ex:formAddrNew"
+        },
+        {
+          "@id": "ex:regAddr"
+        }
+      ],
+      "epi:decidedBy": {
+        "@id": "epi:ByRecency"
+      },
+      "epi:loser": {
+        "@id": "ex:regAddr"
+      },
+      "epi:winner": {
+        "@id": "ex:formAddrNew"
+      }
+    },
+    {
+      "@id": "ex:incorporatedIn",
+      "@type": [
+        "owl:ObjectProperty",
+        "owl:FunctionalProperty"
+      ]
+    },
+    {
+      "@id": "ex:SanctionsExposed",
+      "@type": "owl:Class",
+      "owl:disjointWith": {
+        "@id": "ex:ClearedEntity"
+      }
+    },
+    {
+      "@id": "ex:a_regActive",
+      "@type": "epi:Assessment",
+      "epi:assesses": {
+        "@id": "ex:regActive"
+      },
+      "epi:reason": "no conflict",
+      "epi:status": {
+        "@id": "epi:Accepted"
+      }
+    },
+    {
+      "@id": "ex:formCleared",
+      "@type": "epi:Claim",
+      "epi:claimedBy": {
+        "@id": "ex:onboardingForm"
+      },
+      "rdf:object": {
+        "@id": "ex:ClearedEntity"
+      },
+      "rdf:predicate": {
+        "@id": "rdf:type"
+      },
+      "rdf:subject": {
+        "@id": "ex:acme"
+      }
+    },
+    {
+      "@id": "ex:dateOfIncorporation",
+      "@type": [
+        "owl:DatatypeProperty",
+        "owl:FunctionalProperty"
+      ]
+    },
+    {
+      "@id": "ex:conflict_3",
+      "@type": "epi:Conflict",
+      "epi:involves": [
+        {
+          "@id": "ex:newsCy"
+        },
+        {
+          "@id": "ex:newsUk"
+        }
+      ]
+    },
+    {
+      "@id": "ex:d_country",
+      "@type": "epi:Decision",
+      "epi:comparedValues": "undecided after tier, confidence, recency",
+      "epi:compares": [
+        {
+          "@id": "ex:newsCy"
+        },
+        {
+          "@id": "ex:newsUk"
+        }
+      ]
+    },
+    {
+      "@id": "ex:ActiveCompany",
+      "@type": "owl:Class",
+      "owl:disjointWith": {
+        "@id": "ex:DissolvedCompany"
+      }
+    }
+  ]
+}

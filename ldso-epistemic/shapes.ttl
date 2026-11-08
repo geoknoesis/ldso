@@ -1,0 +1,397 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix epi:  <https://w3id.org/ldso/epistemic#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Epistemic SHACL Shapes
+# Structural well-formedness of any LDSO-Epistemic data. The stricter subset a
+# HydraDL compiler accepts is in hydradl-profile-shapes.ttl.
+# These shapes assume the data is merged with the TBox (ontology.ttl) and validated with RDFS
+# inference: through the rdfs:range of epi:supersedes, epi:retracts, epi:assesses and the like, an
+# unknown target is typed epi:Claim and reported by ClaimShape (missing predicate).
+# DISCLAIMER: not an official W3C Standard or W3C Recommendation; a DRAFT (0.1.0).
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/epistemic/shapes>
+  a owl:Ontology ;
+  dct:title "LDSO-Epistemic SHACL Validation Shapes"@en ;
+  dct:description "SHACL node shapes for validating instances of LDSO-Epistemic classes."@en ;
+  owl:imports <https://w3id.org/ldso/epistemic> ;
+  sh:declare [
+    sh:prefix "epi" ;
+    sh:namespace "https://w3id.org/ldso/epistemic#"^^xsd:anyURI ;
+  ] , [
+    sh:prefix "rdf" ;
+    sh:namespace "http://www.w3.org/1999/02/22-rdf-syntax-ns#"^^xsd:anyURI ;
+  ] , [
+    sh:prefix "owl" ;
+    sh:namespace "http://www.w3.org/2002/07/owl#"^^xsd:anyURI ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Claims
+# ═════════════════════════════════════════════════════════════════════════════
+
+epi:ClaimShape
+  a sh:NodeShape ;
+  sh:targetClass epi:Claim ;
+
+  sh:property [
+    sh:path rdf:subject ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:severity sh:Violation ;
+    sh:message "A Claim MUST have exactly one rdf:subject (an individual)." ;
+  ] ;
+
+  sh:property [
+    sh:path rdf:predicate ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "A Claim MUST have exactly one rdf:predicate (an IRI)." ;
+  ] ;
+
+  sh:property [
+    sh:path rdf:object ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "A Claim MUST have exactly one rdf:object." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:negated ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:boolean ;
+    sh:severity sh:Violation ;
+    sh:message "epi:negated MUST be a single xsd:boolean." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:confidence ;
+    sh:maxCount 1 ;
+    sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [ sh:datatype xsd:nonNegativeInteger ] [ sh:datatype xsd:positiveInteger ] [ sh:datatype xsd:unsignedInt ] [ sh:datatype xsd:int ] [ sh:datatype xsd:long ] [ sh:datatype xsd:unsignedLong ] ) ;
+    sh:minInclusive 0 ;
+    sh:maxInclusive 1 ;
+    sh:severity sh:Violation ;
+    sh:message "epi:confidence MUST be at most one decimal between 0 and 1." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:claimedBy ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "A Claim MUST have exactly one epi:claimedBy." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:claimedAt ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:dateTime ;
+    sh:severity sh:Violation ;
+    sh:message "epi:claimedAt MUST be at most one xsd:dateTime." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:supersedes ;
+    sh:class epi:Claim ;
+    sh:severity sh:Violation ;
+    sh:message "epi:supersedes MUST point to an epi:Claim." ;
+  ] ;
+
+  sh:sparql [
+    sh:message "A claim whose predicate is rdf:type, owl:sameAs or owl:differentFrom MUST have an IRI object: {?value} is not." ;
+    sh:prefixes <https://w3id.org/ldso/epistemic/shapes> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this rdf:predicate ?p ; rdf:object ?value .
+        FILTER (?p IN (rdf:type, owl:sameAs, owl:differentFrom) && !isIRI(?value))
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Retractions
+# ═════════════════════════════════════════════════════════════════════════════
+
+epi:RetractionShape
+  a sh:NodeShape ;
+  sh:targetClass epi:Retraction ;
+
+  sh:property [
+    sh:path epi:claimedBy ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "A Retraction MUST have exactly one epi:claimedBy." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:claimedAt ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:dateTime ;
+    sh:severity sh:Violation ;
+    sh:message "epi:claimedAt MUST be at most one xsd:dateTime." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:retracts ;
+    sh:minCount 1 ;
+    sh:class epi:Claim ;
+    sh:severity sh:Violation ;
+    sh:message "A Retraction MUST retract at least one epi:Claim via epi:retracts." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Sources and trust
+# ═════════════════════════════════════════════════════════════════════════════
+
+epi:SourceShape
+  a sh:NodeShape ;
+  sh:targetClass epi:Source ;
+
+  sh:property [
+    sh:path epi:tier ;
+    sh:maxCount 1 ;
+    sh:or ( [ sh:datatype xsd:integer ] [ sh:datatype xsd:nonNegativeInteger ] [ sh:datatype xsd:positiveInteger ] [ sh:datatype xsd:unsignedInt ] [ sh:datatype xsd:int ] [ sh:datatype xsd:long ] [ sh:datatype xsd:unsignedLong ] ) ;
+    sh:minInclusive 0 ;
+    sh:severity sh:Violation ;
+    sh:message "epi:tier MUST be at most one non-negative integer." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:admissionFloor ;
+    sh:maxCount 1 ;
+    sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [ sh:datatype xsd:nonNegativeInteger ] [ sh:datatype xsd:positiveInteger ] [ sh:datatype xsd:unsignedInt ] [ sh:datatype xsd:int ] [ sh:datatype xsd:long ] [ sh:datatype xsd:unsignedLong ] ) ;
+    sh:minInclusive 0 ;
+    sh:maxInclusive 1 ;
+    sh:severity sh:Violation ;
+    sh:message "epi:admissionFloor MUST be at most one decimal between 0 and 1." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Resolution policy
+# ═════════════════════════════════════════════════════════════════════════════
+
+epi:ResolutionPolicyShape
+  a sh:NodeShape ;
+  sh:targetClass epi:ResolutionPolicy ;
+
+  sh:property [
+    sh:path epi:admissionFloor ;
+    sh:maxCount 1 ;
+    sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [ sh:datatype xsd:nonNegativeInteger ] [ sh:datatype xsd:positiveInteger ] [ sh:datatype xsd:unsignedInt ] [ sh:datatype xsd:int ] [ sh:datatype xsd:long ] [ sh:datatype xsd:unsignedLong ] ) ;
+    sh:minInclusive 0 ;
+    sh:maxInclusive 1 ;
+    sh:severity sh:Violation ;
+    sh:message "epi:admissionFloor MUST be at most one decimal between 0 and 1." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:confidenceMargin ;
+    sh:maxCount 1 ;
+    sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [ sh:datatype xsd:nonNegativeInteger ] [ sh:datatype xsd:positiveInteger ] [ sh:datatype xsd:unsignedInt ] [ sh:datatype xsd:int ] [ sh:datatype xsd:long ] [ sh:datatype xsd:unsignedLong ] ) ;
+    sh:minInclusive 0 ;
+    sh:maxInclusive 1 ;
+    sh:severity sh:Violation ;
+    sh:message "epi:confidenceMargin MUST be at most one decimal between 0 and 1." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:criteria ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "A policy MUST have at most one epi:criteria list." ;
+  ] ;
+
+  sh:property [
+    sh:path ( epi:criteria [ sh:zeroOrMorePath rdf:rest ] rdf:first ) ;
+    sh:class epi:Criterion ;
+    sh:severity sh:Violation ;
+    sh:message "Every member of epi:criteria MUST be an epi:Criterion (epi:ByTier, epi:ByConfidence or epi:ByRecency)." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:hasScopedChain ;
+    sh:class epi:ScopedChain ;
+    sh:severity sh:Violation ;
+    sh:message "epi:hasScopedChain MUST point to an epi:ScopedChain." ;
+  ] ;
+
+  sh:sparql [
+    sh:message "A policy MUST have at most one scoped chain per property or class: {?value} has two." ;
+    sh:prefixes <https://w3id.org/ldso/epistemic/shapes> ;
+    sh:select """
+      SELECT DISTINCT $this ?value WHERE {
+        $this epi:hasScopedChain ?a , ?b .
+        ?a epi:appliesTo ?value .
+        ?b epi:appliesTo ?value .
+        FILTER (?a != ?b)
+      }
+    """ ;
+  ] .
+
+epi:ScopedChainShape
+  a sh:NodeShape ;
+  sh:targetClass epi:ScopedChain ;
+
+  sh:property [
+    sh:path epi:appliesTo ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "A ScopedChain MUST have exactly one epi:appliesTo (a property or class IRI)." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:criteria ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "A ScopedChain MUST have exactly one epi:criteria list." ;
+  ] ;
+
+  sh:property [
+    sh:path ( epi:criteria [ sh:zeroOrMorePath rdf:rest ] rdf:first ) ;
+    sh:class epi:Criterion ;
+    sh:severity sh:Violation ;
+    sh:message "Every member of epi:criteria MUST be an epi:Criterion (epi:ByTier, epi:ByConfidence or epi:ByRecency)." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Results
+# ═════════════════════════════════════════════════════════════════════════════
+
+epi:AssessmentShape
+  a sh:NodeShape ;
+  sh:targetClass epi:Assessment ;
+
+  sh:property [
+    sh:path epi:assesses ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class epi:Claim ;
+    sh:severity sh:Violation ;
+    sh:message "An Assessment MUST have exactly one epi:assesses (an epi:Claim)." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:status ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:in ( epi:Accepted epi:Rejected epi:Contested epi:Undetermined epi:NotAdmitted ) ;
+    sh:severity sh:Violation ;
+    sh:message "An Assessment MUST have exactly one epi:status, one of the five epi:ClaimStatus individuals." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:reason ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:severity sh:Violation ;
+    sh:message "epi:reason MUST be at most one xsd:string." ;
+  ] .
+
+epi:ConflictShape
+  a sh:NodeShape ;
+  sh:targetClass epi:Conflict ;
+
+  sh:property [
+    sh:path epi:involves ;
+    sh:minCount 1 ;
+    sh:class epi:Claim ;
+    sh:severity sh:Violation ;
+    sh:message "A Conflict MUST involve at least one epi:Claim via epi:involves." ;
+  ] .
+
+# A decision compares exactly two claims. It is decided (epi:winner, epi:loser and epi:decidedBy,
+# each exactly once, the winner and the loser being the two compared claims) or undecided (none of
+# the three). The winner and loser are checked to be among the compared claims in SHACL core: the
+# values of epi:compares, epi:winner and epi:loser taken together are at most two, so a winner or a
+# loser outside the two compared claims is a third value. (With RDFS inference the same follows
+# from epi:winner and epi:loser being sub-properties of epi:compares.)
+epi:DecisionShape
+  a sh:NodeShape ;
+  sh:targetClass epi:Decision ;
+
+  sh:property [
+    sh:path epi:compares ;
+    sh:minCount 2 ;
+    sh:maxCount 2 ;
+    sh:class epi:Claim ;
+    sh:severity sh:Violation ;
+    sh:message "A Decision MUST compare exactly two epi:Claim (epi:compares), decided or not." ;
+  ] ;
+
+  sh:property [
+    sh:path [ sh:alternativePath ( epi:compares epi:winner epi:loser ) ] ;
+    sh:maxCount 2 ;
+    sh:severity sh:Violation ;
+    sh:message "The epi:winner and the epi:loser of a Decision MUST be among the two claims it epi:compares." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:winner ;
+    sh:maxCount 1 ;
+    sh:class epi:Claim ;
+    sh:disjoint epi:loser ;
+    sh:severity sh:Violation ;
+    sh:message "epi:winner MUST be at most one epi:Claim, other than the epi:loser." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:loser ;
+    sh:maxCount 1 ;
+    sh:class epi:Claim ;
+    sh:severity sh:Violation ;
+    sh:message "epi:loser MUST be at most one epi:Claim." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:decidedBy ;
+    sh:maxCount 1 ;
+    sh:class epi:Criterion ;
+    sh:severity sh:Violation ;
+    sh:message "epi:decidedBy MUST be at most one epi:Criterion." ;
+  ] ;
+
+  sh:property [
+    sh:path epi:comparedValues ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:severity sh:Violation ;
+    sh:message "epi:comparedValues MUST be at most one xsd:string." ;
+  ] .
+
+epi:DecisionOutcomeShape
+  a sh:NodeShape ;
+  sh:targetClass epi:Decision ;
+  sh:xone ( epi:DecidedDecisionShape epi:UndecidedDecisionShape ) ;
+  sh:severity sh:Violation ;
+  sh:message "A Decision MUST have epi:winner, epi:loser and epi:decidedBy each exactly once (a criterion decided) or none of them (undecided)." .
+
+epi:DecidedDecisionShape
+  a sh:NodeShape ;
+  sh:property [ sh:path epi:winner ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path epi:loser ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path epi:decidedBy ; sh:minCount 1 ; sh:maxCount 1 ] .
+
+epi:UndecidedDecisionShape
+  a sh:NodeShape ;
+  sh:property [ sh:path epi:winner ; sh:maxCount 0 ] ;
+  sh:property [ sh:path epi:loser ; sh:maxCount 0 ] ;
+  sh:property [ sh:path epi:decidedBy ; sh:maxCount 0 ] .
