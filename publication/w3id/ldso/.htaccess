@@ -1,0 +1,13 @@
+# Proposed w3id.org/ldso rules. External deployment and Apache testing pending.
+Options -MultiViews
+RewriteEngine On
+
+RewriteRule ^$ https://geoknoesis.github.io/ldso/ [R=303,L]
+
+RewriteCond %{HTTP_ACCEPT} (text/turtle|application/x-turtle) [NC]
+RewriteRule ^(core|entities|annotations|semantics|operations)/?$ https://geoknoesis.github.io/ldso/ldso-$1/ontology.ttl [R=303,L]
+RewriteCond %{HTTP_ACCEPT} (text/turtle|application/x-turtle) [NC]
+RewriteRule ^lifecycle/?$ https://geoknoesis.github.io/ldso/lifecycle/ontology.ttl [R=303,L]
+
+RewriteRule ^(core|entities|annotations|semantics|operations)/?$ https://geoknoesis.github.io/ldso/ldso-$1/ [R=303,L]
+RewriteRule ^lifecycle/?$ https://geoknoesis.github.io/ldso/lifecycle/ [R=303,L]

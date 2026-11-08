@@ -1,5 +1,7 @@
 # LDSO — Legal Document Structure Ontology
 
+Local repair and validation notes: [PUBLICATION-FIXES.md](PUBLICATION-FIXES.md). Run `python -m unittest discover -s tests -v` after installing `requirements-test.txt`; regenerate JSON-LD examples with `python tools/sync_examples.py`.
+
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://w3id.org/ldso)
 

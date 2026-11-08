@@ -1,175 +1,516 @@
 {
   "@context": {
-    "rdf":  "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "xsd":  "http://www.w3.org/2001/XMLSchema#",
-    "dct":  "http://purl.org/dc/terms/",
+    "ann": "https://w3id.org/ldso/annotations#",
+    "brick": "https://brickschema.org/schema/Brick#",
+    "csvw": "http://www.w3.org/ns/csvw#",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcam": "http://purl.org/dc/dcam/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dcmitype": "http://purl.org/dc/dcmitype/",
+    "dct": "http://purl.org/dc/terms/",
+    "doap": "http://usefulinc.com/ns/doap#",
+    "ent": "https://w3id.org/ldso/entities#",
+    "ex": "https://example.org/ata/",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "geo": "http://www.opengis.net/ont/geosparql#",
     "ldso": "https://w3id.org/ldso/core#",
-    "ent":  "https://w3id.org/ldso/entities#",
-    "ann":  "https://w3id.org/ldso/annotations#",
-    "ex":   "https://example.org/ata/",
-
-    "entityType":      { "@id": "ent:entityType",      "@type": "@id" },
-    "showAs":          { "@id": "ent:showAs",           "@container": "@language" },
-    "href":            { "@id": "ent:href",             "@type": "xsd:anyURI" },
-    "label":           { "@id": "rdfs:label",           "@container": "@language" },
-    "refersToEntity":  { "@id": "ann:refersToEntity",   "@type": "@id" },
-    "hasMention":      { "@id": "ann:hasMention",       "@type": "@id" },
-    "mentionOf":       { "@id": "ann:mentionOf",        "@type": "@id" },
-    "inElement":       { "@id": "ann:inElement",        "@type": "@id" },
-    "surfaceForm":     { "@id": "ann:surfaceForm",      "@container": "@language" },
-    "startChar":       { "@id": "ann:startChar",        "@type": "xsd:nonNegativeInteger" },
-    "endChar":         { "@id": "ann:endChar",          "@type": "xsd:nonNegativeInteger" },
-    "confidence":      { "@id": "ann:confidence",       "@type": "xsd:decimal" },
-    "title":           { "@id": "dct:title",            "@container": "@language" },
-    "language":        { "@id": "dct:language" },
-    "issued":          { "@id": "dct:issued",           "@type": "xsd:date" },
-    "expressionOf":    { "@id": "ldso:expressionOf",    "@type": "@id" },
-    "hasExpression":   { "@id": "ldso:hasExpression",   "@type": "@id" },
-    "contains":        { "@id": "ldso:contains",        "@type": "@id" },
-    "partOf":          { "@id": "ldso:partOf",          "@type": "@id" },
-    "notation":        { "@id": "ldso:notation" },
-    "citation":        { "@id": "ldso:citation" },
-    "orderIndex":      { "@id": "ldso:orderIndex",      "@type": "xsd:integer" },
-    "text":            { "@id": "ldso:text",            "@container": "@language" },
-    "next":            { "@id": "ldso:next",            "@type": "@id" },
-    "previous":        { "@id": "ldso:previous",        "@type": "@id" }
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "org": "http://www.w3.org/ns/org#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "prof": "http://www.w3.org/ns/dx/prof/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "qb": "http://purl.org/linked-data/cube#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "https://schema.org/",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "ssn": "http://www.w3.org/ns/ssn/",
+    "time": "http://www.w3.org/2006/time#",
+    "vann": "http://purl.org/vocab/vann/",
+    "void": "http://rdfs.org/ns/void#",
+    "wgs": "https://www.w3.org/2003/01/geo/wgs84_pos#",
+    "xml": "http://www.w3.org/XML/1998/namespace",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
   },
   "@graph": [
-
-    // ── Canonical Entity Catalogue ────────────────────────────────────────────
-
-    { "@id": "ex:wco", "@type": "ent:NamedEntity",
-      "entityType": "ent:Organization",
-      "href": "https://www.wcoomd.org",
-      "showAs": { "en": "World Customs Organization" },
-      "label": { "en": "World Customs Organization" } },
-
-    { "@id": "ex:temporary_admission", "@type": "ent:NamedEntity",
-      "entityType": "ent:Concept",
-      "href": "https://example.org/legal/concepts/temporary-admission",
-      "showAs": { "en": "temporary admission" },
-      "label": { "en": "temporary admission" } },
-
-    { "@id": "ex:competent_authority", "@type": "ent:NamedEntity",
-      "entityType": "ent:Role",
-      "href": "https://example.org/roles/competent-authority",
-      "showAs": { "en": "competent authority" },
-      "label": { "en": "competent authority" } },
-
-    { "@id": "ex:customs_territory", "@type": "ent:NamedEntity",
-      "entityType": "ent:Location",
-      "href": "https://example.org/locations/customs-territory",
-      "showAs": { "en": "customs territory" },
-      "label": { "en": "customs territory" } },
-
-    { "@id": "ex:ata_carnet", "@type": "ent:NamedEntity",
-      "entityType": "ent:Concept",
-      "href": "https://example.org/legal/concepts/ata-carnet",
-      "showAs": { "en": "ATA carnet" },
-      "label": { "en": "ATA carnet" } },
-
-    // ── Fine-grained Annotations (NLP output) ────────────────────────────────
-
-    { "@id": "ex:m_tempAdm_p1", "@type": "ann:EntityMention",
-      "mentionOf": "ex:temporary_admission", "inElement": "ex:para_1",
-      "surfaceForm": { "en": "admitted temporarily" },
-      "startChar": 17, "endChar": 36, "confidence": 0.91 },
-
-    { "@id": "ex:m_custTerritory_p1", "@type": "ann:EntityMention",
-      "mentionOf": "ex:customs_territory", "inElement": "ex:para_1",
-      "surfaceForm": { "en": "customs territory" },
-      "startChar": 44, "endChar": 61, "confidence": 0.97 },
-
-    { "@id": "ex:m_tempAdm_p2", "@type": "ann:EntityMention",
-      "mentionOf": "ex:temporary_admission", "inElement": "ex:para_2",
-      "surfaceForm": { "en": "temporary admission" },
-      "startChar": 23, "endChar": 42, "confidence": 0.99 },
-
-    { "@id": "ex:m_compAuth_p2", "@type": "ann:EntityMention",
-      "mentionOf": "ex:competent_authority", "inElement": "ex:para_2",
-      "surfaceForm": { "en": "competent authority" },
-      "startChar": 62, "endChar": 81, "confidence": 0.96 },
-
-    { "@id": "ex:m_compAuth_p3", "@type": "ann:EntityMention",
-      "mentionOf": "ex:competent_authority", "inElement": "ex:para_3",
-      "surfaceForm": { "en": "competent authority" },
-      "startChar": 6, "endChar": 25, "confidence": 0.97 },
-
-    { "@id": "ex:m_ataCarnet_ia", "@type": "ann:EntityMention",
-      "mentionOf": "ex:ata_carnet", "inElement": "ex:item_a",
-      "surfaceForm": { "en": "ATA carnet" },
-      "startChar": 3, "endChar": 13, "confidence": 0.99 },
-
-    // ── Document Structure ────────────────────────────────────────────────────
-
-    { "@id": "ex:resource_ata", "@type": "ldso:LegalResource",
-      "title": { "en": "Agreement on Temporary Admission of Goods" },
-      "hasExpression": "ex:doc_ata_en" },
-
-    { "@id": "ex:doc_ata_en", "@type": "ldso:Document",
-      "title": { "en": "Agreement on Temporary Admission of Goods" },
-      "language": "en", "issued": "2026-01-15",
-      "expressionOf": "ex:resource_ata", "contains": "ex:body_ata" },
-
-    { "@id": "ex:body_ata", "@type": "ldso:Body",
-      "partOf": "ex:doc_ata_en", "contains": "ex:chp_2" },
-
-    { "@id": "ex:chp_2", "@type": "ldso:Chapter",
-      "notation": "2", "title": { "en": "Conditions of Temporary Admission" },
-      "partOf": "ex:body_ata", "orderIndex": 2, "contains": "ex:art_5" },
-
-    { "@id": "ex:art_5", "@type": "ldso:Article",
-      "notation": "5", "citation": "2.5",
-      "title": { "en": "Admission Procedures" },
-      "partOf": "ex:chp_2", "orderIndex": 5,
-      "refersToEntity": ["ex:temporary_admission", "ex:competent_authority"],
-      "contains": ["ex:para_1", "ex:para_2", "ex:para_3"] },
-
-    { "@id": "ex:para_1", "@type": "ldso:Paragraph",
-      "notation": "1", "citation": "2.5.1", "orderIndex": 1,
-      "text": { "en": "Goods shall be admitted temporarily into the customs territory of a Contracting Party without payment of import duties and taxes, provided that they are intended for re-exportation within the period specified in Article 7." },
-      "partOf": "ex:art_5",
-      "refersToEntity": ["ex:temporary_admission", "ex:customs_territory"],
-      "hasMention": ["ex:m_tempAdm_p1", "ex:m_custTerritory_p1"],
-      "next": "ex:para_2" },
-
-    { "@id": "ex:para_2", "@type": "ldso:Paragraph",
-      "notation": "2", "citation": "2.5.2", "orderIndex": 2,
-      "text": { "en": "The applicant for temporary admission shall present to the competent authority one of the following documents:" },
-      "partOf": "ex:art_5",
-      "refersToEntity": ["ex:temporary_admission", "ex:competent_authority"],
-      "hasMention": ["ex:m_tempAdm_p2", "ex:m_compAuth_p2"],
-      "previous": "ex:para_1", "next": "ex:para_3", "contains": "ex:list_1" },
-
-    { "@id": "ex:para_3", "@type": "ldso:Paragraph",
-      "notation": "3", "citation": "2.5.3", "orderIndex": 3,
-      "text": { "en": "Where the competent authority is satisfied that the conditions set out in paragraphs 1 and 2 are fulfilled, it shall grant temporary admission by endorsing the presented document and retaining a copy for its records." },
-      "partOf": "ex:art_5",
-      "refersToEntity": ["ex:competent_authority"],
-      "hasMention": ["ex:m_compAuth_p3"],
-      "previous": "ex:para_2" },
-
-    { "@id": "ex:list_1", "@type": "ldso:BlockList",
-      "partOf": "ex:para_2",
-      "contains": ["ex:item_a", "ex:item_b", "ex:item_c"] },
-
-    { "@id": "ex:item_a", "@type": "ldso:Item",
-      "notation": "a", "citation": "2.5.2.a", "orderIndex": 1,
-      "text": { "en": "an ATA carnet issued under the terms of this Agreement;" },
-      "partOf": "ex:list_1",
-      "refersToEntity": ["ex:ata_carnet"],
-      "hasMention": ["ex:m_ataCarnet_ia"],
-      "next": "ex:item_b" },
-
-    { "@id": "ex:item_b", "@type": "ldso:Item",
-      "notation": "b", "citation": "2.5.2.b", "orderIndex": 2,
-      "text": { "en": "a national customs document accepted by the competent authority;" },
-      "partOf": "ex:list_1", "previous": "ex:item_a", "next": "ex:item_c" },
-
-    { "@id": "ex:item_c", "@type": "ldso:Item",
-      "notation": "c", "citation": "2.5.2.c", "orderIndex": 3,
-      "text": { "en": "a declaration accepted in accordance with Article 6." },
-      "partOf": "ex:list_1", "previous": "ex:item_b" }
+    {
+      "@id": "ex:doc_ata_en",
+      "@type": "ldso:Document",
+      "dct:issued": {
+        "@type": "xsd:date",
+        "@value": "2026-01-15"
+      },
+      "dct:language": "en",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Agreement on Temporary Admission of Goods"
+      },
+      "ldso:contains": {
+        "@id": "ex:body_ata"
+      },
+      "ldso:expressionOf": {
+        "@id": "ex:resource_ata"
+      }
+    },
+    {
+      "@id": "ex:m_ataCarnet_ia",
+      "@type": "ann:EntityMention",
+      "ann:confidence": {
+        "@type": "xsd:decimal",
+        "@value": "0.99"
+      },
+      "ann:endChar": 13,
+      "ann:inElement": {
+        "@id": "ex:item_a"
+      },
+      "ann:mentionOf": {
+        "@id": "ex:ata_carnet"
+      },
+      "ann:startChar": 3,
+      "ann:surfaceForm": {
+        "@language": "en",
+        "@value": "ATA carnet"
+      }
+    },
+    {
+      "@id": "ex:competent_authority",
+      "@type": "ent:NamedEntity",
+      "ent:entityType": {
+        "@id": "ent:Role"
+      },
+      "ent:href": {
+        "@type": "xsd:anyURI",
+        "@value": "https://example.org/roles/competent-authority"
+      },
+      "ent:showAs": {
+        "@language": "en",
+        "@value": "competent authority"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "competent authority"
+      }
+    },
+    {
+      "@id": "ex:m_tempAdm_p2",
+      "@type": "ann:EntityMention",
+      "ann:confidence": {
+        "@type": "xsd:decimal",
+        "@value": "0.99"
+      },
+      "ann:endChar": 42,
+      "ann:inElement": {
+        "@id": "ex:para_2"
+      },
+      "ann:mentionOf": {
+        "@id": "ex:temporary_admission"
+      },
+      "ann:startChar": 23,
+      "ann:surfaceForm": {
+        "@language": "en",
+        "@value": "temporary admission"
+      }
+    },
+    {
+      "@id": "ex:chp_2",
+      "@type": "ldso:Chapter",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Conditions of Temporary Admission"
+      },
+      "ldso:contains": {
+        "@id": "ex:art_5"
+      },
+      "ldso:notation": "2",
+      "ldso:orderIndex": 2,
+      "ldso:partOf": {
+        "@id": "ex:body_ata"
+      }
+    },
+    {
+      "@id": "ex:resource_ata",
+      "@type": "ldso:LegalResource",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Agreement on Temporary Admission of Goods"
+      },
+      "ldso:hasExpression": {
+        "@id": "ex:doc_ata_en"
+      }
+    },
+    {
+      "@id": "ex:wco",
+      "@type": "ent:NamedEntity",
+      "ent:entityType": {
+        "@id": "ent:Organization"
+      },
+      "ent:href": {
+        "@type": "xsd:anyURI",
+        "@value": "https://www.wcoomd.org"
+      },
+      "ent:showAs": {
+        "@language": "en",
+        "@value": "World Customs Organization"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "World Customs Organization"
+      }
+    },
+    {
+      "@id": "ex:item_c",
+      "@type": "ldso:Item",
+      "ldso:citation": "2.5.2.c",
+      "ldso:notation": "c",
+      "ldso:orderIndex": 3,
+      "ldso:partOf": {
+        "@id": "ex:list_1"
+      },
+      "ldso:previous": {
+        "@id": "ex:item_b"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "a declaration accepted in accordance with Article 6."
+      }
+    },
+    {
+      "@id": "ex:m_tempAdm_p1",
+      "@type": "ann:EntityMention",
+      "ann:confidence": {
+        "@type": "xsd:decimal",
+        "@value": "0.91"
+      },
+      "ann:endChar": 36,
+      "ann:inElement": {
+        "@id": "ex:para_1"
+      },
+      "ann:mentionOf": {
+        "@id": "ex:temporary_admission"
+      },
+      "ann:startChar": 17,
+      "ann:surfaceForm": {
+        "@language": "en",
+        "@value": "admitted temporarily"
+      }
+    },
+    {
+      "@id": "ex:item_a",
+      "@type": "ldso:Item",
+      "ann:hasMention": {
+        "@id": "ex:m_ataCarnet_ia"
+      },
+      "ann:refersToEntity": {
+        "@id": "ex:ata_carnet"
+      },
+      "ldso:citation": "2.5.2.a",
+      "ldso:next": {
+        "@id": "ex:item_b"
+      },
+      "ldso:notation": "a",
+      "ldso:orderIndex": 1,
+      "ldso:partOf": {
+        "@id": "ex:list_1"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "an ATA carnet issued under the terms of this Agreement;"
+      }
+    },
+    {
+      "@id": "ex:para_2",
+      "@type": "ldso:Paragraph",
+      "ann:hasMention": [
+        {
+          "@id": "ex:m_tempAdm_p2"
+        },
+        {
+          "@id": "ex:m_compAuth_p2"
+        }
+      ],
+      "ann:refersToEntity": [
+        {
+          "@id": "ex:temporary_admission"
+        },
+        {
+          "@id": "ex:competent_authority"
+        }
+      ],
+      "ldso:citation": "2.5.2",
+      "ldso:contains": {
+        "@id": "ex:list_1"
+      },
+      "ldso:next": {
+        "@id": "ex:para_3"
+      },
+      "ldso:notation": "2",
+      "ldso:orderIndex": 2,
+      "ldso:partOf": {
+        "@id": "ex:art_5"
+      },
+      "ldso:previous": {
+        "@id": "ex:para_1"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "The applicant for temporary admission shall present to the competent authority one of the following documents:"
+      }
+    },
+    {
+      "@id": "ex:ata_carnet",
+      "@type": "ent:NamedEntity",
+      "ent:entityType": {
+        "@id": "ent:Concept"
+      },
+      "ent:href": {
+        "@type": "xsd:anyURI",
+        "@value": "https://example.org/legal/concepts/ata-carnet"
+      },
+      "ent:showAs": {
+        "@language": "en",
+        "@value": "ATA carnet"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "ATA carnet"
+      }
+    },
+    {
+      "@id": "ex:item_b",
+      "@type": "ldso:Item",
+      "ldso:citation": "2.5.2.b",
+      "ldso:next": {
+        "@id": "ex:item_c"
+      },
+      "ldso:notation": "b",
+      "ldso:orderIndex": 2,
+      "ldso:partOf": {
+        "@id": "ex:list_1"
+      },
+      "ldso:previous": {
+        "@id": "ex:item_a"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "a national customs document accepted by the competent authority;"
+      }
+    },
+    {
+      "@id": "ex:para_1",
+      "@type": "ldso:Paragraph",
+      "ann:hasMention": [
+        {
+          "@id": "ex:m_tempAdm_p1"
+        },
+        {
+          "@id": "ex:m_custTerritory_p1"
+        }
+      ],
+      "ann:refersToEntity": [
+        {
+          "@id": "ex:temporary_admission"
+        },
+        {
+          "@id": "ex:customs_territory"
+        }
+      ],
+      "ldso:citation": "2.5.1",
+      "ldso:next": {
+        "@id": "ex:para_2"
+      },
+      "ldso:notation": "1",
+      "ldso:orderIndex": 1,
+      "ldso:partOf": {
+        "@id": "ex:art_5"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "Goods shall be admitted temporarily into the customs territory of\na Contracting Party without payment of import duties and taxes, provided that\nthey are intended for re-exportation within the period specified in Article 7."
+      }
+    },
+    {
+      "@id": "ex:temporary_admission",
+      "@type": "ent:NamedEntity",
+      "ent:entityType": {
+        "@id": "ent:Concept"
+      },
+      "ent:href": {
+        "@type": "xsd:anyURI",
+        "@value": "https://example.org/legal/concepts/temporary-admission"
+      },
+      "ent:showAs": {
+        "@language": "en",
+        "@value": "temporary admission"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "temporary admission"
+      }
+    },
+    {
+      "@id": "ex:para_3",
+      "@type": "ldso:Paragraph",
+      "ann:hasMention": {
+        "@id": "ex:m_compAuth_p3"
+      },
+      "ann:refersToEntity": {
+        "@id": "ex:competent_authority"
+      },
+      "ldso:citation": "2.5.3",
+      "ldso:notation": "3",
+      "ldso:orderIndex": 3,
+      "ldso:partOf": {
+        "@id": "ex:art_5"
+      },
+      "ldso:previous": {
+        "@id": "ex:para_2"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "Where the competent authority is satisfied that the conditions\nset out in paragraphs 1 and 2 are fulfilled, it shall grant temporary admission\nby endorsing the presented document and retaining a copy for its records."
+      }
+    },
+    {
+      "@id": "ex:art_5",
+      "@type": "ldso:Article",
+      "ann:refersToEntity": [
+        {
+          "@id": "ex:temporary_admission"
+        },
+        {
+          "@id": "ex:competent_authority"
+        }
+      ],
+      "dct:title": {
+        "@language": "en",
+        "@value": "Admission Procedures"
+      },
+      "ldso:citation": "2.5",
+      "ldso:contains": [
+        {
+          "@id": "ex:para_1"
+        },
+        {
+          "@id": "ex:para_2"
+        },
+        {
+          "@id": "ex:para_3"
+        }
+      ],
+      "ldso:notation": "5",
+      "ldso:orderIndex": 5,
+      "ldso:partOf": {
+        "@id": "ex:chp_2"
+      }
+    },
+    {
+      "@id": "ex:m_compAuth_p2",
+      "@type": "ann:EntityMention",
+      "ann:confidence": {
+        "@type": "xsd:decimal",
+        "@value": "0.96"
+      },
+      "ann:endChar": 81,
+      "ann:inElement": {
+        "@id": "ex:para_2"
+      },
+      "ann:mentionOf": {
+        "@id": "ex:competent_authority"
+      },
+      "ann:startChar": 62,
+      "ann:surfaceForm": {
+        "@language": "en",
+        "@value": "competent authority"
+      }
+    },
+    {
+      "@id": "ex:customs_territory",
+      "@type": "ent:NamedEntity",
+      "ent:entityType": {
+        "@id": "ent:Location"
+      },
+      "ent:href": {
+        "@type": "xsd:anyURI",
+        "@value": "https://example.org/locations/customs-territory"
+      },
+      "ent:showAs": {
+        "@language": "en",
+        "@value": "customs territory"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "customs territory"
+      }
+    },
+    {
+      "@id": "ex:m_custTerritory_p1",
+      "@type": "ann:EntityMention",
+      "ann:confidence": {
+        "@type": "xsd:decimal",
+        "@value": "0.97"
+      },
+      "ann:endChar": 61,
+      "ann:inElement": {
+        "@id": "ex:para_1"
+      },
+      "ann:mentionOf": {
+        "@id": "ex:customs_territory"
+      },
+      "ann:startChar": 44,
+      "ann:surfaceForm": {
+        "@language": "en",
+        "@value": "customs territory"
+      }
+    },
+    {
+      "@id": "ex:list_1",
+      "@type": "ldso:BlockList",
+      "ldso:contains": [
+        {
+          "@id": "ex:item_a"
+        },
+        {
+          "@id": "ex:item_b"
+        },
+        {
+          "@id": "ex:item_c"
+        }
+      ],
+      "ldso:partOf": {
+        "@id": "ex:para_2"
+      }
+    },
+    {
+      "@id": "ex:body_ata",
+      "@type": "ldso:Body",
+      "ldso:contains": {
+        "@id": "ex:chp_2"
+      },
+      "ldso:partOf": {
+        "@id": "ex:doc_ata_en"
+      }
+    },
+    {
+      "@id": "ex:m_compAuth_p3",
+      "@type": "ann:EntityMention",
+      "ann:confidence": {
+        "@type": "xsd:decimal",
+        "@value": "0.97"
+      },
+      "ann:endChar": 25,
+      "ann:inElement": {
+        "@id": "ex:para_3"
+      },
+      "ann:mentionOf": {
+        "@id": "ex:competent_authority"
+      },
+      "ann:startChar": 6,
+      "ann:surfaceForm": {
+        "@language": "en",
+        "@value": "competent authority"
+      }
+    }
   ]
 }

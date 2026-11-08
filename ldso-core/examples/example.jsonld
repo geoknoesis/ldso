@@ -1,231 +1,496 @@
 {
   "@context": {
-    "ldso":      "https://w3id.org/ldso/core#",
-    "dct":       "http://purl.org/dc/terms/",
-    "rdf":       "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "rdfs":      "http://www.w3.org/2000/01/rdf-schema#",
-    "xsd":       "http://www.w3.org/2001/XMLSchema#",
-
-    "LegalResource":  "ldso:LegalResource",
-    "Document":       "ldso:Document",
-    "Body":           "ldso:Body",
-    "Chapter":        "ldso:Chapter",
-    "Article":        "ldso:Article",
-    "Paragraph":      "ldso:Paragraph",
-    "BlockList":      "ldso:BlockList",
-    "Item":           "ldso:Item",
-    "Table":          "ldso:Table",
-    "Row":            "ldso:Row",
-    "Cell":           "ldso:Cell",
-
-    "notation":       { "@id": "ldso:notation" },
-    "citation":       { "@id": "ldso:citation" },
-    "orderIndex":     { "@id": "ldso:orderIndex", "@type": "xsd:integer" },
-    "isHeader":       { "@id": "ldso:isHeader", "@type": "xsd:boolean" },
-
-    "title":          { "@id": "dct:title", "@container": "@language" },
-    "language":       { "@id": "dct:language" },
-    "issued":         { "@id": "dct:issued", "@type": "xsd:date" },
-    "format":         { "@id": "dct:format" },
-
-    "text":           { "@id": "ldso:text", "@container": "@language" },
-    "anchorText":     { "@id": "ldso:anchorText", "@container": "@language" },
-
-    "expressionOf":   { "@id": "ldso:expressionOf", "@type": "@id" },
-    "hasExpression":  { "@id": "ldso:hasExpression", "@type": "@id", "@container": "@set" },
-    "contains":       { "@id": "ldso:contains", "@type": "@id", "@container": "@set" },
-    "partOf":         { "@id": "ldso:partOf", "@type": "@id" },
-    "next":           { "@id": "ldso:next", "@type": "@id" },
-    "previous":       { "@id": "ldso:previous", "@type": "@id" },
-    "hasTable":       { "@id": "ldso:hasTable", "@type": "@id", "@container": "@set" },
-    "hasRow":         { "@id": "ldso:hasRow", "@type": "@id", "@container": "@set" },
-    "hasCell":        { "@id": "ldso:hasCell", "@type": "@id", "@container": "@set" }
+    "brick": "https://brickschema.org/schema/Brick#",
+    "csvw": "http://www.w3.org/ns/csvw#",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcam": "http://purl.org/dc/dcam/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dcmitype": "http://purl.org/dc/dcmitype/",
+    "dct": "http://purl.org/dc/terms/",
+    "doap": "http://usefulinc.com/ns/doap#",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "geo": "http://www.opengis.net/ont/geosparql#",
+    "ldso": "https://w3id.org/ldso/core#",
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "org": "http://www.w3.org/ns/org#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "prof": "http://www.w3.org/ns/dx/prof/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "qb": "http://purl.org/linked-data/cube#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "https://schema.org/",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "ssn": "http://www.w3.org/ns/ssn/",
+    "time": "http://www.w3.org/2006/time#",
+    "vann": "http://purl.org/vocab/vann/",
+    "void": "http://rdfs.org/ns/void#",
+    "wgs": "https://www.w3.org/2003/01/geo/wgs84_pos#",
+    "xml": "http://www.w3.org/XML/1998/namespace",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
   },
-
   "@graph": [
-
     {
-      "@id":   "https://example.org/resource/temporary-admission",
-      "@type": "LegalResource",
-      "title": { "en": "Agreement on Temporary Admission of Goods" },
-      "hasExpression": [
-        { "@id": "https://example.org/doc/temporary-admission/EN" }
-      ]
-    },
-
-    {
-      "@id":         "https://example.org/doc/temporary-admission/EN",
-      "@type":       "Document",
-      "title":       { "en": "Agreement on Temporary Admission of Goods" },
-      "language":    "en",
-      "issued":      "2026-01-15",
-      "format":      "text/turtle",
-      "expressionOf": "https://example.org/resource/temporary-admission",
-      "contains": [
-        { "@id": "https://example.org/doc/temporary-admission/EN/body" }
-      ]
-    },
-
-    {
-      "@id":    "https://example.org/doc/temporary-admission/EN/body",
-      "@type":  "Body",
-      "contains": [
-        { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2" }
-      ]
-    },
-
-    {
-      "@id":        "https://example.org/doc/temporary-admission/EN/body/chp_2",
-      "@type":      "Chapter",
-      "notation":   "2",
-      "citation":   "2",
-      "title":      { "en": "Customs Facilitation" },
-      "orderIndex": 2,
-      "contains": [
-        { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5" }
-      ]
-    },
-
-    {
-      "@id":        "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5",
-      "@type":      "Article",
-      "notation":   "5",
-      "citation":   "2.5",
-      "title":      { "en": "Temporary Admission of Goods" },
-      "orderIndex": 5,
-      "contains": [
-        { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_1" },
-        { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2" },
-        { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_3" }
-      ],
-      "hasTable": [
-        { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1" }
-      ]
-    },
-
-    {
-      "@id":        "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_1",
-      "@type":      "Paragraph",
-      "notation":   "1",
-      "citation":   "2.5.1",
-      "orderIndex": 1,
-      "text": {
-        "en": "Each Party shall allow the temporary admission of goods referred to in paragraph 2 of this Article without payment of customs duties and taxes."
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5",
+      "@type": "ldso:Article",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Temporary Admission of Goods"
       },
-      "next": { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2" }
-    },
-
-    {
-      "@id":        "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2",
-      "@type":      "Paragraph",
-      "notation":   "2",
-      "citation":   "2.5.2",
-      "orderIndex": 2,
-      "text": {
-        "en": "The following goods shall be eligible for temporary admission under this Article:"
-      },
-      "previous": { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_1" },
-      "next":     { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_3" },
-      "contains": [
-        { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1" }
-      ]
-    },
-
-    {
-      "@id":    "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1",
-      "@type":  "BlockList",
-      "contains": [
-        { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_a" },
-        { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_b" },
-        { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_c" }
-      ]
-    },
-
-    {
-      "@id":        "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_a",
-      "@type":      "Item",
-      "notation":   "a",
-      "citation":   "2.5.2.a",
-      "orderIndex": 1,
-      "text": { "en": "goods for display or demonstration at exhibitions, fairs, or meetings;" },
-      "next": { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_b" }
-    },
-
-    {
-      "@id":        "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_b",
-      "@type":      "Item",
-      "notation":   "b",
-      "citation":   "2.5.2.b",
-      "orderIndex": 2,
-      "text": { "en": "professional equipment and tools;" },
-      "previous": { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_a" },
-      "next":     { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_c" }
-    },
-
-    {
-      "@id":        "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_c",
-      "@type":      "Item",
-      "notation":   "c",
-      "citation":   "2.5.2.c",
-      "orderIndex": 3,
-      "text": { "en": "goods for testing, inspection, or quality control purposes." },
-      "previous": { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_b" }
-    },
-
-    {
-      "@id":        "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_3",
-      "@type":      "Paragraph",
-      "notation":   "3",
-      "citation":   "2.5.3",
-      "orderIndex": 3,
-      "text": {
-        "en": "Goods admitted under this Article shall be re-exported within the period specified by the importing Party, which shall not exceed twelve months from the date of admission."
-      },
-      "previous": { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2" }
-    },
-
-    {
-      "@id":   "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1",
-      "@type": "Table",
-      "title": { "en": "Temporary Admission — Applicable Conditions" },
-      "hasRow": [
+      "ldso:citation": "2.5",
+      "ldso:contains": [
         {
-          "@id":        "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1",
-          "@type":      "Row",
-          "orderIndex": 1,
-          "isHeader":   true,
-          "next": { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2" },
-          "hasCell": [
-            { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_1", "@type": "Cell", "orderIndex": 1, "text": { "en": "Category" } },
-            { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_2", "@type": "Cell", "orderIndex": 2, "text": { "en": "Maximum Period" } },
-            { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_3", "@type": "Cell", "orderIndex": 3, "text": { "en": "Duty Treatment" } }
-          ]
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_1"
         },
         {
-          "@id":        "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2",
-          "@type":      "Row",
-          "orderIndex": 2,
-          "previous": { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1" },
-          "next":     { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3" },
-          "hasCell": [
-            { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_1", "@type": "Cell", "orderIndex": 1, "text": { "en": "Exhibition goods" } },
-            { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_2", "@type": "Cell", "orderIndex": 2, "text": { "en": "6 months" } },
-            { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_3", "@type": "Cell", "orderIndex": 3, "text": { "en": "Duty-free" } }
-          ]
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2"
         },
         {
-          "@id":        "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3",
-          "@type":      "Row",
-          "orderIndex": 3,
-          "previous": { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2" },
-          "hasCell": [
-            { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_1", "@type": "Cell", "orderIndex": 1, "text": { "en": "Professional equipment" } },
-            { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_2", "@type": "Cell", "orderIndex": 2, "text": { "en": "12 months" } },
-            { "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_3", "@type": "Cell", "orderIndex": 3, "text": { "en": "Duty-free" } }
-          ]
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_3"
         }
-      ]
+      ],
+      "ldso:next": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_6"
+      },
+      "ldso:notation": "5",
+      "ldso:orderIndex": 5,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2"
+      },
+      "ldso:previous": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_4"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_1",
+      "@type": "ldso:Cell",
+      "ldso:orderIndex": 1,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "Category"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_3",
+      "@type": "ldso:Cell",
+      "ldso:orderIndex": 3,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "Duty Treatment"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1",
+      "@type": "ldso:BlockList",
+      "ldso:contains": [
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_a"
+        },
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_b"
+        },
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_c"
+        }
+      ],
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_1",
+      "@type": "ldso:Paragraph",
+      "ldso:citation": "2.5.1",
+      "ldso:next": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2"
+      },
+      "ldso:notation": "1",
+      "ldso:orderIndex": 1,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "Each Party shall allow the temporary admission of goods\nreferred to in paragraph 2 of this Article without payment of customs\nduties and taxes."
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_b",
+      "@type": "ldso:Item",
+      "ldso:citation": "2.5.2.b",
+      "ldso:next": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_c"
+      },
+      "ldso:notation": "b",
+      "ldso:orderIndex": 2,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1"
+      },
+      "ldso:previous": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_a"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "professional equipment and tools;"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_c",
+      "@type": "ldso:Item",
+      "ldso:citation": "2.5.2.c",
+      "ldso:notation": "c",
+      "ldso:orderIndex": 3,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1"
+      },
+      "ldso:previous": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_b"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "goods for testing, inspection, or quality control purposes."
+      }
+    },
+    {
+      "@id": "https://example.org/resource/temporary-admission",
+      "@type": "ldso:LegalResource",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Agreement on Temporary Admission of Goods"
+      },
+      "ldso:hasExpression": {
+        "@id": "https://example.org/doc/temporary-admission/EN"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_3",
+      "@type": "ldso:Paragraph",
+      "ldso:citation": "2.5.3",
+      "ldso:notation": "3",
+      "ldso:orderIndex": 3,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5"
+      },
+      "ldso:previous": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "Goods admitted under this Article shall be re-exported within\nthe period specified by the importing Party, which shall not exceed\ntwelve months from the date of admission."
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_3",
+      "@type": "ldso:Cell",
+      "ldso:orderIndex": 3,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "Duty-free"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_6",
+      "@type": "ldso:Article",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Transit Procedures"
+      },
+      "ldso:citation": "2.6",
+      "ldso:notation": "6",
+      "ldso:orderIndex": 6,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2"
+      },
+      "ldso:previous": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_2",
+      "@type": "ldso:Cell",
+      "ldso:orderIndex": 2,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "12 months"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2",
+      "@type": "ldso:Row",
+      "ldso:hasCell": [
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_1"
+        },
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_2"
+        },
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_3"
+        }
+      ],
+      "ldso:next": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3"
+      },
+      "ldso:orderIndex": 2,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1"
+      },
+      "ldso:previous": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN",
+      "@type": "ldso:Document",
+      "dct:format": "text/turtle",
+      "dct:issued": {
+        "@type": "xsd:date",
+        "@value": "2026-01-15"
+      },
+      "dct:language": "en",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Agreement on Temporary Admission of Goods"
+      },
+      "ldso:contains": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body"
+      },
+      "ldso:expressionOf": {
+        "@id": "https://example.org/resource/temporary-admission"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_4",
+      "@type": "ldso:Article",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Customs Cooperation"
+      },
+      "ldso:citation": "2.4",
+      "ldso:next": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5"
+      },
+      "ldso:notation": "4",
+      "ldso:orderIndex": 4,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_1",
+      "@type": "ldso:Cell",
+      "ldso:orderIndex": 1,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "Exhibition goods"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2",
+      "@type": "ldso:Paragraph",
+      "ldso:citation": "2.5.2",
+      "ldso:contains": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1"
+      },
+      "ldso:next": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_3"
+      },
+      "ldso:notation": "2",
+      "ldso:orderIndex": 2,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5"
+      },
+      "ldso:previous": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_1"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "The following goods shall be eligible for temporary admission under this Article:"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_a",
+      "@type": "ldso:Item",
+      "ldso:citation": "2.5.2.a",
+      "ldso:next": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1/item_b"
+      },
+      "ldso:notation": "a",
+      "ldso:orderIndex": 1,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/para_2/list_1"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "goods for display or demonstration at exhibitions, fairs, or meetings;"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body",
+      "@type": "ldso:Body",
+      "ldso:contains": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2"
+      },
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3",
+      "@type": "ldso:Row",
+      "ldso:hasCell": [
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_1"
+        },
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_2"
+        },
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_3"
+        }
+      ],
+      "ldso:orderIndex": 3,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1"
+      },
+      "ldso:previous": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1",
+      "@type": "ldso:Row",
+      "ldso:hasCell": [
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_1"
+        },
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_2"
+        },
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_3"
+        }
+      ],
+      "ldso:isHeader": true,
+      "ldso:next": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2"
+      },
+      "ldso:orderIndex": 1,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2",
+      "@type": "ldso:Chapter",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Customs Facilitation"
+      },
+      "ldso:citation": "2",
+      "ldso:contains": [
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_4"
+        },
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5"
+        },
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_6"
+        }
+      ],
+      "ldso:notation": "2",
+      "ldso:orderIndex": 2,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1",
+      "@type": "ldso:Table",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Temporary Admission — Applicable Conditions"
+      },
+      "ldso:hasRow": [
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1"
+        },
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2"
+        },
+        {
+          "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3"
+        }
+      ],
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_3",
+      "@type": "ldso:Cell",
+      "ldso:orderIndex": 3,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "Duty-free"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2/cell_2",
+      "@type": "ldso:Cell",
+      "ldso:orderIndex": 2,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_2"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "6 months"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3/cell_1",
+      "@type": "ldso:Cell",
+      "ldso:orderIndex": 1,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_3"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "Professional equipment"
+      }
+    },
+    {
+      "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1/cell_2",
+      "@type": "ldso:Cell",
+      "ldso:orderIndex": 2,
+      "ldso:partOf": {
+        "@id": "https://example.org/doc/temporary-admission/EN/body/chp_2/art_5/table_1/row_1"
+      },
+      "ldso:text": {
+        "@language": "en",
+        "@value": "Maximum Period"
+      }
     }
-
   ]
 }

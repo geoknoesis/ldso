@@ -8,3 +8,7 @@
 # OS artifacts
 .DS_Store
 Thumbs.db
+
+# Python validation tooling
+__pycache__/
+*.py[cod]

@@ -1,244 +1,672 @@
 {
   "@context": {
-    "rdf":   "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "rdfs":  "http://www.w3.org/2000/01/rdf-schema#",
-    "owl":   "http://www.w3.org/2002/07/owl#",
-    "xsd":   "http://www.w3.org/2001/XMLSchema#",
-    "skos":  "http://www.w3.org/2004/02/skos/core#",
-    "dct":   "http://purl.org/dc/terms/",
-    "prov":  "http://www.w3.org/ns/prov#",
-    "life":  "https://w3id.org/ldso/lifecycle#",
-    "ldso":  "https://w3id.org/ldso/core#",
-    "ex":    "https://w3id.org/ldso/lifecycle/example#",
-
-    "prefLabel":              { "@id": "skos:prefLabel" },
-    "definition":             { "@id": "skos:definition" },
-    "description":            { "@id": "dct:description" },
-    "issued":                 { "@id": "dct:issued",    "@type": "xsd:date" },
-    "isPartOf":               { "@id": "dct:isPartOf",  "@type": "@id" },
-    "source":                 { "@id": "dct:source",    "@type": "@id" },
-    "wasDerivedFrom":         { "@id": "prov:wasDerivedFrom", "@type": "@id" },
-    "wasAttributedTo":        { "@id": "prov:wasAttributedTo", "@type": "@id" },
-    "wasGeneratedBy":         { "@id": "prov:wasGeneratedBy", "@type": "@id" },
-
-    "effectiveFrom":          { "@id": "life:effectiveFrom",   "@type": "xsd:date" },
-    "effectiveTo":            { "@id": "life:effectiveTo",     "@type": "xsd:date" },
-    "versionNumber":          { "@id": "life:versionNumber" },
-    "stateLabel":             { "@id": "life:stateLabel" },
-    "changeDescription":      { "@id": "life:changeDescription" },
-    "eventDate":              { "@id": "life:eventDate",       "@type": "xsd:date" },
-    "modificationDate":       { "@id": "life:modificationDate","@type": "xsd:date" },
-    "consolidationDate":      { "@id": "life:consolidationDate","@type": "xsd:date" },
-
-    "amends":                 { "@id": "life:amends",                 "@type": "@id" },
-    "modifies":               { "@id": "life:modifies",               "@type": "@id" },
-    "affects":                { "@id": "life:affects",                "@type": "@id" },
-    "replaces":               { "@id": "life:replaces",               "@type": "@id" },
-    "repeals":                { "@id": "life:repeals",                "@type": "@id" },
-    "inserts":                { "@id": "life:inserts",                "@type": "@id" },
-    "deletes":                { "@id": "life:deletes",                "@type": "@id" },
-    "createsVersion":         { "@id": "life:createsVersion",         "@type": "@id" },
-    "supersedes":             { "@id": "life:supersedes",             "@type": "@id" },
-    "supersededBy":           { "@id": "life:supersededBy",           "@type": "@id" },
-    "previousVersion":        { "@id": "life:previousVersion",        "@type": "@id" },
-    "nextVersion":            { "@id": "life:nextVersion",            "@type": "@id" },
-    "hasLegalEffect":         { "@id": "life:hasLegalEffect",         "@type": "@id" },
-    "derivedFromInstruction": { "@id": "life:derivedFromInstruction", "@type": "@id" },
-    "derivedFromProvision":   { "@id": "life:derivedFromProvision",   "@type": "@id" },
-    "consolidates":           { "@id": "life:consolidates",           "@type": "@id" },
-    "derivedFromConsolidation":{"@id": "life:derivedFromConsolidation","@type": "@id" },
-    "hasValidityInterval":    { "@id": "life:hasValidityInterval",    "@type": "@id" },
-    "effectiveFromEvent":     { "@id": "life:effectiveFromEvent",     "@type": "@id" },
-    "effectiveUntilEvent":    { "@id": "life:effectiveUntilEvent",    "@type": "@id" },
-    "transitionsFrom":        { "@id": "life:transitionsFrom",        "@type": "@id" },
-    "transitionsTo":          { "@id": "life:transitionsTo",          "@type": "@id" }
+    "brick": "https://brickschema.org/schema/Brick#",
+    "csvw": "http://www.w3.org/ns/csvw#",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcam": "http://purl.org/dc/dcam/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dcmitype": "http://purl.org/dc/dcmitype/",
+    "dct": "http://purl.org/dc/terms/",
+    "doap": "http://usefulinc.com/ns/doap#",
+    "ex": "https://w3id.org/ldso/lifecycle/example#",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "geo": "http://www.opengis.net/ont/geosparql#",
+    "ldso": "https://w3id.org/ldso/core#",
+    "life": "https://w3id.org/ldso/lifecycle#",
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "org": "http://www.w3.org/ns/org#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "prof": "http://www.w3.org/ns/dx/prof/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "qb": "http://purl.org/linked-data/cube#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "https://schema.org/",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "ssn": "http://www.w3.org/ns/ssn/",
+    "time": "http://www.w3.org/2006/time#",
+    "vann": "http://purl.org/vocab/vann/",
+    "void": "http://rdfs.org/ns/void#",
+    "wgs": "https://www.w3.org/2003/01/geo/wgs84_pos#",
+    "xml": "http://www.w3.org/XML/1998/namespace",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
   },
   "@graph": [
-
     {
-      "@id": "ex:USMCA_Original",
-      "@type": ["ldso:LegalDocument", "life:VersionedResource"],
-      "prefLabel": "United States–Mexico–Canada Agreement (Original, 2020)",
-      "issued": "2020-07-01",
-      "effectiveFrom": "2020-07-01",
-      "stateLabel": "Effective",
-      "effectiveFromEvent": "ex:EIF_USMCA_2020"
+      "@id": "ex:USMCA_Art2_5",
+      "@type": [
+        "ldso:Article",
+        "life:VersionedResource"
+      ],
+      "ldso:partOf": {
+        "@id": "ex:USMCA_Chapter2"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "USMCA Article 2.5 — Tariff Elimination"
+      }
     },
-
     {
-      "@id": "ex:EIF_USMCA_2020",
-      "@type": "life:EntryIntoForce",
-      "prefLabel": "USMCA Entry into Force — 2020-07-01",
-      "eventDate": "2020-07-01",
-      "affects": "ex:USMCA_Original",
-      "changeDescription": "USMCA enters into force upon domestic ratification by all three parties."
+      "@id": "ex:PolicyExpiry_Section4_2024",
+      "@type": "life:Expiration",
+      "life:affects": {
+        "@id": "ex:Policy_TA_Section4_v1"
+      },
+      "life:eventDate": {
+        "@type": "xsd:date",
+        "@value": "2024-12-31"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "TA Insurance Policy Section 4 — Natural Expiry 2024-12-31"
+      }
     },
-
-    {
-      "@id": "ex:USMCA_AmendmentProtocol_2028",
-      "@type": ["ldso:LegalDocument", "life:VersionedResource"],
-      "prefLabel": "USMCA Amendment Protocol 2028",
-      "issued": "2028-01-15",
-      "amends": "ex:USMCA_Original",
-      "effectiveFrom": "2028-03-01",
-      "stateLabel": "Effective",
-      "effectiveFromEvent": "ex:EIF_Amendment_2028"
-    },
-
-    {
-      "@id": "ex:USMCA_Art2_5_Para3_v1",
-      "@type": "life:VersionedProvision",
-      "prefLabel": "USMCA Art. 2.5, Para. 3 — Original Tariff Schedule (v1)",
-      "description": "Original tariff elimination schedule for automotive parts under Annex 2-B, staged over ten years.",
-      "isPartOf": "ex:USMCA_Art2_5",
-      "effectiveFrom": "2020-07-01",
-      "effectiveTo": "2028-02-28",
-      "versionNumber": "1",
-      "stateLabel": "Deprecated",
-      "wasDerivedFrom": "ex:USMCA_Original",
-      "nextVersion": "ex:USMCA_Art2_5_Para3_v2",
-      "supersededBy": "ex:USMCA_Art2_5_Para3_v2"
-    },
-
-    {
-      "@id": "ex:Instr_2028_Art2_5_Para3",
-      "@type": "life:AmendmentInstruction",
-      "prefLabel": "Amendment Instruction 2028 — Art. 2.5, Para. 3",
-      "modifies": "ex:USMCA_Art2_5_Para3_v1",
-      "modificationDate": "2028-01-15",
-      "changeDescription": "Article 2.5, paragraph 3 is replaced in its entirety with a revised tariff reduction schedule for steel and aluminium products.",
-      "source": "ex:USMCA_AmendmentProtocol_2028",
-      "wasAttributedTo": "ex:USMCA_AmendmentProtocol_2028"
-    },
-
-    {
-      "@id": "ex:Sub_2028_Art2_5_Para3",
-      "@type": ["life:Substitution", "life:EffectiveModification"],
-      "prefLabel": "Substitution — Art. 2.5 Para. 3 (2028 Amendment Protocol)",
-      "derivedFromInstruction": "ex:Instr_2028_Art2_5_Para3",
-      "replaces": "ex:USMCA_Art2_5_Para3_v1",
-      "createsVersion": "ex:USMCA_Art2_5_Para3_v2",
-      "eventDate": "2028-03-01",
-      "changeDescription": "Substitution effective 2028-03-01 per USMCA Amendment Protocol 2028, Art. 4(1).",
-      "wasGeneratedBy": "ex:EIF_Amendment_2028"
-    },
-
-    {
-      "@id": "ex:USMCA_Art2_5_Para3_v2",
-      "@type": "life:VersionedProvision",
-      "prefLabel": "USMCA Art. 2.5, Para. 3 — Revised Tariff Schedule (v2)",
-      "description": "Revised schedule providing accelerated tariff phase-out for HS Chapters 72 and 76; full elimination by 2030.",
-      "isPartOf": "ex:USMCA_Art2_5",
-      "effectiveFrom": "2028-03-01",
-      "versionNumber": "2",
-      "stateLabel": "Effective",
-      "supersedes": "ex:USMCA_Art2_5_Para3_v1",
-      "previousVersion": "ex:USMCA_Art2_5_Para3_v1",
-      "wasDerivedFrom": "ex:Sub_2028_Art2_5_Para3"
-    },
-
-    {
-      "@id": "ex:EIF_Amendment_2028",
-      "@type": "life:EntryIntoForce",
-      "prefLabel": "USMCA Amendment Protocol 2028 — Entry into Force",
-      "eventDate": "2028-03-01",
-      "affects": [
-        "ex:USMCA_AmendmentProtocol_2028",
-        "ex:USMCA_Art2_5_Para3_v2"
-      ]
-    },
-
-    {
-      "@id": "ex:Transition_Para3_v1_Deprecated",
-      "@type": "life:LegalStateTransition",
-      "prefLabel": "Art. 2.5 Para. 3 v1 — Effective → Deprecated",
-      "transitionsFrom": "life:StateEffective",
-      "transitionsTo": "life:StateDeprecated",
-      "eventDate": "2028-03-01",
-      "affects": "ex:USMCA_Art2_5_Para3_v1"
-    },
-
     {
       "@id": "ex:Transition_Para3_v2_Effective",
       "@type": "life:LegalStateTransition",
-      "prefLabel": "Art. 2.5 Para. 3 v2 — Pending → Effective",
-      "transitionsFrom": "life:StatePending",
-      "transitionsTo": "life:StateEffective",
-      "eventDate": "2028-03-01",
-      "affects": "ex:USMCA_Art2_5_Para3_v2"
+      "life:affects": {
+        "@id": "ex:USMCA_Art2_5_Para3_v2"
+      },
+      "life:eventDate": {
+        "@type": "xsd:date",
+        "@value": "2028-03-01"
+      },
+      "life:transitionsFrom": {
+        "@id": "life:StatePending"
+      },
+      "life:transitionsTo": {
+        "@id": "life:StateEffective"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Art. 2.5 Para. 3 v2 — Pending → Effective"
+      }
     },
-
     {
-      "@id": "ex:Consolidated_USMCA_2028",
-      "@type": "life:Consolidation",
-      "prefLabel": "USMCA Consolidated Text (as of 2028-03-01)",
-      "consolidates": [
-        "ex:USMCA_Original",
-        "ex:USMCA_AmendmentProtocol_2028"
-      ],
-      "consolidationDate": "2028-03-01",
-      "eventDate": "2028-03-01",
-      "changeDescription": "Consolidated USMCA incorporating all amendments in force as of 2028-03-01."
+      "@id": "ex:Ins_2025_Section4_v2",
+      "@type": "life:Insertion",
+      "life:derivedFromInstruction": {
+        "@id": "ex:Endorsement_2024_Section4_Extension"
+      },
+      "life:eventDate": {
+        "@type": "xsd:date",
+        "@value": "2025-01-01"
+      },
+      "life:inserts": {
+        "@id": "ex:Policy_TA_Section4_v2"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Insertion — Renewed Section 4 (2025 Endorsement)"
+      }
     },
-
-    {
-      "@id": "ex:Consolidated_Art2_5_Para3",
-      "@type": "life:ConsolidatedProvision",
-      "prefLabel": "USMCA Art. 2.5 Para. 3 — Consolidated (2028-03-01)",
-      "description": "Consolidated version of Art. 2.5 Para. 3 as in force from 2028-03-01.",
-      "derivedFromConsolidation": "ex:Consolidated_USMCA_2028",
-      "derivedFromProvision": [
-        "ex:USMCA_Art2_5_Para3_v1",
-        "ex:USMCA_Art2_5_Para3_v2"
-      ],
-      "effectiveFrom": "2028-03-01",
-      "versionNumber": "consolidated-2028-03-01",
-      "stateLabel": "Consolidated"
-    },
-
     {
       "@id": "ex:Policy_TA_Section4_v1",
       "@type": "life:VersionedProvision",
-      "prefLabel": "TA Insurance Policy — Section 4 — Premium Schedule (v1)",
-      "description": "Premium schedule for temporary admission bonds on automotive parts, valid 2023–2024.",
-      "effectiveFrom": "2023-01-01",
-      "effectiveTo": "2024-12-31",
-      "versionNumber": "1",
-      "stateLabel": "Expired"
+      "dct:description": {
+        "@language": "en",
+        "@value": "Premium schedule for temporary admission bonds on automotive parts, valid 2023–2024."
+      },
+      "ldso:partOf": {
+        "@id": "ex:InsurancePolicy_TA_2023"
+      },
+      "life:effectiveFrom": {
+        "@type": "xsd:date",
+        "@value": "2023-01-01"
+      },
+      "life:effectiveTo": {
+        "@type": "xsd:date",
+        "@value": "2024-12-31"
+      },
+      "life:stateLabel": "Expired",
+      "life:versionNumber": "1",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "TA Insurance Policy — Section 4 — Premium Schedule (v1)"
+      }
     },
-
+    {
+      "@id": "ex:BIT_2015",
+      "@type": [
+        "ldso:Document",
+        "life:VersionedResource"
+      ],
+      "dct:language": "en",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Bilateral Investment Treaty 2015"
+      },
+      "life:effectiveFrom": {
+        "@type": "xsd:date",
+        "@value": "2015-01-01"
+      },
+      "life:stateLabel": "Effective",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Bilateral Investment Treaty 2015 (BIT-2015)"
+      }
+    },
+    {
+      "@id": "ex:Transition_Para3_v1_Deprecated",
+      "@type": "life:LegalStateTransition",
+      "life:affects": {
+        "@id": "ex:USMCA_Art2_5_Para3_v1"
+      },
+      "life:eventDate": {
+        "@type": "xsd:date",
+        "@value": "2028-03-01"
+      },
+      "life:transitionsFrom": {
+        "@id": "life:StateEffective"
+      },
+      "life:transitionsTo": {
+        "@id": "life:StateDeprecated"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Art. 2.5 Para. 3 v1 — Effective → Deprecated"
+      }
+    },
+    {
+      "@id": "ex:Consolidated_Art2_5_Para3",
+      "@type": "life:ConsolidatedProvision",
+      "dct:description": {
+        "@language": "en",
+        "@value": "Consolidated version of Art. 2.5 Para. 3 as in force from\n2028-03-01, integrating the 2028 Amendment Protocol changes."
+      },
+      "life:derivedFromConsolidation": {
+        "@id": "ex:Consolidated_USMCA_2028"
+      },
+      "life:derivedFromProvision": [
+        {
+          "@id": "ex:USMCA_Art2_5_Para3_v1"
+        },
+        {
+          "@id": "ex:USMCA_Art2_5_Para3_v2"
+        }
+      ],
+      "life:effectiveFrom": {
+        "@type": "xsd:date",
+        "@value": "2028-03-01"
+      },
+      "life:stateLabel": "Consolidated",
+      "life:versionNumber": "consolidated-2028-03-01",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "USMCA Art. 2.5 Para. 3 — Consolidated (2028-03-01)"
+      }
+    },
+    {
+      "@id": "ex:USMCA_AmendmentProtocol_2028",
+      "@type": [
+        "ldso:Document",
+        "life:VersionedResource"
+      ],
+      "dct:issued": {
+        "@type": "xsd:date",
+        "@value": "2028-01-15"
+      },
+      "dct:language": "en",
+      "dct:title": {
+        "@language": "en",
+        "@value": "USMCA Amendment Protocol 2028"
+      },
+      "life:amends": {
+        "@id": "ex:USMCA_Original"
+      },
+      "life:effectiveFrom": {
+        "@type": "xsd:date",
+        "@value": "2028-03-01"
+      },
+      "life:effectiveFromEvent": {
+        "@id": "ex:EIF_Amendment_2028"
+      },
+      "life:stateLabel": "Effective",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "USMCA Amendment Protocol 2028"
+      }
+    },
+    {
+      "@id": "ex:Instr_Repeal_BIT_Art12",
+      "@type": "life:AmendmentInstruction",
+      "dct:source": {
+        "@id": "ex:BIT_TerminationProtocol_2025"
+      },
+      "life:changeDescription": {
+        "@language": "en",
+        "@value": "Article 12 of the Bilateral Investment Treaty 2015 is hereby\nrepealed with effect from 1 June 2026. Pending arbitrations commenced before\nthat date continue to be governed by Article 12 until their conclusion."
+      },
+      "life:eventDate": {
+        "@type": "xsd:date",
+        "@value": "2025-12-01"
+      },
+      "life:modificationDate": {
+        "@type": "xsd:date",
+        "@value": "2025-12-01"
+      },
+      "life:modifies": {
+        "@id": "ex:BIT_Art12_v1"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Repeal Instruction — BIT-2015 Article 12"
+      }
+    },
+    {
+      "@id": "ex:USMCA_Original",
+      "@type": [
+        "ldso:Document",
+        "life:VersionedResource"
+      ],
+      "dct:issued": {
+        "@type": "xsd:date",
+        "@value": "2020-07-01"
+      },
+      "dct:language": "en",
+      "dct:title": {
+        "@language": "en",
+        "@value": "United States–Mexico–Canada Agreement (Original, 2020)"
+      },
+      "life:effectiveFrom": {
+        "@type": "xsd:date",
+        "@value": "2020-07-01"
+      },
+      "life:effectiveFromEvent": {
+        "@id": "ex:EIF_USMCA_2020"
+      },
+      "life:stateLabel": "Effective",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "United States–Mexico–Canada Agreement (Original, 2020)"
+      }
+    },
+    {
+      "@id": "ex:InsurancePolicy_TA_2023",
+      "@type": [
+        "ldso:Document",
+        "life:VersionedResource"
+      ],
+      "dct:language": "en",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Temporary Admission Insurance Policy — Auto Parts (2023)"
+      },
+      "life:effectiveFrom": {
+        "@type": "xsd:date",
+        "@value": "2023-01-01"
+      },
+      "life:stateLabel": "Effective",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Temporary Admission Insurance Policy — Auto Parts (2023)"
+      }
+    },
+    {
+      "@id": "ex:EIF_USMCA_2020",
+      "@type": "life:EntryIntoForce",
+      "life:affects": {
+        "@id": "ex:USMCA_Original"
+      },
+      "life:changeDescription": {
+        "@language": "en",
+        "@value": "USMCA enters into force upon completion of domestic ratification by all three parties."
+      },
+      "life:eventDate": {
+        "@type": "xsd:date",
+        "@value": "2020-07-01"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "USMCA Entry into Force — 2020-07-01"
+      }
+    },
+    {
+      "@id": "ex:Consolidated_USMCA_2028",
+      "@type": "life:Consolidation",
+      "life:changeDescription": {
+        "@language": "en",
+        "@value": "Consolidated text of USMCA incorporating the original agreement\nand all amendments in force as of 2028-03-01."
+      },
+      "life:consolidates": [
+        {
+          "@id": "ex:USMCA_Original"
+        },
+        {
+          "@id": "ex:USMCA_AmendmentProtocol_2028"
+        }
+      ],
+      "life:consolidationDate": {
+        "@type": "xsd:date",
+        "@value": "2028-03-01"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "USMCA Consolidated Text (as of 2028-03-01)"
+      }
+    },
+    {
+      "@id": "ex:Repeal_BIT_Art12",
+      "@type": [
+        "life:Repeal",
+        "life:EffectiveModification"
+      ],
+      "life:changeDescription": {
+        "@language": "en",
+        "@value": "Express repeal of ISDS provision per Termination Protocol 2025."
+      },
+      "life:derivedFromInstruction": {
+        "@id": "ex:Instr_Repeal_BIT_Art12"
+      },
+      "life:eventDate": {
+        "@type": "xsd:date",
+        "@value": "2026-06-01"
+      },
+      "life:repeals": {
+        "@id": "ex:BIT_Art12_v1"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Repeal — BIT-2015 Article 12 (effective 2026-06-01)"
+      }
+    },
+    {
+      "@id": "ex:BIT_Art12_v1",
+      "@type": [
+        "life:VersionedProvision",
+        "life:DeprecatedProvision"
+      ],
+      "ldso:partOf": {
+        "@id": "ex:BIT_2015"
+      },
+      "life:effectiveFrom": {
+        "@type": "xsd:date",
+        "@value": "2015-01-01"
+      },
+      "life:effectiveTo": {
+        "@type": "xsd:date",
+        "@value": "2026-05-31"
+      },
+      "life:stateLabel": "Deprecated",
+      "life:versionNumber": "1",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "BIT-2015 Article 12 — Investor–State Dispute Settlement (v1)"
+      }
+    },
+    {
+      "@id": "ex:USMCA_Art2_5_Para3_v2",
+      "@type": "life:VersionedProvision",
+      "dct:description": {
+        "@language": "en",
+        "@value": "Revised tariff elimination schedule providing for accelerated\nphase-out of tariffs on steel and aluminium products. Tariffs on goods\nclassified under HS Chapters 72 and 76 are eliminated in full by 2030."
+      },
+      "ldso:partOf": {
+        "@id": "ex:USMCA_Art2_5"
+      },
+      "life:effectiveFrom": {
+        "@type": "xsd:date",
+        "@value": "2028-03-01"
+      },
+      "life:previousVersion": {
+        "@id": "ex:USMCA_Art2_5_Para3_v1"
+      },
+      "life:stateLabel": "Effective",
+      "life:supersedes": {
+        "@id": "ex:USMCA_Art2_5_Para3_v1"
+      },
+      "life:versionNumber": "2",
+      "prov:wasDerivedFrom": {
+        "@id": "ex:Sub_2028_Art2_5_Para3"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "USMCA Art. 2.5, Para. 3 — Revised Tariff Schedule (v2)"
+      }
+    },
+    {
+      "@id": "ex:Endorsement_2024_Section4_Extension",
+      "@type": "life:AmendmentInstruction",
+      "dct:source": {
+        "@id": "ex:InsurancePolicy_TA_Endorsement_2024"
+      },
+      "life:changeDescription": {
+        "@language": "en",
+        "@value": "Section 4 of the Temporary Admission Insurance Policy is extended\nfor an additional two-year period (2025-01-01 to 2026-12-31) with a revised\npremium schedule reflecting updated risk assessments."
+      },
+      "life:eventDate": {
+        "@type": "xsd:date",
+        "@value": "2024-11-01"
+      },
+      "life:modificationDate": {
+        "@type": "xsd:date",
+        "@value": "2024-11-01"
+      },
+      "life:modifies": {
+        "@id": "ex:Policy_TA_Section4_v1"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "2024 Endorsement — Section 4 Two-Year Extension"
+      }
+    },
+    {
+      "@id": "ex:USMCA_Art2_5_Para3_v1",
+      "@type": "life:VersionedProvision",
+      "dct:description": {
+        "@language": "en",
+        "@value": "Original tariff elimination schedule for automotive parts under\nAnnex 2-B, providing for staged reduction over ten years from entry into\nforce."
+      },
+      "ldso:partOf": {
+        "@id": "ex:USMCA_Art2_5"
+      },
+      "life:effectiveFrom": {
+        "@type": "xsd:date",
+        "@value": "2020-07-01"
+      },
+      "life:effectiveTo": {
+        "@type": "xsd:date",
+        "@value": "2028-02-28"
+      },
+      "life:nextVersion": {
+        "@id": "ex:USMCA_Art2_5_Para3_v2"
+      },
+      "life:stateLabel": "Deprecated",
+      "life:supersededBy": {
+        "@id": "ex:USMCA_Art2_5_Para3_v2"
+      },
+      "life:versionNumber": "1",
+      "prov:wasDerivedFrom": {
+        "@id": "ex:USMCA_Original"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "USMCA Art. 2.5, Para. 3 — Original Tariff Schedule (v1)"
+      }
+    },
+    {
+      "@id": "ex:EIF_Amendment_2028",
+      "@type": "life:EntryIntoForce",
+      "life:affects": [
+        {
+          "@id": "ex:USMCA_AmendmentProtocol_2028"
+        },
+        {
+          "@id": "ex:USMCA_Art2_5_Para3_v2"
+        }
+      ],
+      "life:eventDate": {
+        "@type": "xsd:date",
+        "@value": "2028-03-01"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "USMCA Amendment Protocol 2028 — Entry into Force"
+      }
+    },
+    {
+      "@id": "ex:InsurancePolicy_TA_Endorsement_2024",
+      "@type": "ldso:Document",
+      "dct:language": "en",
+      "dct:title": {
+        "@language": "en",
+        "@value": "Endorsement to TA Insurance Policy (November 2024)"
+      },
+      "life:amends": {
+        "@id": "ex:InsurancePolicy_TA_2023"
+      },
+      "life:effectiveFrom": {
+        "@type": "xsd:date",
+        "@value": "2025-01-01"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Endorsement to TA Insurance Policy (November 2024)"
+      }
+    },
+    {
+      "@id": "ex:BIT_TerminationProtocol_2025",
+      "@type": "ldso:Document",
+      "dct:language": "en",
+      "dct:title": {
+        "@language": "en",
+        "@value": "BIT-2015 Termination Protocol (2025)"
+      },
+      "life:amends": {
+        "@id": "ex:BIT_2015"
+      },
+      "life:effectiveFrom": {
+        "@type": "xsd:date",
+        "@value": "2026-06-01"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "BIT-2015 Termination Protocol (2025)"
+      }
+    },
     {
       "@id": "ex:Policy_TA_Section4_v2",
       "@type": "life:VersionedProvision",
-      "prefLabel": "TA Insurance Policy — Section 4 — Premium Schedule (v2, Extended)",
-      "description": "Revised premium schedule for temporary admission bonds, valid 2025–2026.",
-      "effectiveFrom": "2025-01-01",
-      "effectiveTo": "2026-12-31",
-      "versionNumber": "2",
-      "stateLabel": "Effective",
-      "supersedes": "ex:Policy_TA_Section4_v1",
-      "previousVersion": "ex:Policy_TA_Section4_v1"
+      "dct:description": {
+        "@language": "en",
+        "@value": "Revised premium schedule for temporary admission bonds, valid 2025–2026."
+      },
+      "ldso:partOf": {
+        "@id": "ex:InsurancePolicy_TA_2023"
+      },
+      "life:effectiveFrom": {
+        "@type": "xsd:date",
+        "@value": "2025-01-01"
+      },
+      "life:effectiveTo": {
+        "@type": "xsd:date",
+        "@value": "2026-12-31"
+      },
+      "life:previousVersion": {
+        "@id": "ex:Policy_TA_Section4_v1"
+      },
+      "life:stateLabel": "Effective",
+      "life:supersedes": {
+        "@id": "ex:Policy_TA_Section4_v1"
+      },
+      "life:versionNumber": "2",
+      "prov:wasDerivedFrom": {
+        "@id": "ex:Ins_2025_Section4_v2"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "TA Insurance Policy — Section 4 — Premium Schedule (v2, Extended)"
+      }
     },
-
     {
-      "@id": "ex:BIT_Art12_v1",
-      "@type": ["life:VersionedProvision", "life:DeprecatedProvision"],
-      "prefLabel": "BIT-2015 Article 12 — ISDS (Repealed)",
-      "effectiveFrom": "2015-01-01",
-      "effectiveTo": "2026-05-31",
-      "versionNumber": "1",
-      "stateLabel": "Repealed"
+      "@id": "ex:Instr_2028_Art2_5_Para3",
+      "@type": "life:AmendmentInstruction",
+      "dct:source": {
+        "@id": "ex:USMCA_AmendmentProtocol_2028"
+      },
+      "life:changeDescription": {
+        "@language": "en",
+        "@value": "Article 2.5, paragraph 3 is hereby replaced in its entirety with\na revised tariff reduction schedule reflecting accelerated elimination for\nsteel and aluminium products, effective 1 March 2028."
+      },
+      "life:modificationDate": {
+        "@type": "xsd:date",
+        "@value": "2028-01-15"
+      },
+      "life:modifies": {
+        "@id": "ex:USMCA_Art2_5_Para3_v1"
+      },
+      "prov:wasAttributedTo": {
+        "@id": "ex:USMCA_AmendmentProtocol_2028"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Amendment Instruction 2028 — Art. 2.5, Para. 3"
+      }
     },
-
     {
-      "@id": "ex:Repeal_BIT_Art12",
-      "@type": ["life:Repeal", "life:EffectiveModification"],
-      "prefLabel": "Repeal — BIT-2015 Article 12 (effective 2026-06-01)",
-      "derivedFromInstruction": "ex:Instr_Repeal_BIT_Art12",
-      "repeals": "ex:BIT_Art12_v1",
-      "eventDate": "2026-06-01",
-      "changeDescription": "Express repeal of ISDS provision per Termination Protocol 2025."
+      "@id": "ex:Sub_2028_Art2_5_Para3",
+      "@type": [
+        "life:Substitution",
+        "life:EffectiveModification"
+      ],
+      "life:changeDescription": {
+        "@language": "en",
+        "@value": "Substitution effective 2028-03-01 per USMCA Amendment Protocol 2028, Art. 4(1)."
+      },
+      "life:createsVersion": {
+        "@id": "ex:USMCA_Art2_5_Para3_v2"
+      },
+      "life:derivedFromInstruction": {
+        "@id": "ex:Instr_2028_Art2_5_Para3"
+      },
+      "life:eventDate": {
+        "@type": "xsd:date",
+        "@value": "2028-03-01"
+      },
+      "life:replaces": {
+        "@id": "ex:USMCA_Art2_5_Para3_v1"
+      },
+      "prov:wasGeneratedBy": {
+        "@id": "ex:EIF_Amendment_2028"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Substitution — Art. 2.5 Para. 3 (2028 Amendment Protocol)"
+      }
+    },
+    {
+      "@id": "ex:Transition_BIT_Art12_Repealed",
+      "@type": "life:LegalStateTransition",
+      "life:affects": {
+        "@id": "ex:BIT_Art12_v1"
+      },
+      "life:eventDate": {
+        "@type": "xsd:date",
+        "@value": "2026-06-01"
+      },
+      "life:transitionsFrom": {
+        "@id": "life:StateEffective"
+      },
+      "life:transitionsTo": {
+        "@id": "life:StateRepealed"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "BIT Art. 12 v1 — Effective → Repealed"
+      }
+    },
+    {
+      "@id": "ex:USMCA_Chapter2",
+      "@type": "ldso:Chapter",
+      "ldso:partOf": {
+        "@id": "ex:USMCA_Original"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "USMCA Chapter 2 — National Treatment and Market Access for Goods"
+      }
     }
-
   ]
 }

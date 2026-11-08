@@ -7,6 +7,7 @@
 @prefix vann: <http://purl.org/vocab/vann/> .
 @prefix leg:  <https://w3id.org/ldso/semantics#> .
 @prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LDSO-Semantics: Legal Semantic Annotation Ontology
@@ -221,9 +222,9 @@ ex:Def_TemporaryAdmission
   a leg:Definition ;
   leg:annotates ex:art_1 ;
   leg:definedTerm "temporary admission"@en ;
-  leg:definitionText """Temporary admission means the customs procedure
+  leg:definitionText '''Temporary admission means the customs procedure
 under which certain goods can be brought into a customs territory
-conditionally relieved from payment of import duties and taxes."""@en ."""@en ;
+conditionally relieved from payment of import duties and taxes.'''@en ."""@en ;
   rdfs:isDefinedBy <https://w3id.org/ldso/semantics> .
 
 
