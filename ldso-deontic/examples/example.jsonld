@@ -1,0 +1,1302 @@
+{
+  "@context": {
+    "brick": "https://brickschema.org/schema/Brick#",
+    "csvw": "http://www.w3.org/ns/csvw#",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcam": "http://purl.org/dc/dcam/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dcmitype": "http://purl.org/dc/dcmitype/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "deo": "https://w3id.org/ldso/deontic#",
+    "doap": "http://usefulinc.com/ns/doap#",
+    "ent": "https://w3id.org/ldso/entities#",
+    "ex": "https://example.org/insurance/",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "geo": "http://www.opengis.net/ont/geosparql#",
+    "ldso": "https://w3id.org/ldso/core#",
+    "leg": "https://w3id.org/ldso/semantics#",
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "ops": "https://w3id.org/ldso/operations#",
+    "org": "http://www.w3.org/ns/org#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "prof": "http://www.w3.org/ns/dx/prof/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "qb": "http://purl.org/linked-data/cube#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "https://schema.org/",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "ssn": "http://www.w3.org/ns/ssn/",
+    "time": "http://www.w3.org/2006/time#",
+    "vann": "http://purl.org/vocab/vann/",
+    "void": "http://rdfs.org/ns/void#",
+    "wgs": "https://www.w3.org/2003/01/geo/wgs84_pos#",
+    "xml": "http://www.w3.org/XML/1998/namespace",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "ex:clause_8",
+      "@type": "ldso:LegalElement",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Clause 8 — Claims payment"
+      }
+    },
+    {
+      "@id": "ex:CoveredClaim",
+      "@type": "owl:Class",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "covered claim"
+      }
+    },
+    {
+      "@id": "ex:fs_regulator",
+      "@type": "deo:FactualStatement",
+      "deo:asserts": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb32"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb32",
+      "@type": "deo:Literal",
+      "deo:hasArgument": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb33"
+      },
+      "deo:predicate": {
+        "@id": "ex:competentRegulator"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb33",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:regulator"
+      }
+    },
+    {
+      "@id": "ex:sig_paid_late_fee",
+      "@type": "deo:PredicateSignature",
+      "deo:hasArgumentSlot": [
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb5"
+        },
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb6"
+        }
+      ],
+      "deo:isQuantity": false,
+      "deo:keyLength": 1,
+      "deo:signaturePredicate": {
+        "@id": "ex:paidLateFee"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb5",
+      "@type": "deo:ArgumentSlot",
+      "deo:argumentIndex": 0,
+      "deo:valueType": {
+        "@id": "deo:Individual"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb6",
+      "@type": "deo:ArgumentSlot",
+      "deo:argumentIndex": 1,
+      "deo:valueType": {
+        "@id": "deo:Number"
+      }
+    },
+    {
+      "@id": "ex:clause_11",
+      "@type": "ldso:LegalElement",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Clause 11 — Decisions and access to records"
+      }
+    },
+    {
+      "@id": "ex:dl_10_days",
+      "@type": "ops:Deadline",
+      "ops:deadlineDuration": {
+        "@type": "xsd:duration",
+        "@value": "P10D"
+      }
+    },
+    {
+      "@id": "ex:expr_fee_raw",
+      "@type": "deo:Expression",
+      "deo:hasOperand": [
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb25"
+        },
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb26"
+        }
+      ],
+      "deo:operation": {
+        "@id": "deo:Mul"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb25",
+      "@type": "deo:ExpressionOperand",
+      "deo:operandValue": {
+        "@type": "xsd:decimal",
+        "@value": "0.015"
+      },
+      "deo:position": 1
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb26",
+      "@type": "deo:ExpressionOperand",
+      "deo:operandValue": {
+        "@id": "ex:var_amount"
+      },
+      "deo:position": 2
+    },
+    {
+      "@id": "ex:regulator",
+      "@type": "ent:NamedEntity",
+      "ent:entityType": {
+        "@id": "ent:Organization"
+      },
+      "ent:href": {
+        "@type": "xsd:anyURI",
+        "@value": "https://example.org/orgs/difs"
+      },
+      "ent:showAs": {
+        "@language": "en",
+        "@value": "Department of Insurance and Financial Services"
+      }
+    },
+    {
+      "@id": "ex:expr_fee",
+      "@type": "deo:Expression",
+      "deo:hasOperand": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb24"
+      },
+      "deo:operation": {
+        "@id": "deo:Round"
+      },
+      "deo:places": 2,
+      "deo:roundingMode": {
+        "@id": "deo:HalfEven"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb24",
+      "@type": "deo:ExpressionOperand",
+      "deo:operandValue": {
+        "@id": "ex:expr_fee_raw"
+      },
+      "deo:position": 1
+    },
+    {
+      "@id": "ex:var_holder",
+      "@type": "deo:Variable",
+      "rdfs:label": "?holder"
+    },
+    {
+      "@id": "ex:var_amount",
+      "@type": "deo:Variable",
+      "rdfs:label": "?amount"
+    },
+    {
+      "@id": "ex:r_pay",
+      "@type": "deo:PrescriptiveRule",
+      "deo:activatedBy": {
+        "@id": "ex:c_approved"
+      },
+      "deo:formalizes": {
+        "@id": "ex:Oblig_Clause8"
+      },
+      "deo:hasCondition": [
+        {
+          "@id": "ex:c_covered"
+        },
+        {
+          "@id": "ex:c_insurer_of"
+        },
+        {
+          "@id": "ex:c_approved"
+        },
+        {
+          "@id": "ex:c_late_fee_amount"
+        }
+      ],
+      "deo:hasConsequent": {
+        "@id": "ex:chain_pay"
+      },
+      "deo:legalSource": {
+        "@id": "ex:policy_doc"
+      },
+      "deo:paraphrase": {
+        "@language": "en",
+        "@value": "The insurer must pay an approved covered claim within 30 days of approval; failing that, it must pay at least the late fee within 10 days. The rule reads the late fee, computed from the recorded claim amount, so without a claimAmount record its obligations are Unknown."
+      },
+      "deo:strength": {
+        "@id": "deo:DefeasibleStrength"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Clause 8: pay an approved covered claim"
+      }
+    },
+    {
+      "@id": "ex:chain_pay",
+      "@type": "deo:ReparationChain",
+      "deo:hasChainElement": [
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb14"
+        },
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb15"
+        }
+      ]
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb14",
+      "@type": "deo:ChainElement",
+      "deo:position": 1,
+      "deo:statement": {
+        "@id": "ex:obl_pay"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb15",
+      "@type": "deo:ChainElement",
+      "deo:position": 2,
+      "deo:statement": {
+        "@id": "ex:obl_late_fee"
+      }
+    },
+    {
+      "@id": "ex:ov_endorsement_deadline",
+      "@type": "deo:Override",
+      "deo:basisProvision": {
+        "@id": "ex:endorsement_3"
+      },
+      "deo:overridden": {
+        "@id": "ex:r_pay"
+      },
+      "deo:overrideBasis": {
+        "@id": "deo:ExplicitClause"
+      },
+      "deo:overriding": {
+        "@id": "ex:r_flood_endorsement"
+      }
+    },
+    {
+      "@id": "ex:act_compensate",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb11"
+      },
+      "deo:predicate": {
+        "@id": "ex:compensatedDelay"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb11",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "ex:obl_pay",
+      "@type": "deo:Obligation",
+      "deo:action": {
+        "@id": "ex:act_pay"
+      },
+      "deo:bearer": {
+        "@id": "ex:var_insurer"
+      },
+      "deo:deadline": {
+        "@id": "ex:dl_30_days"
+      },
+      "deo:obligationType": {
+        "@id": "deo:Achievement"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "the insurer must pay the claim within 30 days"
+      }
+    },
+    {
+      "@id": "ex:obl_notify",
+      "@type": "deo:Obligation",
+      "deo:action": {
+        "@id": "ex:act_notify"
+      },
+      "deo:bearer": {
+        "@id": "ex:var_insurer"
+      },
+      "deo:deadline": {
+        "@id": "ex:dl_15_days"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "the insurer must notify its decision within 15 days"
+      }
+    },
+    {
+      "@id": "ex:act_pay_late_fee",
+      "@type": "deo:Action",
+      "deo:hasArgument": [
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb8"
+        },
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb9"
+        }
+      ],
+      "deo:predicate": {
+        "@id": "ex:paidLateFee"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb8",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb9",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 1,
+      "deo:argumentValue": {
+        "@id": "ex:var_fee"
+      }
+    },
+    {
+      "@id": "ex:r_notify",
+      "@type": "deo:PrescriptiveRule",
+      "deo:formalizes": {
+        "@id": "ex:Oblig_Clause11"
+      },
+      "deo:hasCondition": [
+        {
+          "@id": "ex:c_filed"
+        },
+        {
+          "@id": "ex:c_insurer_of"
+        }
+      ],
+      "deo:hasConsequent": {
+        "@id": "ex:obl_notify"
+      },
+      "deo:strength": {
+        "@id": "deo:StrictStrength"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Clause 11(1): notify the decision"
+      }
+    },
+    {
+      "@id": "ex:clause_9",
+      "@type": "ldso:LegalElement",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Clause 9 — Exclusions"
+      }
+    },
+    {
+      "@id": "ex:FloodClaim",
+      "@type": "owl:Class",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "flood claim"
+      }
+    },
+    {
+      "@id": "ex:obl_compensate",
+      "@type": "deo:Obligation",
+      "deo:action": {
+        "@id": "ex:act_compensate"
+      },
+      "deo:bearer": {
+        "@id": "ex:var_insurer"
+      },
+      "deo:deadline": {
+        "@id": "ex:dl_30_days"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "the insurer must compensate the delay within 30 days"
+      }
+    },
+    {
+      "@id": "ex:obl_pay_flood",
+      "@type": "deo:Obligation",
+      "deo:action": {
+        "@id": "ex:act_pay"
+      },
+      "deo:bearer": {
+        "@id": "ex:var_insurer"
+      },
+      "deo:deadline": {
+        "@id": "ex:dl_60_days"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "the insurer must pay a flood claim within 60 days"
+      }
+    },
+    {
+      "@id": "ex:policy_doc",
+      "@type": "ldso:LegalResource",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Household policy wording 2026"
+      }
+    },
+    {
+      "@id": "ex:c_late_fee_amount",
+      "@type": "deo:FactCondition",
+      "deo:hasArgument": [
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb22"
+        },
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb23"
+        }
+      ],
+      "deo:predicate": {
+        "@id": "ex:lateFeeAmount"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb22",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb23",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 1,
+      "deo:argumentValue": {
+        "@id": "ex:var_fee"
+      }
+    },
+    {
+      "@id": "ex:sig_claim_amount",
+      "@type": "deo:PredicateSignature",
+      "deo:hasArgumentSlot": [
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb1"
+        },
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb2"
+        }
+      ],
+      "deo:isQuantity": true,
+      "deo:keyLength": 1,
+      "deo:signaturePredicate": {
+        "@id": "ex:claimAmount"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb1",
+      "@type": "deo:ArgumentSlot",
+      "deo:argumentIndex": 0,
+      "deo:valueType": {
+        "@id": "deo:Individual"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb2",
+      "@type": "deo:ArgumentSlot",
+      "deo:argumentIndex": 1,
+      "deo:valueType": {
+        "@id": "deo:Number"
+      }
+    },
+    {
+      "@id": "ex:act_notify",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb10"
+      },
+      "deo:predicate": {
+        "@id": "ex:notified"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb10",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "ex:proh_pay",
+      "@type": "deo:Prohibition",
+      "deo:action": {
+        "@id": "ex:act_pay"
+      },
+      "deo:bearer": {
+        "@id": "ex:var_insurer"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "the insurer is not to pay the claim"
+      }
+    },
+    {
+      "@id": "ex:Oblig_End3",
+      "@type": "leg:Obligation",
+      "leg:annotates": {
+        "@id": "ex:endorsement_3"
+      }
+    },
+    {
+      "@id": "ex:ov_endorsement_over_exclusion",
+      "@type": "deo:Override",
+      "deo:basisProvision": {
+        "@id": "ex:endorsement_3"
+      },
+      "deo:overridden": {
+        "@id": "ex:r_flood_exclusion"
+      },
+      "deo:overrideBasis": {
+        "@id": "deo:LexSpecialis"
+      },
+      "deo:overriding": {
+        "@id": "ex:r_flood_endorsement"
+      }
+    },
+    {
+      "@id": "ex:r_late_payment",
+      "@type": "deo:ConstitutiveRule",
+      "deo:concludes": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb27"
+      },
+      "deo:formalizes": {
+        "@id": "ex:Oblig_Clause8"
+      },
+      "deo:hasCondition": [
+        {
+          "@id": "ex:c_pay_violated"
+        },
+        {
+          "@id": "ex:c_approved"
+        },
+        {
+          "@id": "ex:c_insurer_of"
+        }
+      ],
+      "deo:strength": {
+        "@id": "deo:StrictStrength"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "A missed payment deadline counts as late payment"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb27",
+      "@type": "deo:Literal",
+      "deo:hasArgument": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb28"
+      },
+      "deo:predicate": {
+        "@id": "ex:latePayment"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb28",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "ex:c_requested",
+      "@type": "deo:FactCondition",
+      "deo:hasArgument": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb18"
+      },
+      "deo:predicate": {
+        "@id": "ex:requestedFile"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb18",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "ex:Excep_Clause9",
+      "@type": "leg:Exception",
+      "leg:annotates": {
+        "@id": "ex:clause_9"
+      }
+    },
+    {
+      "@id": "ex:obl_late_fee",
+      "@type": "deo:Obligation",
+      "deo:action": {
+        "@id": "ex:act_pay_late_fee"
+      },
+      "deo:bearer": {
+        "@id": "ex:var_insurer"
+      },
+      "deo:deadline": {
+        "@id": "ex:dl_10_days"
+      },
+      "deo:fulfilmentComparator": {
+        "@id": "ops:GreaterThanOrEqual"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "the insurer must pay at least the late fee within 10 days"
+      }
+    },
+    {
+      "@id": "ex:Oblig_Clause8",
+      "@type": "leg:Obligation",
+      "leg:annotates": {
+        "@id": "ex:clause_8"
+      }
+    },
+    {
+      "@id": "ex:var_insurer",
+      "@type": "deo:Variable",
+      "rdfs:label": "?insurer"
+    },
+    {
+      "@id": "ex:r_flood_exclusion",
+      "@type": "deo:PrescriptiveRule",
+      "deo:formalizes": {
+        "@id": "ex:Excep_Clause9"
+      },
+      "deo:hasCondition": [
+        {
+          "@id": "ex:c_flood"
+        },
+        {
+          "@id": "ex:c_insurer_of"
+        }
+      ],
+      "deo:hasConsequent": {
+        "@id": "ex:proh_pay"
+      },
+      "deo:paraphrase": {
+        "@language": "en",
+        "@value": "A flood claim blocks the obligation to pay (without forbidding payment)."
+      },
+      "deo:strength": {
+        "@id": "deo:DefeaterStrength"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Clause 9: flood damage is excluded"
+      }
+    },
+    {
+      "@id": "ex:c_fee",
+      "@type": "deo:AssignmentCondition",
+      "deo:assigns": {
+        "@id": "ex:var_fee"
+      },
+      "deo:expression": {
+        "@id": "ex:expr_fee"
+      }
+    },
+    {
+      "@id": "ex:var_fee",
+      "@type": "deo:Variable",
+      "rdfs:label": "?fee"
+    },
+    {
+      "@id": "ex:sig_late_fee_amount",
+      "@type": "deo:PredicateSignature",
+      "deo:hasArgumentSlot": [
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb3"
+        },
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb4"
+        }
+      ],
+      "deo:isQuantity": true,
+      "deo:keyLength": 1,
+      "deo:signaturePredicate": {
+        "@id": "ex:lateFeeAmount"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb3",
+      "@type": "deo:ArgumentSlot",
+      "deo:argumentIndex": 0,
+      "deo:valueType": {
+        "@id": "deo:Individual"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb4",
+      "@type": "deo:ArgumentSlot",
+      "deo:argumentIndex": 1,
+      "deo:valueType": {
+        "@id": "deo:Number"
+      }
+    },
+    {
+      "@id": "ex:c_insurer_of",
+      "@type": "deo:PropertyCondition",
+      "deo:object": {
+        "@id": "ex:var_claim"
+      },
+      "deo:property": {
+        "@id": "ex:insurerOf"
+      },
+      "deo:subject": {
+        "@id": "ex:var_insurer"
+      }
+    },
+    {
+      "@id": "ex:right_access",
+      "@type": "deo:Right",
+      "deo:action": {
+        "@id": "ex:act_access"
+      },
+      "deo:auxiliaryParty": {
+        "@id": "ex:var_insurer"
+      },
+      "deo:bearer": {
+        "@id": "ex:var_holder"
+      },
+      "deo:correlative": {
+        "@id": "ex:obl_provide_file"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "the policyholder may access the claim file"
+      }
+    },
+    {
+      "@id": "ex:obl_provide_file",
+      "@type": "deo:Obligation",
+      "deo:action": {
+        "@id": "ex:act_provide_file"
+      },
+      "deo:bearer": {
+        "@id": "ex:var_insurer"
+      },
+      "deo:deadline": {
+        "@id": "ex:dl_10_days"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "the insurer must provide the claim file within 10 days"
+      }
+    },
+    {
+      "@id": "ex:Oblig_Clause11",
+      "@type": "leg:Obligation",
+      "leg:annotates": {
+        "@id": "ex:clause_11"
+      }
+    },
+    {
+      "@id": "ex:c_pay_violated",
+      "@type": "deo:NormCondition",
+      "deo:aboutStatement": {
+        "@id": "ex:obl_pay"
+      },
+      "deo:normState": {
+        "@id": "deo:Violated"
+      }
+    },
+    {
+      "@id": "ex:insurerOf",
+      "@type": "owl:ObjectProperty",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "insurer of"
+      }
+    },
+    {
+      "@id": "ex:r_flood_endorsement",
+      "@type": "deo:PrescriptiveRule",
+      "deo:activatedBy": {
+        "@id": "ex:c_approved"
+      },
+      "deo:formalizes": {
+        "@id": "ex:Oblig_End3"
+      },
+      "deo:hasCondition": [
+        {
+          "@id": "ex:c_flood"
+        },
+        {
+          "@id": "ex:c_flood_endorsed"
+        },
+        {
+          "@id": "ex:c_insurer_of"
+        },
+        {
+          "@id": "ex:c_approved"
+        }
+      ],
+      "deo:hasConsequent": {
+        "@id": "ex:obl_pay_flood"
+      },
+      "deo:paraphrase": {
+        "@language": "en",
+        "@value": "Where the flood endorsement applies, the insurer must pay an approved flood claim within 60 days of approval."
+      },
+      "deo:strength": {
+        "@id": "deo:DefeasibleStrength"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Endorsement 3: flood claims are paid within 60 days"
+      }
+    },
+    {
+      "@id": "ex:michigan",
+      "@type": "ent:NamedEntity",
+      "ent:entityType": {
+        "@id": "ent:Place"
+      },
+      "ent:href": {
+        "@type": "xsd:anyURI",
+        "@value": "https://example.org/places/michigan"
+      },
+      "ent:showAs": {
+        "@language": "en",
+        "@value": "Michigan"
+      }
+    },
+    {
+      "@id": "ex:act_provide_file",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb13"
+      },
+      "deo:predicate": {
+        "@id": "ex:providedFile"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb13",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "ex:c_flood_endorsed",
+      "@type": "deo:FactCondition",
+      "deo:hasArgument": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb19"
+      },
+      "deo:predicate": {
+        "@id": "ex:floodEndorsed"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb19",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "ex:rep_notify_penalty",
+      "@type": "deo:Reparation",
+      "deo:imposes": {
+        "@id": "ex:obl_compensate"
+      },
+      "deo:repairs": {
+        "@id": "ex:obl_notify"
+      },
+      "deo:reparationKind": {
+        "@id": "deo:Penalty"
+      }
+    },
+    {
+      "@id": "ex:r_access",
+      "@type": "deo:PrescriptiveRule",
+      "deo:formalizes": {
+        "@id": "ex:Right_Clause11"
+      },
+      "deo:hasCondition": [
+        {
+          "@id": "ex:c_requested"
+        },
+        {
+          "@id": "ex:c_holder_of"
+        },
+        {
+          "@id": "ex:c_insurer_of"
+        }
+      ],
+      "deo:hasConsequent": {
+        "@id": "ex:right_access"
+      },
+      "deo:strength": {
+        "@id": "deo:DefeasibleStrength"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Clause 11(2): the policyholder's right of access"
+      }
+    },
+    {
+      "@id": "ex:r_late_fee_amount",
+      "@type": "deo:ConstitutiveRule",
+      "deo:concludes": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb29"
+      },
+      "deo:formalizes": {
+        "@id": "ex:Oblig_Clause8"
+      },
+      "deo:hasCondition": [
+        {
+          "@id": "ex:c_claim_amount"
+        },
+        {
+          "@id": "ex:c_fee"
+        }
+      ],
+      "deo:paraphrase": {
+        "@language": "en",
+        "@value": "The late fee of a claim is 1.5% of its amount, rounded half even to two decimal places."
+      },
+      "deo:strength": {
+        "@id": "deo:StrictStrength"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Clause 8: the late fee is 1.5% of the claim amount, to the cent"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb29",
+      "@type": "deo:Literal",
+      "deo:hasArgument": [
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb30"
+        },
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb31"
+        }
+      ],
+      "deo:predicate": {
+        "@id": "ex:lateFeeAmount"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb30",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb31",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 1,
+      "deo:argumentValue": {
+        "@id": "ex:var_fee"
+      }
+    },
+    {
+      "@id": "ex:act_pay",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb7"
+      },
+      "deo:predicate": {
+        "@id": "ex:paid"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb7",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "ex:policy_2026",
+      "@type": "deo:NormativeSystem",
+      "deo:authority": {
+        "@id": "ex:regulator"
+      },
+      "deo:conflictStrategy": {
+        "@id": "deo:AmbiguityBlocking"
+      },
+      "deo:declaresComplete": [
+        {
+          "@id": "ex:paid"
+        },
+        {
+          "@id": "ex:paidLateFee"
+        },
+        {
+          "@id": "ex:notified"
+        },
+        {
+          "@id": "ex:providedFile"
+        }
+      ],
+      "deo:declaresSignature": [
+        {
+          "@id": "ex:sig_claim_amount"
+        },
+        {
+          "@id": "ex:sig_late_fee_amount"
+        },
+        {
+          "@id": "ex:sig_paid_late_fee"
+        }
+      ],
+      "deo:hasFactualStatement": {
+        "@id": "ex:fs_regulator"
+      },
+      "deo:hasOverride": [
+        {
+          "@id": "ex:ov_endorsement_over_exclusion"
+        },
+        {
+          "@id": "ex:ov_endorsement_deadline"
+        }
+      ],
+      "deo:hasReparation": {
+        "@id": "ex:rep_notify_penalty"
+      },
+      "deo:hasRule": [
+        {
+          "@id": "ex:r_pay"
+        },
+        {
+          "@id": "ex:r_flood_exclusion"
+        },
+        {
+          "@id": "ex:r_flood_endorsement"
+        },
+        {
+          "@id": "ex:r_notify"
+        },
+        {
+          "@id": "ex:r_access"
+        },
+        {
+          "@id": "ex:r_late_payment"
+        },
+        {
+          "@id": "ex:r_late_fee_amount"
+        }
+      ],
+      "deo:jurisdiction": {
+        "@id": "ex:michigan"
+      },
+      "deo:legalSource": {
+        "@id": "ex:policy_doc"
+      },
+      "deo:policyType": {
+        "@id": "deo:Agreement"
+      },
+      "deo:utcOffset": -18000,
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Household insurance policy 2026, formalised"
+      }
+    },
+    {
+      "@id": "ex:dl_15_days",
+      "@type": "ops:Deadline",
+      "ops:deadlineDuration": {
+        "@type": "xsd:duration",
+        "@value": "P15D"
+      }
+    },
+    {
+      "@id": "ex:c_holder_of",
+      "@type": "deo:PropertyCondition",
+      "deo:object": {
+        "@id": "ex:var_claim"
+      },
+      "deo:property": {
+        "@id": "ex:holderOf"
+      },
+      "deo:subject": {
+        "@id": "ex:var_holder"
+      }
+    },
+    {
+      "@id": "ex:Right_Clause11",
+      "@type": "leg:Right",
+      "leg:annotates": {
+        "@id": "ex:clause_11"
+      }
+    },
+    {
+      "@id": "ex:c_covered",
+      "@type": "deo:ClassCondition",
+      "deo:classExpression": {
+        "@id": "ex:CoveredClaim"
+      },
+      "deo:subject": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "ex:c_approved",
+      "@type": "deo:FactCondition",
+      "deo:hasArgument": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb16"
+      },
+      "deo:predicate": {
+        "@id": "ex:approved"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb16",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "ex:dl_30_days",
+      "@type": "ops:Deadline",
+      "ops:deadlineDuration": {
+        "@type": "xsd:duration",
+        "@value": "P30D"
+      }
+    },
+    {
+      "@id": "ex:var_claim",
+      "@type": "deo:Variable",
+      "rdfs:label": "?claim"
+    },
+    {
+      "@id": "ex:act_access",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb12"
+      },
+      "deo:predicate": {
+        "@id": "ex:accessedFile"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb12",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "ex:dl_60_days",
+      "@type": "ops:Deadline",
+      "ops:deadlineDuration": {
+        "@type": "xsd:duration",
+        "@value": "P60D"
+      }
+    },
+    {
+      "@id": "ex:endorsement_3",
+      "@type": "ldso:LegalElement",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Endorsement 3 — Flood cover"
+      }
+    },
+    {
+      "@id": "ex:c_filed",
+      "@type": "deo:FactCondition",
+      "deo:hasArgument": {
+        "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb17"
+      },
+      "deo:predicate": {
+        "@id": "ex:filed"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb17",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "ex:c_flood",
+      "@type": "deo:ClassCondition",
+      "deo:classExpression": {
+        "@id": "ex:FloodClaim"
+      },
+      "deo:subject": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "ex:c_claim_amount",
+      "@type": "deo:FactCondition",
+      "deo:hasArgument": [
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb20"
+        },
+        {
+          "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb21"
+        }
+      ],
+      "deo:predicate": {
+        "@id": "ex:claimAmount"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb20",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_claim"
+      }
+    },
+    {
+      "@id": "_:n6e52a8e06b6a4dd9943dde95890b008fb21",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 1,
+      "deo:argumentValue": {
+        "@id": "ex:var_amount"
+      }
+    },
+    {
+      "@id": "ex:holderOf",
+      "@type": "owl:ObjectProperty",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "holder of"
+      }
+    }
+  ]
+}

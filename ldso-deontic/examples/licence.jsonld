@@ -1,0 +1,956 @@
+{
+  "@context": {
+    "brick": "https://brickschema.org/schema/Brick#",
+    "csvw": "http://www.w3.org/ns/csvw#",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcam": "http://purl.org/dc/dcam/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dcmitype": "http://purl.org/dc/dcmitype/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "deo": "https://w3id.org/ldso/deontic#",
+    "doap": "http://usefulinc.com/ns/doap#",
+    "ent": "https://w3id.org/ldso/entities#",
+    "ex": "https://example.org/licence/",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "geo": "http://www.opengis.net/ont/geosparql#",
+    "ldso": "https://w3id.org/ldso/core#",
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "ops": "https://w3id.org/ldso/operations#",
+    "org": "http://www.w3.org/ns/org#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "prof": "http://www.w3.org/ns/dx/prof/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "qb": "http://purl.org/linked-data/cube#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "https://schema.org/",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "ssn": "http://www.w3.org/ns/ssn/",
+    "time": "http://www.w3.org/2006/time#",
+    "vann": "http://purl.org/vocab/vann/",
+    "void": "http://rdfs.org/ns/void#",
+    "wgs": "https://www.w3.org/2003/01/geo/wgs84_pos#",
+    "xml": "http://www.w3.org/XML/1998/namespace",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "ex:master_terms",
+      "@type": "deo:NormativeSystem",
+      "deo:hasRule": {
+        "@id": "ex:r_no_resale"
+      },
+      "deo:legalSource": {
+        "@id": "ex:licence_doc"
+      },
+      "deo:policyType": {
+        "@id": "deo:Set"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Provider master terms"
+      }
+    },
+    {
+      "@id": "ex:c_region",
+      "@type": "deo:LogicalCondition",
+      "deo:logicalOperator": {
+        "@id": "deo:Or"
+      },
+      "deo:operand": [
+        {
+          "@id": "ex:c_in_eu"
+        },
+        {
+          "@id": "ex:c_in_us"
+        }
+      ]
+    },
+    {
+      "@id": "ex:act_keep_secure",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b12"
+      },
+      "deo:predicate": {
+        "@id": "ex:keptSecure"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b12",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_ds"
+      }
+    },
+    {
+      "@id": "ex:survey_2026",
+      "@type": "deo:AssetCollection",
+      "deo:refinement": {
+        "@id": "ex:c_anonymised"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "2026 survey datasets"
+      }
+    },
+    {
+      "@id": "ex:chain_retain",
+      "@type": "deo:ReparationChain",
+      "deo:hasChainElement": [
+        {
+          "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b22"
+        },
+        {
+          "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b23"
+        }
+      ]
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b22",
+      "@type": "deo:ChainElement",
+      "deo:position": 1,
+      "deo:statement": {
+        "@id": "ex:obl_delete"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b23",
+      "@type": "deo:ChainElement",
+      "deo:position": 2,
+      "deo:statement": {
+        "@id": "ex:perm_archive"
+      }
+    },
+    {
+      "@id": "ex:licence_doc",
+      "@type": "ldso:LegalResource",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Open Data Licence — Research Use"
+      }
+    },
+    {
+      "@id": "ex:c_anonymised",
+      "@type": "deo:ClassCondition",
+      "deo:classExpression": {
+        "@id": "ex:AnonymisedDataset"
+      },
+      "deo:subject": {
+        "@id": "ex:var_ds"
+      }
+    },
+    {
+      "@id": "ex:c_in_us",
+      "@type": "deo:ComparisonCondition",
+      "deo:leftOperand": {
+        "@id": "odrl:spatial"
+      },
+      "deo:operator": {
+        "@id": "deo:IsPartOf"
+      },
+      "deo:rightOperandReference": {
+        "@id": "http://sws.geonames.org/6252001/"
+      }
+    },
+    {
+      "@id": "ex:perm_use",
+      "@type": "deo:Permission",
+      "deo:action": {
+        "@id": "ex:act_use"
+      },
+      "deo:assignee": {
+        "@id": "ex:licensee"
+      },
+      "deo:assigner": {
+        "@id": "ex:provider"
+      },
+      "deo:requiresDuty": {
+        "@id": "ex:obl_attribute"
+      },
+      "deo:target": {
+        "@id": "ex:survey_2026"
+      }
+    },
+    {
+      "@id": "ex:obl_report",
+      "@type": "deo:Obligation",
+      "deo:action": {
+        "@id": "ex:act_report"
+      },
+      "deo:bearer": {
+        "@id": "ex:licensee"
+      },
+      "deo:deadline": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b21"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b21",
+      "@type": "ops:RecurringSchedule"
+    },
+    {
+      "@id": "ex:rep_remedy",
+      "@type": "deo:Reparation",
+      "deo:imposes": {
+        "@id": "ex:obl_delete"
+      },
+      "deo:repairs": {
+        "@id": "ex:proh_distribute"
+      },
+      "deo:reparationKind": {
+        "@id": "deo:Remedy"
+      }
+    },
+    {
+      "@id": "ex:c_purpose",
+      "@type": "deo:ComparisonCondition",
+      "deo:leftOperand": {
+        "@id": "odrl:purpose"
+      },
+      "deo:operator": {
+        "@id": "deo:IsAnyOf"
+      },
+      "deo:rightOperand": [
+        "research",
+        "education"
+      ]
+    },
+    {
+      "@id": "odrl:print",
+      "deo:includedIn": {
+        "@id": "odrl:use"
+      }
+    },
+    {
+      "@id": "ex:act_use",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b7"
+      },
+      "deo:predicate": {
+        "@id": "odrl:use"
+      },
+      "deo:refinement": [
+        {
+          "@id": "ex:c_max_copies"
+        },
+        {
+          "@id": "ex:c_purpose"
+        }
+      ]
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b7",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_ds"
+      }
+    },
+    {
+      "@id": "ex:c_registered",
+      "@type": "deo:FactCondition",
+      "deo:hasArgument": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b17"
+      },
+      "deo:predicate": {
+        "@id": "ex:registered"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b17",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:licensee"
+      }
+    },
+    {
+      "@id": "ex:obl_keep_secure",
+      "@type": "deo:Obligation",
+      "deo:action": {
+        "@id": "ex:act_keep_secure"
+      },
+      "deo:bearer": {
+        "@id": "ex:licensee"
+      },
+      "deo:obligationType": {
+        "@id": "deo:Maintenance"
+      }
+    },
+    {
+      "@id": "ex:var_ds",
+      "@type": "deo:Variable",
+      "rdfs:label": "?dataset"
+    },
+    {
+      "@id": "ex:obl_delete",
+      "@type": "deo:Obligation",
+      "deo:action": {
+        "@id": "ex:act_delete"
+      },
+      "deo:bearer": {
+        "@id": "ex:licensee"
+      },
+      "deo:deadline": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b20"
+      },
+      "deo:perdurant": true
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b20",
+      "@type": "ops:Deadline",
+      "ops:deadlineDuration": {
+        "@type": "xsd:duration",
+        "@value": "P6M"
+      }
+    },
+    {
+      "@id": "ex:licensee",
+      "@type": "ent:NamedEntity",
+      "ent:entityType": {
+        "@id": "ent:Organization"
+      },
+      "ent:href": {
+        "@type": "xsd:anyURI",
+        "@value": "https://example.org/orgs/licensee"
+      },
+      "ent:showAs": {
+        "@language": "en",
+        "@value": "Licensee"
+      }
+    },
+    {
+      "@id": "ex:c_max_copies",
+      "@type": "deo:ComparisonCondition",
+      "deo:dataType": {
+        "@type": "xsd:anyURI",
+        "@value": "http://www.w3.org/2001/XMLSchema#integer"
+      },
+      "deo:leftOperand": {
+        "@id": "odrl:count"
+      },
+      "deo:operator": {
+        "@id": "ops:LessThanOrEqual"
+      },
+      "deo:rightOperand": 10
+    },
+    {
+      "@id": "ex:sig_count",
+      "@type": "deo:PredicateSignature",
+      "deo:hasArgumentSlot": [
+        {
+          "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b1"
+        },
+        {
+          "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b2"
+        }
+      ],
+      "deo:isQuantity": true,
+      "deo:keyLength": 1,
+      "deo:signaturePredicate": {
+        "@id": "odrl:count"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b1",
+      "@type": "deo:ArgumentSlot",
+      "deo:argumentIndex": 0,
+      "deo:valueType": {
+        "@id": "deo:Individual"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b2",
+      "@type": "deo:ArgumentSlot",
+      "deo:argumentIndex": 1,
+      "deo:valueType": {
+        "@id": "deo:Number"
+      }
+    },
+    {
+      "@id": "ex:act_distribute",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b8"
+      },
+      "deo:predicate": {
+        "@id": "odrl:distribute"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b8",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_ds"
+      }
+    },
+    {
+      "@id": "ex:c_registered_then_approved",
+      "@type": "deo:LogicalCondition",
+      "deo:logicalOperator": {
+        "@id": "deo:AndSequence"
+      },
+      "deo:operand": [
+        {
+          "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b15"
+        },
+        {
+          "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b16"
+        }
+      ]
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b15",
+      "@type": "deo:SequencedOperand",
+      "deo:operandCondition": {
+        "@id": "ex:c_registered"
+      },
+      "deo:position": 1
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b16",
+      "@type": "deo:SequencedOperand",
+      "deo:operandCondition": {
+        "@id": "ex:c_approved"
+      },
+      "deo:position": 2
+    },
+    {
+      "@id": "ex:r_delete_broad",
+      "@type": "deo:PrescriptiveRule",
+      "deo:formalizes": {
+        "@id": "ex:clause_4"
+      },
+      "deo:hasCondition": {
+        "@id": "ex:c_in_collection"
+      },
+      "deo:hasConsequent": {
+        "@id": "ex:obl_report"
+      },
+      "deo:strength": {
+        "@id": "deo:DefeasibleStrength"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Clause 4, broad reading: report use every year"
+      }
+    },
+    {
+      "@id": "ex:r_retain",
+      "@type": "deo:PrescriptiveRule",
+      "deo:formalizes": {
+        "@id": "ex:clause_4"
+      },
+      "deo:hasCondition": {
+        "@id": "ex:c_in_collection"
+      },
+      "deo:hasConsequent": {
+        "@id": "ex:obl_keep_secure"
+      },
+      "deo:strength": {
+        "@id": "deo:DefeasibleStrength"
+      }
+    },
+    {
+      "@id": "ex:act_report",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b13"
+      },
+      "deo:predicate": {
+        "@id": "ex:reportedUse"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b13",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_ds"
+      }
+    },
+    {
+      "@id": "ex:act_sell",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b9"
+      },
+      "deo:predicate": {
+        "@id": "odrl:sell"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b9",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_ds"
+      }
+    },
+    {
+      "@id": "ex:proh_distribute",
+      "@type": "deo:Prohibition",
+      "deo:action": {
+        "@id": "ex:act_distribute"
+      },
+      "deo:assignee": {
+        "@id": "ex:licensee"
+      },
+      "deo:assigner": {
+        "@id": "ex:provider"
+      },
+      "deo:target": {
+        "@id": "ex:survey_2026"
+      }
+    },
+    {
+      "@id": "ex:r_grant_archive",
+      "@type": "deo:PrescriptiveRule",
+      "deo:formalizes": {
+        "@id": "ex:clause_4"
+      },
+      "deo:hasCondition": {
+        "@id": "ex:c_project_ended"
+      },
+      "deo:hasConsequent": {
+        "@id": "ex:obl_grant_archive"
+      },
+      "deo:strength": {
+        "@id": "deo:DefeasibleStrength"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Clause 4: the provider must allow the licensee to archive"
+      }
+    },
+    {
+      "@id": "ex:perm_archive",
+      "@type": "deo:Permission",
+      "deo:action": {
+        "@id": "ex:act_archive"
+      },
+      "deo:bearer": {
+        "@id": "ex:licensee"
+      }
+    },
+    {
+      "@id": "ex:proh_sell",
+      "@type": "deo:Prohibition",
+      "deo:action": {
+        "@id": "ex:act_sell"
+      },
+      "deo:bearer": {
+        "@id": "ex:licensee"
+      }
+    },
+    {
+      "@id": "ex:obl_attribute",
+      "@type": "deo:Obligation",
+      "deo:action": {
+        "@id": "ex:act_attribute"
+      },
+      "deo:bearer": {
+        "@id": "ex:licensee"
+      }
+    },
+    {
+      "@id": "ex:r_use",
+      "@type": "deo:PrescriptiveRule",
+      "deo:formalizes": {
+        "@id": "ex:clause_4"
+      },
+      "deo:hasCondition": [
+        {
+          "@id": "ex:c_in_collection"
+        },
+        {
+          "@id": "ex:c_region"
+        },
+        {
+          "@id": "ex:c_registered_then_approved"
+        }
+      ],
+      "deo:hasConsequent": {
+        "@id": "ex:perm_use"
+      },
+      "deo:strength": {
+        "@id": "deo:DefeasibleStrength"
+      },
+      "deo:temporalCharacteristic": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b24"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b24",
+      "@type": "deo:TemporalCharacteristic",
+      "deo:atTime": {
+        "@type": "xsd:dateTime",
+        "@value": "2026-01-01T00:00:00+00:00"
+      },
+      "deo:forStatus": {
+        "@id": "deo:StatusInForce"
+      },
+      "deo:statusDevelopment": {
+        "@id": "deo:Starts"
+      }
+    },
+    {
+      "@id": "ex:act_delete",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b11"
+      },
+      "deo:predicate": {
+        "@id": "odrl:delete"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b11",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_ds"
+      }
+    },
+    {
+      "@id": "ex:c_in_eu",
+      "@type": "deo:ComparisonCondition",
+      "deo:leftOperand": {
+        "@id": "odrl:spatial"
+      },
+      "deo:operator": {
+        "@id": "deo:IsPartOf"
+      },
+      "deo:rightOperandReference": {
+        "@id": "http://sws.geonames.org/6255148/"
+      }
+    },
+    {
+      "@id": "ex:clause_4",
+      "@type": "ldso:LegalElement",
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Clause 4 — Retention"
+      }
+    },
+    {
+      "@id": "ex:licence",
+      "@type": "deo:NormativeSystem",
+      "deo:conflictStrategy": {
+        "@id": "deo:ProhibitionPrevails"
+      },
+      "deo:declaresSignature": [
+        {
+          "@id": "ex:sig_count"
+        },
+        {
+          "@id": "ex:sig_purpose"
+        }
+      ],
+      "deo:hasAlternatives": {
+        "@id": "ex:alt_clause4"
+      },
+      "deo:hasOverride": {
+        "@id": "ex:ov_strategy"
+      },
+      "deo:hasReparation": {
+        "@id": "ex:rep_remedy"
+      },
+      "deo:hasRule": [
+        {
+          "@id": "ex:r_use"
+        },
+        {
+          "@id": "ex:r_no_distribute"
+        },
+        {
+          "@id": "ex:r_retain"
+        },
+        {
+          "@id": "ex:r_delete_strict"
+        },
+        {
+          "@id": "ex:r_delete_broad"
+        },
+        {
+          "@id": "ex:r_grant_archive"
+        }
+      ],
+      "deo:inheritsFrom": {
+        "@id": "ex:master_terms"
+      },
+      "deo:legalSource": {
+        "@id": "ex:licence_doc"
+      },
+      "deo:policyType": {
+        "@id": "deo:Agreement"
+      },
+      "deo:profile": {
+        "@type": "xsd:anyURI",
+        "@value": "https://example.org/odrl-profile/research"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Research licence for the 2026 survey datasets"
+      }
+    },
+    {
+      "@id": "ex:sig_purpose",
+      "@type": "deo:PredicateSignature",
+      "deo:hasArgumentSlot": [
+        {
+          "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b3"
+        },
+        {
+          "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b4"
+        }
+      ],
+      "deo:isQuantity": true,
+      "deo:keyLength": 1,
+      "deo:signaturePredicate": {
+        "@id": "odrl:purpose"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b3",
+      "@type": "deo:ArgumentSlot",
+      "deo:argumentIndex": 0,
+      "deo:valueType": {
+        "@id": "deo:Individual"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b4",
+      "@type": "deo:ArgumentSlot",
+      "deo:argumentIndex": 1,
+      "deo:valueType": {
+        "@id": "deo:Text"
+      }
+    },
+    {
+      "@id": "ex:obl_grant_archive",
+      "@type": "deo:Obligation",
+      "deo:auxiliaryParty": {
+        "@id": "ex:licensee"
+      },
+      "deo:bearer": {
+        "@id": "ex:provider"
+      },
+      "deo:deonticContent": {
+        "@id": "ex:perm_archive"
+      }
+    },
+    {
+      "@id": "ex:alt_clause4",
+      "@type": "deo:Alternatives",
+      "deo:alternative": [
+        {
+          "@id": "ex:r_delete_strict"
+        },
+        {
+          "@id": "ex:r_delete_broad"
+        }
+      ],
+      "deo:legalSource": {
+        "@id": "ex:licence_doc"
+      }
+    },
+    {
+      "@id": "ex:r_no_resale",
+      "@type": "deo:PrescriptiveRule",
+      "deo:formalizes": {
+        "@id": "ex:clause_4"
+      },
+      "deo:hasCondition": {
+        "@id": "ex:c_in_collection"
+      },
+      "deo:hasConsequent": {
+        "@id": "ex:proh_sell"
+      },
+      "deo:strength": {
+        "@id": "deo:StrictStrength"
+      }
+    },
+    {
+      "@id": "ex:c_project_ended",
+      "@type": "deo:FactCondition",
+      "deo:hasArgument": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b19"
+      },
+      "deo:predicate": {
+        "@id": "ex:projectEnded"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b19",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:licensee"
+      }
+    },
+    {
+      "@id": "ex:r_no_distribute",
+      "@type": "deo:PrescriptiveRule",
+      "deo:formalizes": {
+        "@id": "ex:clause_4"
+      },
+      "deo:hasCondition": {
+        "@id": "ex:c_in_collection"
+      },
+      "deo:hasConsequent": {
+        "@id": "ex:proh_distribute"
+      },
+      "deo:strength": {
+        "@id": "deo:DefeasibleStrength"
+      }
+    },
+    {
+      "@id": "ex:provider",
+      "@type": "ent:NamedEntity",
+      "ent:entityType": {
+        "@id": "ent:Organization"
+      },
+      "ent:href": {
+        "@type": "xsd:anyURI",
+        "@value": "https://example.org/orgs/provider"
+      },
+      "ent:showAs": {
+        "@language": "en",
+        "@value": "Data Provider"
+      }
+    },
+    {
+      "@id": "ex:act_attribute",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b10"
+      },
+      "deo:predicate": {
+        "@id": "odrl:attribute"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b10",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_ds"
+      }
+    },
+    {
+      "@id": "ex:act_archive",
+      "@type": "deo:Action",
+      "deo:hasArgument": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b14"
+      },
+      "deo:predicate": {
+        "@id": "odrl:archive"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b14",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_ds"
+      }
+    },
+    {
+      "@id": "ex:r_delete_strict",
+      "@type": "deo:PrescriptiveRule",
+      "deo:activatedBy": {
+        "@id": "ex:c_project_ended"
+      },
+      "deo:formalizes": {
+        "@id": "ex:clause_4"
+      },
+      "deo:hasCondition": [
+        {
+          "@id": "ex:c_in_collection"
+        },
+        {
+          "@id": "ex:c_project_ended"
+        }
+      ],
+      "deo:hasConsequent": {
+        "@id": "ex:chain_retain"
+      },
+      "deo:strength": {
+        "@id": "deo:DefeasibleStrength"
+      },
+      "rdfs:label": {
+        "@language": "en",
+        "@value": "Clause 4, strict reading: delete within six months, else archive"
+      }
+    },
+    {
+      "@id": "ex:ov_strategy",
+      "@type": "deo:Override",
+      "deo:overridden": {
+        "@id": "ex:r_use"
+      },
+      "deo:overrideBasis": {
+        "@id": "deo:ConflictStrategyBasis"
+      },
+      "deo:overriding": {
+        "@id": "ex:r_no_distribute"
+      }
+    },
+    {
+      "@id": "ex:c_in_collection",
+      "@type": "deo:FactCondition",
+      "deo:hasArgument": [
+        {
+          "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b5"
+        },
+        {
+          "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b6"
+        }
+      ],
+      "deo:predicate": {
+        "@id": "deo:memberOf"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b5",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:var_ds"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b6",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 1,
+      "deo:argumentValue": {
+        "@id": "ex:survey_2026"
+      }
+    },
+    {
+      "@id": "ex:c_approved",
+      "@type": "deo:FactCondition",
+      "deo:hasArgument": {
+        "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b18"
+      },
+      "deo:predicate": {
+        "@id": "ex:approvedProject"
+      }
+    },
+    {
+      "@id": "_:n025d03d48cfd449c8459cbd43ba79a70b18",
+      "@type": "deo:Argument",
+      "deo:argumentIndex": 0,
+      "deo:argumentValue": {
+        "@id": "ex:licensee"
+      }
+    }
+  ]
+}

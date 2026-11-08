@@ -1,0 +1,2277 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+@prefix leg:  <https://w3id.org/ldso/semantics#> .
+@prefix ops:  <https://w3id.org/ldso/operations#> .
+@prefix deo:  <https://w3id.org/ldso/deontic#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Deontic: Formal Deontic Norm Ontology
+# Version: 0.1.0 (draft)
+# Namespace: https://w3id.org/ldso/deontic#
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/deontic>
+  a owl:Ontology ;
+  dct:title "LDSO-Deontic: Formal Deontic Norm Ontology"@en ;
+  dct:description """LDSO-Deontic provides a vocabulary for formal, executable deontic
+norms: rules with a strength (strict, defeasible, defeater), formal conditions,
+deontic conclusions (obligation, prohibition, permission, right) with bearers,
+actions, targets and deadlines, reparation chains for what follows a violation,
+explicit overrides between rules with their legal basis, and the values norms
+compute with: predicate signatures, exact arithmetic, rounding and calendar
+expressions, assignments, aggregates and obligations over amounts. It covers the
+deontic and defeasible constructs of OASIS LegalRuleML Core 1.0 and of the
+W3C ODRL 2.2 Information Model, and it is designed so that a normative system
+expressed in it compiles to the defeasible deontic engine of HydraDL
+(hydradl-deontic). Where LDSO-Semantics records what a provision says,
+LDSO-Deontic records how it is formalised: two analysts may annotate a clause
+identically and still formalise it differently."""@en ;
+  dct:creator "Stephane Fellah" ;
+  dct:publisher "Geoknoesis LLC" ;
+  dct:created "2026-10-24"^^xsd:date ;
+  dct:modified "2026-10-25"^^xsd:date ;
+  owl:versionIRI <https://w3id.org/ldso/deontic/0.1.0> ;
+  owl:versionInfo "0.1.0" ;
+  owl:imports <https://w3id.org/ldso/core> ,
+              <https://w3id.org/ldso/entities> ,
+              <https://w3id.org/ldso/semantics> ,
+              <https://w3id.org/ldso/operations> ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+  vann:preferredNamespacePrefix "deo" ;
+  vann:preferredNamespaceUri "https://w3id.org/ldso/deontic#" ;
+  rdfs:comment """DISCLAIMER: This ontology is not an official W3C Standard or W3C Recommendation.
+It is a community/project specification using W3C ReSpec formatting conventions.
+This is a DRAFT (0.1.0) for review."""@en ;
+  rdfs:seeAlso <https://w3id.org/ldso/deontic/index.html> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# NORMATIVE SYSTEM
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:NormativeSystem
+  a owl:Class ;
+  rdfs:label "Normative System"@en ;
+  skos:definition """A set of formal rules, overrides and factual statements that are
+evaluated together: a contract, a policy, a statute or part of one, as
+formalised. The unit a reasoner evaluates."""@en ;
+  skos:scopeNote """Corresponds to an ODRL Policy (odrl:Policy and its subclasses, the
+policy type given by deo:policyType), to a LegalRuleML Statements collection or
+LegalRuleMLDocument, and to a HydraDL NormSystem. Rules belong to a normative
+system through deo:hasRule; overrides through deo:hasOverride. A normative
+system that inherits from another (odrl:inheritFrom) includes its rules.
+Predicates that carry values declare their signature (deo:declaresSignature);
+calendar functions use the system's deo:utcOffset."""@en ;
+  skos:example """
+ex:policy_2026
+  a deo:NormativeSystem ;
+  rdfs:label "Household insurance policy 2026, formalised"@en ;
+  deo:policyType deo:Agreement ;
+  deo:conflictStrategy deo:AmbiguityBlocking ;
+  deo:legalSource ex:policy_doc ;
+  deo:hasRule ex:r_pay_claim , ex:r_flood_endorsement ;
+  deo:hasOverride ex:ov_flood ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# RULES
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:Rule
+  a owl:Class ;
+  rdfs:label "Rule"@en ;
+  skos:definition """A formal rule: a conjunction of conditions (its antecedent) and a
+conclusion, with a strength saying how the conclusion resists contrary rules."""@en ;
+  skos:scopeNote """Abstract: use deo:PrescriptiveRule (deontic conclusion) or
+deo:ConstitutiveRule (factual conclusion: definitions, counts-as). A rule with no
+condition holds unconditionally. Corresponds to a ruleml:Rule inside a LegalRuleML
+PrescriptiveStatement or ConstitutiveStatement, to an ODRL Rule (odrl:Permission,
+odrl:Prohibition, odrl:Duty) together with its constraints, and to a HydraDL
+Rule. Link the rule to what it formalises with deo:formalizes."""@en ;
+  skos:example """
+ex:r_pay_claim
+  a deo:PrescriptiveRule ;
+  deo:strength deo:DefeasibleStrength ;
+  deo:hasCondition ex:c_payable , ex:c_approved_at ;
+  deo:activatedBy ex:c_approved_at ;
+  deo:hasConsequent ex:chain_pay ;
+  deo:formalizes ex:Oblig_Clause8 ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:PrescriptiveRule
+  a owl:Class ;
+  rdfs:label "Prescriptive Rule"@en ;
+  rdfs:subClassOf deo:Rule ;
+  skos:definition """A rule whose conclusion prescribes behaviour: a deontic statement, or a
+reparation chain of deontic statements."""@en ;
+  skos:scopeNote """LegalRuleML PrescriptiveStatement; ODRL Permission, Prohibition and Duty.
+The conclusion is given by deo:hasConsequent."""@en ;
+  skos:example """
+ex:r_no_disclosure
+  a deo:PrescriptiveRule ;
+  deo:strength deo:StrictStrength ;
+  deo:hasConsequent ex:proh_disclose ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:ConstitutiveRule
+  a owl:Class ;
+  rdfs:label "Constitutive Rule"@en ;
+  rdfs:subClassOf deo:Rule ;
+  skos:definition """A rule whose conclusion establishes an institutional fact or a
+classification ("X counts as Y in context C") rather than prescribing behaviour."""@en ;
+  skos:scopeNote """LegalRuleML ConstitutiveStatement: its conclusion must not be a deontic
+formula. The conclusion is a deo:Literal given by deo:concludes. Definitions
+that are plain class axioms belong in OWL (and are reasoned with by a DL
+reasoner); use a constitutive rule when the conclusion depends on facts of a
+case or must be defeasible."""@en ;
+  skos:example """
+ex:r_late_payment
+  a deo:ConstitutiveRule ;
+  deo:strength deo:StrictStrength ;
+  deo:hasCondition ex:c_paid_after_deadline ;
+  deo:concludes ex:lit_late_payment ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:FactualStatement
+  a owl:Class ;
+  rdfs:label "Factual Statement"@en ;
+  skos:definition """A statement of fact made by the normative system itself, without
+conditions — for example that a named body is the competent authority."""@en ;
+  skos:scopeNote """LegalRuleML FactualStatement. The fact is a deo:Literal given by
+deo:asserts. A reasoner treats it as a fact of every situation the system is
+evaluated in."""@en ;
+  skos:example """
+ex:fs_authority
+  a deo:FactualStatement ;
+  deo:asserts ex:lit_agency_competent ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# STRENGTH (SKOS)
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:StrengthScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Rule strengths"@en ;
+  skos:definition "How a rule's conclusion resists contrary rules."@en ;
+  skos:hasTopConcept deo:StrictStrength , deo:DefeasibleStrength , deo:DefeaterStrength ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:StrictStrength
+  a skos:Concept ;
+  rdfs:label "strict"@en ;
+  skos:inScheme deo:StrengthScheme ;
+  skos:topConceptOf deo:StrengthScheme ;
+  skos:definition """The conclusion holds whenever the antecedent holds indisputably; no
+contrary rule defeats it."""@en ;
+  skos:scopeNote "LegalRuleML StrictStrength. HydraDL RuleKind::Strict. In HydraDL a strict deontic rule is an ordinary supporter that a superior rule can still beat; only factual conclusions have a strict tier."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:DefeasibleStrength
+  a skos:Concept ;
+  rdfs:label "defeasible"@en ;
+  skos:inScheme deo:StrengthScheme ;
+  skos:topConceptOf deo:StrengthScheme ;
+  skos:definition """The conclusion holds when the antecedent holds and no applicable
+contrary rule prevails over it."""@en ;
+  skos:scopeNote "LegalRuleML DefeasibleStrength. HydraDL RuleKind::Defeasible. The default for legal rules with exceptions."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:DefeaterStrength
+  a skos:Concept ;
+  rdfs:label "defeater"@en ;
+  skos:inScheme deo:StrengthScheme ;
+  skos:topConceptOf deo:StrengthScheme ;
+  skos:definition """The rule only blocks the contrary conclusion; it never establishes its
+own conclusion. The typical form of an exception that suspends a norm without
+imposing the opposite."""@en ;
+  skos:scopeNote "LegalRuleML Defeater. HydraDL RuleKind::Defeater."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DEONTIC STATEMENTS
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:DeonticStatement
+  a owl:Class ;
+  rdfs:label "Deontic Statement"@en ;
+  skos:definition """The conclusion of a prescriptive rule: that a bearer must, must not,
+or may perform an action, possibly on a target, possibly by a deadline."""@en ;
+  skos:scopeNote """Abstract: use deo:Obligation, deo:Prohibition, deo:Permission or
+deo:Right. The bearer (deo:bearer) is the party the statement is primarily
+directed at (LegalRuleML Bearer; ODRL assignee); other parties are
+deo:auxiliaryParty (LegalRuleML AuxiliaryParty; ODRL assigner). The same
+deontic statement may be the conclusion of several rules: rules that conclude
+the same statement compete over its parameters (for example its deadline),
+and an override decides which applies."""@en ;
+  skos:example """
+ex:obl_pay
+  a deo:Obligation ;
+  deo:bearer ex:insurer_role ;
+  deo:action ex:act_pay ;
+  deo:deadline ex:dl_30_days ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Obligation
+  a owl:Class ;
+  rdfs:label "Obligation"@en ;
+  rdfs:subClassOf deo:DeonticStatement ;
+  skos:definition """The bearer must perform the action (bring about the state). Failing to
+do so, by the deadline if any, is a violation."""@en ;
+  skos:scopeNote """LegalRuleML Obligation; ODRL Duty (and policy-level odrl:obligation).
+The kind of obligation — achievement, maintenance or punctual — is given by
+deo:obligationType; preemption and perdurance by deo:preemptive and
+deo:perdurant. HydraDL: O[bearer](action)."""@en ;
+  skos:example """
+ex:obl_notify
+  a deo:Obligation ;
+  deo:bearer ex:insurer_role ;
+  deo:action ex:act_notify ;
+  deo:obligationType deo:Achievement ;
+  deo:deadline ex:dl_15_days ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Prohibition
+  a owl:Class ;
+  rdfs:label "Prohibition"@en ;
+  rdfs:subClassOf deo:DeonticStatement ;
+  skos:definition """The bearer must not perform the action. Performing it is a violation
+(an infringement)."""@en ;
+  skos:scopeNote """LegalRuleML Prohibition; ODRL Prohibition. Equivalent to an obligation
+of the negated action; kept as its own class because both standards and
+legal text distinguish it. HydraDL: F[bearer](action) = O[bearer](¬action)."""@en ;
+  skos:example """
+ex:proh_disclose
+  a deo:Prohibition ;
+  deo:bearer ex:insurer_role ;
+  deo:action ex:act_disclose_records ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Permission
+  a owl:Class ;
+  rdfs:label "Permission"@en ;
+  rdfs:subClassOf deo:DeonticStatement ;
+  skos:definition """The bearer may perform the action: an explicit (strong) permission,
+which can serve as an exception to a prohibition."""@en ;
+  skos:scopeNote """LegalRuleML Permission; ODRL Permission. A permission stated by a rule is
+a strong permission. A weak permission ("not forbidden") is never stated: it is
+a conclusion of evaluation when no prohibition applies. ODRL duties that must
+be fulfilled before the permission can be exercised are attached with
+deo:requiresDuty. HydraDL: P[bearer](action). A permission may close a
+reparation chain: it then holds once every earlier element is violated."""@en ;
+  skos:example """
+ex:perm_request_docs
+  a deo:Permission ;
+  deo:bearer ex:insurer_role ;
+  deo:action ex:act_request_documents ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Right
+  a owl:Class ;
+  rdfs:label "Right"@en ;
+  rdfs:subClassOf deo:DeonticStatement ;
+  skos:definition """A permission of the bearer together with the obligations or
+prohibitions it implies for auxiliary parties so that the bearer can exercise
+it (a claim-right in Hohfeld's sense)."""@en ;
+  skos:scopeNote """LegalRuleML Right. The correlative duties are listed with
+deo:correlative; each is an ordinary deontic statement borne by an auxiliary
+party. HydraDL has no right operator: a right compiles to the bearer's
+permission plus each correlative statement."""@en ;
+  skos:example """
+ex:right_access
+  a deo:Right ;
+  deo:bearer ex:policyholder_role ;
+  deo:auxiliaryParty ex:insurer_role ;
+  deo:action ex:act_access_file ;
+  deo:correlative ex:obl_provide_file ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# OBLIGATION TYPES (SKOS)
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:ObligationTypeScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Obligation types"@en ;
+  skos:definition "Kinds of obligation by what counts as complying with them over time."@en ;
+  skos:hasTopConcept deo:Achievement , deo:Maintenance , deo:Punctual ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Achievement
+  a skos:Concept ;
+  rdfs:label "achievement obligation"@en ;
+  skos:inScheme deo:ObligationTypeScheme ;
+  skos:topConceptOf deo:ObligationTypeScheme ;
+  skos:definition """Complied with when the action is performed at least once within the
+obligation's period (from activation to deadline)."""@en ;
+  skos:scopeNote "The default. The only obligation type HydraDL v1 evaluates."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Maintenance
+  a skos:Concept ;
+  rdfs:label "maintenance obligation"@en ;
+  skos:inScheme deo:ObligationTypeScheme ;
+  skos:topConceptOf deo:ObligationTypeScheme ;
+  skos:definition """Complied with only if the state holds at every moment of the
+obligation's period; violated at the first moment it does not."""@en ;
+  skos:scopeNote "Not yet evaluated by HydraDL (v1 non-goal)."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Punctual
+  a skos:Concept ;
+  rdfs:label "punctual obligation"@en ;
+  skos:inScheme deo:ObligationTypeScheme ;
+  skos:topConceptOf deo:ObligationTypeScheme ;
+  skos:definition """Complied with only if the action is performed at the very moment the
+obligation is in force."""@en ;
+  skos:scopeNote "Not yet evaluated by HydraDL."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# REPARATION
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:ReparationChain
+  a owl:Class ;
+  rdfs:label "Reparation Chain"@en ;
+  skos:definition """An ordered sequence of deontic statements where each element after the
+first applies only once every earlier element has been violated: "do A; if A
+is violated, do B; if B is violated, do C"."""@en ;
+  skos:scopeNote """LegalRuleML SuborderList (the ⊗ operator of defeasible deontic logic);
+HydraDL Head::Chain. Members are deo:ChainElement nodes with an explicit
+deo:position (LDSO never uses rdf:List). A permission may only be the last
+element, since permissions cannot be violated. The first element's violation
+stays on record when the next element applies."""@en ;
+  skos:example """
+ex:chain_pay
+  a deo:ReparationChain ;
+  deo:hasChainElement [ a deo:ChainElement ; deo:position 1 ; deo:statement ex:obl_pay ] ,
+                      [ a deo:ChainElement ; deo:position 2 ; deo:statement ex:obl_late_fee ] ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:ChainElement
+  a owl:Class ;
+  rdfs:label "Chain Element"@en ;
+  skos:definition "One position of a reparation chain and the deontic statement at that position."@en ;
+  skos:scopeNote "Positions start at 1 and are consecutive within a chain."@en ;
+  skos:example """
+ex:chain_pay_1
+  a deo:ChainElement ;
+  deo:position 1 ;
+  deo:statement ex:obl_pay ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Reparation
+  a owl:Class ;
+  rdfs:label "Reparation"@en ;
+  skos:definition """A stated link between a deontic statement and what its violation
+imposes: a consequence of a failed duty, a remedy for an infringed prohibition,
+or a penalty."""@en ;
+  skos:scopeNote """LegalRuleML Reparation (appliesPenalty / toPrescriptiveStatement) and
+PenaltyStatement; ODRL consequence (on a Duty) and remedy (on a Prohibition).
+Use it when the reparation is stated separately from the primary norm (another
+clause, another rule); use deo:ReparationChain when one rule states the whole
+sequence. Both compile to the same HydraDL ⊗ chain: [repaired, imposed]. The
+kind is given by deo:reparationKind."""@en ;
+  skos:example """
+ex:rep_late_fee
+  a deo:Reparation ;
+  deo:repairs ex:obl_pay ;
+  deo:imposes ex:obl_late_fee ;
+  deo:reparationKind deo:Penalty ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:ReparationKindScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Reparation kinds"@en ;
+  skos:definition "What a stated reparation is, by the kind of norm it answers."@en ;
+  skos:hasTopConcept deo:Consequence , deo:Remedy , deo:Penalty ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Consequence
+  a skos:Concept ;
+  rdfs:label "consequence"@en ;
+  skos:inScheme deo:ReparationKindScheme ;
+  skos:topConceptOf deo:ReparationKindScheme ;
+  skos:definition "A further duty imposed when a duty is not fulfilled."@en ;
+  skos:scopeNote "ODRL odrl:consequence."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Remedy
+  a skos:Concept ;
+  rdfs:label "remedy"@en ;
+  skos:inScheme deo:ReparationKindScheme ;
+  skos:topConceptOf deo:ReparationKindScheme ;
+  skos:definition "A duty imposed when a prohibition is infringed."@en ;
+  skos:scopeNote "ODRL odrl:remedy. A remedy cannot itself carry a consequence in ODRL."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Penalty
+  a skos:Concept ;
+  rdfs:label "penalty"@en ;
+  skos:inScheme deo:ReparationKindScheme ;
+  skos:topConceptOf deo:ReparationKindScheme ;
+  skos:definition "A sanction or correction imposed for a violation."@en ;
+  skos:scopeNote "LegalRuleML PenaltyStatement."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# OVERRIDES
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:Override
+  a owl:Class ;
+  rdfs:label "Override"@en ;
+  skos:definition """A stated priority between two rules: when both apply and conclude
+contrary things (or set different parameters of the same statement), the
+overriding rule prevails over the overridden one."""@en ;
+  skos:scopeNote """LegalRuleML Override (@over, @under) and OverrideStatement; HydraDL
+superiority. Every override records its basis (deo:overrideBasis) — lex
+specialis, lex posterior, lex superior, an explicit clause, or the policy's
+conflict strategy — and may cite the provision that states it
+(deo:basisProvision). Priority is never inferred from the order rules appear
+in. Overrides must form no cycle."""@en ;
+  skos:example """
+ex:ov_flood
+  a deo:Override ;
+  deo:overriding ex:r_flood_endorsement ;
+  deo:overridden ex:r_pay_claim ;
+  deo:overrideBasis deo:LexSpecialis ;
+  deo:basisProvision ex:endorsement_3 ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:OverrideBasisScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Override bases"@en ;
+  skos:definition "The legal ground on which one rule prevails over another."@en ;
+  skos:hasTopConcept deo:LexSpecialis , deo:LexPosterior , deo:LexSuperior ,
+                     deo:ExplicitClause , deo:ConflictStrategyBasis ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:LexSpecialis
+  a skos:Concept ; rdfs:label "lex specialis"@en ;
+  skos:inScheme deo:OverrideBasisScheme ; skos:topConceptOf deo:OverrideBasisScheme ;
+  skos:definition "The more specific rule prevails over the more general one."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:LexPosterior
+  a skos:Concept ; rdfs:label "lex posterior"@en ;
+  skos:inScheme deo:OverrideBasisScheme ; skos:topConceptOf deo:OverrideBasisScheme ;
+  skos:definition "The later rule prevails over the earlier one of the same rank."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:LexSuperior
+  a skos:Concept ; rdfs:label "lex superior"@en ;
+  skos:inScheme deo:OverrideBasisScheme ; skos:topConceptOf deo:OverrideBasisScheme ;
+  skos:definition "The rule from the higher-ranked source prevails."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:ExplicitClause
+  a skos:Concept ; rdfs:label "explicit clause"@en ;
+  skos:inScheme deo:OverrideBasisScheme ; skos:topConceptOf deo:OverrideBasisScheme ;
+  skos:definition """A provision states the priority itself ("notwithstanding Article 5",
+"subject to Section 2")."""@en ;
+  skos:scopeNote "Cite the provision with deo:basisProvision; LDSO-Semantics may annotate it."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:ConflictStrategyBasis
+  a skos:Concept ; rdfs:label "conflict strategy"@en ;
+  skos:inScheme deo:OverrideBasisScheme ; skos:topConceptOf deo:OverrideBasisScheme ;
+  skos:definition """The override follows from the normative system's declared conflict
+strategy (ODRL perm or prohibit), not from a specific provision."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CONFLICT STRATEGY AND POLICY TYPE (SKOS)
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:ConflictStrategyScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Conflict strategies"@en ;
+  skos:definition "What an evaluation answers when two applicable rules conflict and no override decides between them."@en ;
+  skos:hasTopConcept deo:AmbiguityBlocking , deo:PermissionPrevails ,
+                     deo:ProhibitionPrevails , deo:Invalidate ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:AmbiguityBlocking
+  a skos:Concept ; rdfs:label "ambiguity blocking"@en ;
+  skos:inScheme deo:ConflictStrategyScheme ; skos:topConceptOf deo:ConflictStrategyScheme ;
+  skos:definition """Neither conclusion is drawn; the conflict is reported and the answer
+is undetermined."""@en ;
+  skos:scopeNote "The default of defeasible logic and of HydraDL."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:PermissionPrevails
+  a skos:Concept ; rdfs:label "permission prevails"@en ;
+  skos:inScheme deo:ConflictStrategyScheme ; skos:topConceptOf deo:ConflictStrategyScheme ;
+  skos:definition "A permission prevails over a contrary prohibition."@en ;
+  skos:scopeNote "ODRL conflict perm. Compiles to an override (basis deo:ConflictStrategyBasis) of every permission rule over every contrary prohibition rule."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:ProhibitionPrevails
+  a skos:Concept ; rdfs:label "prohibition prevails"@en ;
+  skos:inScheme deo:ConflictStrategyScheme ; skos:topConceptOf deo:ConflictStrategyScheme ;
+  skos:definition "A prohibition prevails over a contrary permission."@en ;
+  skos:scopeNote "ODRL conflict prohibit. Compiles to overrides the other way round."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Invalidate
+  a skos:Concept ; rdfs:label "invalidate"@en ;
+  skos:inScheme deo:ConflictStrategyScheme ; skos:topConceptOf deo:ConflictStrategyScheme ;
+  skos:definition "A conflict makes the whole normative system void."@en ;
+  skos:scopeNote "ODRL conflict invalid (ODRL's default). An evaluation that reports any unresolved conflict answers that the system is void."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:PolicyTypeScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Policy types"@en ;
+  skos:definition "The kind of instrument a normative system is, as ODRL distinguishes them."@en ;
+  skos:hasTopConcept deo:Set , deo:Offer , deo:Agreement ;
+  skos:scopeNote "Set, Offer and Agreement are the ODRL Information Model types; Assertion, Privacy, Request and Ticket come from the ODRL Common Vocabulary and are narrower concepts of them."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Set
+  a skos:Concept ; rdfs:label "set"@en ;
+  skos:inScheme deo:PolicyTypeScheme ; skos:topConceptOf deo:PolicyTypeScheme ;
+  skos:definition "A generic set of rules, in force as stated."@en ;
+  skos:scopeNote "ODRL odrl:Set (the default policy type). Statutes and regulations are sets."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Offer
+  a skos:Concept ; rdfs:label "offer"@en ;
+  skos:inScheme deo:PolicyTypeScheme ; skos:topConceptOf deo:PolicyTypeScheme ;
+  skos:definition "Rules proposed by an assigner; they grant and impose nothing until accepted."@en ;
+  skos:scopeNote "ODRL odrl:Offer. An evaluation treats its rules as not in force."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Agreement
+  a skos:Concept ; rdfs:label "agreement"@en ;
+  skos:inScheme deo:PolicyTypeScheme ; skos:topConceptOf deo:PolicyTypeScheme ;
+  skos:definition "Rules agreed between an assigner and an assignee, in force between them."@en ;
+  skos:scopeNote "ODRL odrl:Agreement. Contracts and insurance policies are agreements."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+deo:Assertion
+  a skos:Concept ; rdfs:label "assertion"@en ;
+  skos:inScheme deo:PolicyTypeScheme ; skos:broader deo:Set ;
+  skos:definition "A party's statement of the rules it understands to hold."@en ;
+  skos:scopeNote "ODRL Common Vocabulary odrl:Assertion. Evaluated as a set; it records a claim, not an agreement."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Privacy
+  a skos:Concept ; rdfs:label "privacy"@en ;
+  skos:inScheme deo:PolicyTypeScheme ; skos:broader deo:Agreement ;
+  skos:definition "An agreement on the processing of personal data, stating the obligations of the data user."@en ;
+  skos:scopeNote "ODRL Common Vocabulary odrl:Privacy. Evaluated as an agreement."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Request
+  a skos:Concept ; rdfs:label "request"@en ;
+  skos:inScheme deo:PolicyTypeScheme ; skos:broader deo:Offer ;
+  skos:definition "Rules an assignee asks to be granted; nothing is in force until granted."@en ;
+  skos:scopeNote "ODRL Common Vocabulary odrl:Request. Evaluated like an offer: its rules are not in force."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Ticket
+  a skos:Concept ; rdfs:label "ticket"@en ;
+  skos:inScheme deo:PolicyTypeScheme ; skos:broader deo:Agreement ;
+  skos:definition "Rules granted to whoever holds the ticket, the assignee left open."@en ;
+  skos:scopeNote "ODRL Common Vocabulary odrl:Ticket. Evaluated as an agreement whose bearer is a variable bound by a holder condition."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# LITERALS, ACTIONS, VARIABLES AND ARGUMENTS
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:Literal
+  a owl:Class ;
+  rdfs:label "Literal"@en ;
+  skos:definition """An atomic formula, possibly negated: a predicate applied to ordered
+arguments, such as paid(?claim) or ¬disclosed(?record)."""@en ;
+  skos:scopeNote """The building block of conditions, actions and factual conclusions.
+The predicate (deo:predicate) is an IRI — a domain predicate, an ODRL action, an
+LDSO-Entities concept. Arguments (deo:hasArgument) are deo:Argument nodes
+ordered by deo:argumentIndex; their values are named entities or deo:Variable
+nodes. A predicate whose arguments include values (numbers, instants,
+durations, texts) declares a deo:PredicateSignature; a value argument is then
+a variable, bound by a fact or computed by a deo:AssignmentCondition. HydraDL:
+Literal { atom, positive }."""@en ;
+  skos:example """
+ex:lit_paid
+  a deo:Literal ;
+  deo:predicate ex:paid ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Action
+  a owl:Class ;
+  rdfs:label "Action"@en ;
+  rdfs:subClassOf deo:Literal ;
+  skos:definition """What a deontic statement requires, forbids or permits the bearer to
+do: a literal whose predicate is the act (pay, notify, use, print) and whose
+arguments are what it is done to."""@en ;
+  skos:scopeNote """ODRL Action (the value of odrl:action) together with the statement's
+target; the act's type is the deo:predicate (an ODRL action IRI or a domain
+act). A negated action reads "refrain from". Narrowing an action
+(odrl:refinement) is done with deo:refinement. Relations between act types
+(odrl:includedIn, odrl:implies) are stated on the act-type IRIs with
+deo:includedIn and deo:implies."""@en ;
+  skos:example """
+ex:act_pay
+  a deo:Action ;
+  deo:predicate ex:payClaim ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Argument
+  a owl:Class ;
+  rdfs:label "Argument"@en ;
+  skos:definition "One argument of a literal: its position and its value."@en ;
+  skos:scopeNote "Indexes start at 0 and are consecutive within a literal."@en ;
+  skos:example """
+ex:arg_0
+  a deo:Argument ;
+  deo:argumentIndex 0 ;
+  deo:argumentValue ex:var_claim ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Variable
+  a owl:Class ;
+  rdfs:label "Variable"@en ;
+  skos:definition """A placeholder in a rule, standing for any individual or value; the
+same variable in several literals of one rule stands for the same individual or
+value."""@en ;
+  skos:scopeNote """Variables are scoped to the rule that uses them. Every variable of a
+rule must occur in a positive fact, class or property condition of that rule,
+or be bound by an assignment or an aggregate (rule safety): a reasoner applies
+rules to the named individuals and computed values only. HydraDL:
+Term::Variable."""@en ;
+  skos:example """
+ex:var_claim
+  a deo:Variable ;
+  rdfs:label "?claim" ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Collection
+  a owl:Class ;
+  rdfs:label "Collection"@en ;
+  skos:definition """A set of assets or parties a rule refers to as a whole, optionally
+narrowed by refinements."""@en ;
+  skos:scopeNote """ODRL AssetCollection and PartyCollection. Members point to it with
+deo:memberOf (odrl:partOf). A rule over a collection applies to each member
+that satisfies its refinements: a compiler turns it into a variable with a
+membership condition."""@en ;
+  skos:example """
+ex:all_claims_2026
+  a deo:AssetCollection ;
+  deo:refinement ex:c_filed_in_2026 ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:AssetCollection
+  a owl:Class ;
+  rdfs:label "Asset Collection"@en ;
+  rdfs:subClassOf deo:Collection ;
+  skos:definition "A collection of the things actions are performed on."@en ;
+  skos:scopeNote "ODRL AssetCollection."@en ;
+  skos:example "ex:all_claims_2026 a deo:AssetCollection ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:PartyCollection
+  a owl:Class ;
+  rdfs:label "Party Collection"@en ;
+  rdfs:subClassOf deo:Collection ;
+  skos:definition "A collection of parties a statement is borne by or addressed to."@en ;
+  skos:scopeNote "ODRL PartyCollection."@en ;
+  skos:example "ex:all_policyholders a deo:PartyCollection ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CONDITIONS
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:Condition
+  a owl:Class ;
+  rdfs:label "Condition"@en ;
+  skos:definition """One conjunct of a rule's antecedent: something that must hold in a
+situation for the rule to apply."""@en ;
+  skos:scopeNote """Abstract: use deo:FactCondition, deo:ClassCondition,
+deo:PropertyCondition, deo:NormCondition, deo:ComparisonCondition,
+deo:LogicalCondition, deo:AssignmentCondition or deo:AggregateCondition. A
+condition is evaluated with three values: established,
+refuted, or undetermined (when the record is open and silent). The formal
+counterpart of an LDSO-Semantics leg:Condition or leg:Exception (link with
+deo:formalizes) and of an ODRL Constraint or LogicalConstraint."""@en ;
+  skos:example """
+ex:c_payable
+  a deo:ClassCondition ;
+  deo:classExpression ex:PayableClaim ;
+  deo:subject ex:var_claim ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:FactCondition
+  a owl:Class ;
+  rdfs:label "Fact Condition"@en ;
+  rdfs:subClassOf deo:Condition , deo:Literal ;
+  skos:definition """A condition that a literal holds in the situation — a recorded fact,
+possibly with a time — or, if negated, that it does not."""@en ;
+  skos:scopeNote """Whether an unrecorded fact counts as false depends on whether its
+predicate is declared complete (deo:declaresComplete). HydraDL:
+Condition::Fact. The time of the fact a rule is activated by sets when its
+obligation starts (deo:activatedBy)."""@en ;
+  skos:example """
+ex:c_approved_at
+  a deo:FactCondition ;
+  deo:predicate ex:approvedAt ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:ClassCondition
+  a owl:Class ;
+  rdfs:label "Class Condition"@en ;
+  rdfs:subClassOf deo:Condition ;
+  skos:definition """A condition that an individual belongs (or, if negated, does not
+belong) to an OWL class, decided by a DL reasoner over the ontology."""@en ;
+  skos:scopeNote """The class is named by deo:classExpression (a named class, or a class
+expression node); the individual by deo:subject. Answered one-way: an
+entailment establishes it, an entailed complement refutes it, anything else
+leaves it undetermined unless the class is declared complete. HydraDL:
+Condition::Class."""@en ;
+  skos:example """
+ex:c_flood
+  a deo:ClassCondition ;
+  deo:classExpression ex:FloodClaim ;
+  deo:subject ex:var_claim ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:PropertyCondition
+  a owl:Class ;
+  rdfs:label "Property Condition"@en ;
+  rdfs:subClassOf deo:Condition ;
+  skos:definition """A condition that two individuals stand (or, if negated, do not stand)
+in an OWL object property, decided by a DL reasoner over the ontology."""@en ;
+  skos:scopeNote "HydraDL: Condition::Role."@en ;
+  skos:example """
+ex:c_insurer_of
+  a deo:PropertyCondition ;
+  deo:property ex:insurerOf ;
+  deo:subject ex:var_insurer ;
+  deo:object ex:var_claim ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:NormCondition
+  a owl:Class ;
+  rdfs:label "Norm Condition"@en ;
+  rdfs:subClassOf deo:Condition ;
+  skos:definition """A condition on the normative state of a deontic statement: that it is
+in force, violated, or complied with."""@en ;
+  skos:scopeNote """The statement is given by deo:aboutStatement and the state by
+deo:normState (deo:InForce, deo:Violated, deo:Fulfilled). LegalRuleML
+Violation and Compliance used as premises. HydraDL: Condition::InForce,
+Condition::Violated and Condition::Fulfilled."""@en ;
+  skos:example """
+ex:c_pay_violated
+  a deo:NormCondition ;
+  deo:aboutStatement ex:obl_pay ;
+  deo:normState deo:Violated ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:ComparisonCondition
+  a owl:Class ;
+  rdfs:label "Comparison Condition"@en ;
+  rdfs:subClassOf deo:Condition ;
+  skos:definition """A condition comparing a measured or stated value (the left operand)
+with a value (the right operand) by an operator, such as count ≤ 5, dateTime <
+2027-01-01, or spatial isPartOf EU."""@en ;
+  skos:scopeNote """ODRL Constraint (leftOperand, operator, rightOperand,
+rightOperandReference, unit, dataType, status). Order comparisons reuse the
+LDSO-Operations comparators (ops:Comparator); set and part operators use the
+deo:SetOperator individuals. The left operand is a predicate with a value (a
+quantity such as ex:claimedAmount, or an ODRL left operand); its key is the
+target of the statement the condition refines, or else the subject of the
+rule's only positive class condition. HydraDL: a fact condition binding the left operand's
+value, then Condition::Compare (for a comparator), Condition::In (deo:IsAnyOf,
+deo:IsNoneOf, with one deo:rightOperand per member) or Condition::Class
+(deo:IsA, the right operand a class). Part-of and all-of operators, right
+operands looked up through deo:rightOperandReference, and comparisons of an
+ODRL status (deo:status) are not executable."""@en ;
+  skos:example """
+ex:c_amount_cap
+  a deo:ComparisonCondition ;
+  deo:leftOperand ex:claimedAmount ;
+  deo:operator ops:LessThanOrEqual ;
+  deo:rightOperand "10000"^^xsd:decimal ;
+  deo:unit "USD" ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:LogicalCondition
+  a owl:Class ;
+  rdfs:label "Logical Condition"@en ;
+  rdfs:subClassOf deo:Condition ;
+  skos:definition """A condition combining other conditions with a logical operator: and,
+or, exclusive or, or and-in-sequence."""@en ;
+  skos:scopeNote """ODRL LogicalConstraint (and, or, xone, andSequence). Operands are
+given by deo:operand; for and-in-sequence, by deo:SequencedOperand nodes
+with a deo:position. A compiler maps and to a conjunction, or to one rule per
+operand, and exclusive-or to one rule per operand with the others negated;
+and-in-sequence (order in time) is not yet executable by HydraDL."""@en ;
+  skos:example """
+ex:c_either
+  a deo:LogicalCondition ;
+  deo:logicalOperator deo:Or ;
+  deo:operand ex:c_flood , ex:c_storm ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:SequencedOperand
+  a owl:Class ;
+  rdfs:label "Sequenced Operand"@en ;
+  skos:definition "An operand of an and-in-sequence condition, with its position in the sequence."@en ;
+  skos:example """
+ex:seq_1
+  a deo:SequencedOperand ;
+  deo:position 1 ;
+  deo:operandCondition ex:c_registered ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:NormStateScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Norm states"@en ;
+  skos:definition "Normative states of a deontic statement that a condition can test."@en ;
+  skos:hasTopConcept deo:InForce , deo:Violated , deo:Fulfilled ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:InForce
+  a skos:Concept ; rdfs:label "in force"@en ;
+  skos:inScheme deo:NormStateScheme ; skos:topConceptOf deo:NormStateScheme ;
+  skos:definition "The deontic statement is concluded (holds) in the situation."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Violated
+  a skos:Concept ; rdfs:label "violated"@en ;
+  skos:inScheme deo:NormStateScheme ; skos:topConceptOf deo:NormStateScheme ;
+  skos:definition "The obligation was not complied with by its deadline, or the prohibition was infringed."@en ;
+  skos:scopeNote "LegalRuleML Violation; ODRL infringed (prohibitions) and not fulfilled (duties)."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Fulfilled
+  a skos:Concept ; rdfs:label "fulfilled"@en ;
+  skos:inScheme deo:NormStateScheme ; skos:topConceptOf deo:NormStateScheme ;
+  skos:definition "The obligation was complied with, or the prohibition's period ended without infringement."@en ;
+  skos:scopeNote "LegalRuleML Compliance; ODRL fulfilled. HydraDL Condition::Fulfilled."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:LogicalOperatorScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Logical operators"@en ;
+  skos:definition "How a logical condition combines its operands."@en ;
+  skos:hasTopConcept deo:And , deo:Or , deo:Xone , deo:AndSequence ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:And
+  a skos:Concept ; rdfs:label "and"@en ;
+  skos:inScheme deo:LogicalOperatorScheme ; skos:topConceptOf deo:LogicalOperatorScheme ;
+  skos:definition "Every operand holds."@en ; skos:scopeNote "ODRL odrl:and."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Or
+  a skos:Concept ; rdfs:label "or"@en ;
+  skos:inScheme deo:LogicalOperatorScheme ; skos:topConceptOf deo:LogicalOperatorScheme ;
+  skos:definition "At least one operand holds."@en ; skos:scopeNote "ODRL odrl:or."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Xone
+  a skos:Concept ; rdfs:label "exactly one"@en ;
+  skos:inScheme deo:LogicalOperatorScheme ; skos:topConceptOf deo:LogicalOperatorScheme ;
+  skos:definition "Exactly one operand holds."@en ; skos:scopeNote "ODRL odrl:xone."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:AndSequence
+  a skos:Concept ; rdfs:label "and in sequence"@en ;
+  skos:inScheme deo:LogicalOperatorScheme ; skos:topConceptOf deo:LogicalOperatorScheme ;
+  skos:definition "Every operand holds, one after another in the stated order."@en ;
+  skos:scopeNote "ODRL odrl:andSequence. Not yet executable by HydraDL."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:SetOperator
+  a owl:Class ;
+  rdfs:label "Set Operator"@en ;
+  skos:definition """A comparison operator over classes, parts and sets, for comparison
+conditions whose operands are not ordered values."""@en ;
+  skos:scopeNote """Use the six individuals below. Order comparisons (=, ≠, <, ≤, >, ≥) use
+the LDSO-Operations comparators instead."""@en ;
+  skos:example "ex:c_eu a deo:ComparisonCondition ; deo:operator deo:IsPartOf ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:IsA        a deo:SetOperator ; rdfs:label "is a"@en ;
+  skos:definition "The left operand is an instance of the right operand class."@en ; skos:scopeNote "ODRL odrl:isA."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:HasPart    a deo:SetOperator ; rdfs:label "has part"@en ;
+  skos:definition "The left operand contains the right operand."@en ; skos:scopeNote "ODRL odrl:hasPart."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:IsPartOf   a deo:SetOperator ; rdfs:label "is part of"@en ;
+  skos:definition "The left operand is contained in the right operand."@en ; skos:scopeNote "ODRL odrl:isPartOf."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:IsAllOf    a deo:SetOperator ; rdfs:label "is all of"@en ;
+  skos:definition "The left operand is every member of the right operand set."@en ; skos:scopeNote "ODRL odrl:isAllOf."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:IsAnyOf    a deo:SetOperator ; rdfs:label "is any of"@en ;
+  skos:definition "The left operand is a member of the right operand set."@en ; skos:scopeNote "ODRL odrl:isAnyOf."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:IsNoneOf   a deo:SetOperator ; rdfs:label "is none of"@en ;
+  skos:definition "The left operand is no member of the right operand set."@en ; skos:scopeNote "ODRL odrl:isNoneOf."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ALTERNATIVE INTERPRETATIONS AND TEMPORAL CHARACTERISTICS
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:Alternatives
+  a owl:Class ;
+  rdfs:label "Alternatives"@en ;
+  skos:definition """A set of mutually exclusive formalisations of the same provision:
+competing interpretations, of which at most one is adopted at a time."""@en ;
+  skos:scopeNote """LegalRuleML Alternatives (hasAlternative, fromLegalSources). Each
+alternative (deo:alternative) is a rule. An evaluation uses the one named by
+deo:adopted, or evaluates each alternative separately and reports per
+interpretation."""@en ;
+  skos:example """
+ex:alt_art7
+  a deo:Alternatives ;
+  deo:alternative ex:r_art7_strict_reading , ex:r_art7_broad_reading ;
+  deo:adopted ex:r_art7_strict_reading ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:TemporalCharacteristic
+  a owl:Class ;
+  rdfs:label "Temporal Characteristic"@en ;
+  skos:definition """A dated change in a rule's legal status: the moment it starts or ends
+being in force, efficacious, applicable or enforceable."""@en ;
+  skos:scopeNote """LegalRuleML TemporalCharacteristic (forStatus, hasStatusDevelopment,
+atTime). Complements LDSO-Lifecycle (life:validFrom / life:validTo on the
+source provision): use this when the formalised rule's own validity differs
+from its provision's, or for statuses other than being in force. Rule validity
+windows are not yet evaluated by HydraDL."""@en ;
+  skos:example """
+ex:tc_r1_start
+  a deo:TemporalCharacteristic ;
+  deo:forStatus deo:StatusInForce ;
+  deo:statusDevelopment deo:Starts ;
+  deo:atTime "2026-01-01T00:00:00Z"^^xsd:dateTime ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:LegalStatusScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Legal statuses of rules"@en ;
+  skos:definition "Legal statuses a rule can have over time."@en ;
+  skos:hasTopConcept deo:StatusInForce , deo:StatusEfficacious ,
+                     deo:StatusApplicable , deo:StatusEnforceable ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:StatusInForce      a skos:Concept ; rdfs:label "in force"@en ;
+  skos:inScheme deo:LegalStatusScheme ; skos:topConceptOf deo:LegalStatusScheme ;
+  skos:definition "The rule belongs to the legal system."@en ; rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:StatusEfficacious  a skos:Concept ; rdfs:label "efficacious"@en ;
+  skos:inScheme deo:LegalStatusScheme ; skos:topConceptOf deo:LegalStatusScheme ;
+  skos:definition "The rule can produce legal effects."@en ; rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:StatusApplicable   a skos:Concept ; rdfs:label "applicable"@en ;
+  skos:inScheme deo:LegalStatusScheme ; skos:topConceptOf deo:LegalStatusScheme ;
+  skos:definition "The rule applies to facts occurring in the period."@en ; rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:StatusEnforceable  a skos:Concept ; rdfs:label "enforceable"@en ;
+  skos:inScheme deo:LegalStatusScheme ; skos:topConceptOf deo:LegalStatusScheme ;
+  skos:definition "The rule's effects can be enforced."@en ; rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:StatusDevelopmentScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Status developments"@en ;
+  skos:definition "Whether a legal status starts or ends."@en ;
+  skos:hasTopConcept deo:Starts , deo:Ends ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Starts a skos:Concept ; rdfs:label "starts"@en ;
+  skos:inScheme deo:StatusDevelopmentScheme ; skos:topConceptOf deo:StatusDevelopmentScheme ;
+  skos:definition "The status begins at the given time."@en ; rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Ends a skos:Concept ; rdfs:label "ends"@en ;
+  skos:inScheme deo:StatusDevelopmentScheme ; skos:topConceptOf deo:StatusDevelopmentScheme ;
+  skos:definition "The status ends at the given time."@en ; rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# VALUES: SIGNATURES, EXPRESSIONS, ASSIGNMENTS AND AGGREGATES
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:PredicateSignature
+  a owl:Class ;
+  rdfs:label "Predicate Signature"@en ;
+  skos:definition """The argument types of a predicate that carries values (numbers,
+instants, durations, texts), which leading arguments identify a record (its
+key), and whether it is a quantity, with one value per key, or a relation,
+with any number."""@en ;
+  skos:scopeNote """Declared on the normative system with deo:declaresSignature. The
+arguments are deo:ArgumentSlot nodes ordered by deo:argumentIndex (LDSO never
+uses rdf:List). A quantity (deo:isQuantity true) has exactly one argument after
+its key: income(?person, ?amount). Its values compete: a recorded value beats a
+concluded one, the latest record wins, and rules concluding different values
+attack each other. A relation (deo:isQuantity false) may hold several values
+per key, such as payments. A predicate without a signature takes individuals
+only. HydraDL: NormSystem.signatures, Signature { args, key, quantity }."""@en ;
+  skos:example """
+ex:sig_claim_amount
+  a deo:PredicateSignature ;
+  deo:signaturePredicate ex:claimAmount ;
+  deo:keyLength 1 ;
+  deo:isQuantity true ;
+  deo:hasArgumentSlot [ a deo:ArgumentSlot ; deo:argumentIndex 0 ; deo:valueType deo:Individual ] ,
+                      [ a deo:ArgumentSlot ; deo:argumentIndex 1 ; deo:valueType deo:Number ] ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:ArgumentSlot
+  a owl:Class ;
+  rdfs:label "Argument Slot"@en ;
+  skos:definition "One argument position of a predicate signature and the type of value it holds."@en ;
+  skos:scopeNote "Indexes start at 0 and are consecutive within a signature. The type is a concept of deo:ValueTypeScheme."@en ;
+  skos:example """
+ex:slot_amount
+  a deo:ArgumentSlot ;
+  deo:argumentIndex 1 ;
+  deo:valueType deo:Number ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:ValueTypeScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Value types"@en ;
+  skos:definition "The types an argument of a predicate signature can hold."@en ;
+  skos:hasTopConcept deo:Individual , deo:Number , deo:Instant , deo:Duration , deo:Text ;
+  skos:scopeNote "HydraDL ValueType. An argument position holds one type in every fact: never an individual in one and a value in another."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Individual
+  a skos:Concept ; rdfs:label "individual"@en ;
+  skos:inScheme deo:ValueTypeScheme ; skos:topConceptOf deo:ValueTypeScheme ;
+  skos:definition "A named individual of the ontology: a party, a claim, a dataset."@en ;
+  skos:scopeNote "HydraDL ValueType::Individual. Key arguments are usually individuals."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Number
+  a skos:Concept ; rdfs:label "number"@en ;
+  skos:inScheme deo:ValueTypeScheme ; skos:topConceptOf deo:ValueTypeScheme ;
+  skos:definition "An exact rational number: an amount, a rate, a count."@en ;
+  skos:scopeNote "HydraDL ValueType::Number. There is no floating point: 1 ÷ 3 is exactly one third, and rounding happens only where an expression says so. Written as xsd:decimal or xsd:integer."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Instant
+  a skos:Concept ; rdfs:label "instant"@en ;
+  skos:inScheme deo:ValueTypeScheme ; skos:topConceptOf deo:ValueTypeScheme ;
+  skos:definition "A point in time, such as a date of birth or the day a claim was filed."@en ;
+  skos:scopeNote "HydraDL ValueType::Instant (seconds). Written as xsd:dateTime."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Duration
+  a skos:Concept ; rdfs:label "duration"@en ;
+  skos:inScheme deo:ValueTypeScheme ; skos:topConceptOf deo:ValueTypeScheme ;
+  skos:definition "A fixed length of time."@en ;
+  skos:scopeNote "HydraDL ValueType::Duration (seconds). Written as xsd:duration in weeks, days, hours, minutes and seconds; calendar months and years vary in length and are counted with calendar operations instead."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Text
+  a skos:Concept ; rdfs:label "text"@en ;
+  skos:inScheme deo:ValueTypeScheme ; skos:topConceptOf deo:ValueTypeScheme ;
+  skos:definition "A string, such as a code or a category name."@en ;
+  skos:scopeNote "HydraDL ValueType::Text. Texts are only equal or not; they have no order."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Expression
+  a owl:Class ;
+  rdfs:label "Expression"@en ;
+  skos:definition """A computation over values: an operation applied to ordered operands,
+such as 0.015 × ?amount, round(?x, 2) or the whole years between two
+instants."""@en ;
+  skos:scopeNote """The operation is a concept of deo:OperationScheme (deo:operation). Operands
+are deo:ExpressionOperand nodes ordered by deo:position (LDSO never uses
+rdf:List); each operand's value is a literal, an individual, a deo:Variable or
+a nested expression. deo:Round also takes deo:places and deo:roundingMode.
+Arithmetic is exact. Used by deo:AssignmentCondition and
+deo:AggregateCondition. HydraDL: Expr."""@en ;
+  skos:example """
+ex:expr_fee
+  a deo:Expression ;
+  deo:operation deo:Round ;
+  deo:places 2 ;
+  deo:roundingMode deo:HalfEven ;
+  deo:hasOperand [ a deo:ExpressionOperand ; deo:position 1 ; deo:operandValue [
+    a deo:Expression ;
+    deo:operation deo:Mul ;
+    deo:hasOperand [ a deo:ExpressionOperand ; deo:position 1 ; deo:operandValue "0.015"^^xsd:decimal ] ,
+                   [ a deo:ExpressionOperand ; deo:position 2 ; deo:operandValue ex:var_amount ]
+  ] ] ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:ExpressionOperand
+  a owl:Class ;
+  rdfs:label "Expression Operand"@en ;
+  skos:definition "One operand of an expression: its position and its value."@en ;
+  skos:scopeNote "Positions start at 1 and are consecutive within an expression; the order matters for subtraction, division and the calendar operations."@en ;
+  skos:example """
+ex:operand_rate
+  a deo:ExpressionOperand ;
+  deo:position 1 ;
+  deo:operandValue "0.015"^^xsd:decimal ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:OperationScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Operations"@en ;
+  skos:definition "The operations an expression applies to its operands."@en ;
+  skos:scopeNote """One concept per HydraDL Expr operation (a constant or a variable is an
+operand, not an operation). The number of operands is fixed per operation:
+none for deo:Now, one for deo:Neg, deo:Abs, deo:Round, deo:Floor and
+deo:Ceil, two for the others. Calendar operations count civil dates at the
+normative system's deo:utcOffset."""@en ;
+  skos:hasTopConcept deo:Now , deo:Neg , deo:Abs , deo:Add , deo:Sub , deo:Mul , deo:Div ,
+                     deo:Lesser , deo:Greater , deo:Round , deo:Floor , deo:Ceil ,
+                     deo:YearsBetween , deo:MonthsBetween , deo:DaysBetween ,
+                     deo:AddDays , deo:AddMonths , deo:AddYears ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Now a skos:Concept ; rdfs:label "now"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The instant of the evaluation. No operand."@en ; skos:scopeNote "HydraDL Expr::Now."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Neg a skos:Concept ; rdfs:label "negation"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The opposite of the operand."@en ; skos:scopeNote "HydraDL Expr::Neg."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Abs a skos:Concept ; rdfs:label "absolute value"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The magnitude of the operand."@en ; skos:scopeNote "HydraDL Expr::Abs."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Add a skos:Concept ; rdfs:label "sum"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The first operand plus the second; an instant plus a duration is an instant."@en ; skos:scopeNote "HydraDL Expr::Add."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Sub a skos:Concept ; rdfs:label "difference"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The first operand minus the second; two instants give a duration."@en ; skos:scopeNote "HydraDL Expr::Sub."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Mul a skos:Concept ; rdfs:label "product"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The first operand times the second."@en ; skos:scopeNote "HydraDL Expr::Mul."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Div a skos:Concept ; rdfs:label "quotient"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The first operand divided by the second, exactly."@en ; skos:scopeNote "HydraDL Expr::Div. Division by zero has no value: a comparison over it is undetermined."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Lesser a skos:Concept ; rdfs:label "lesser"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The lesser of the two operands."@en ; skos:scopeNote "HydraDL Expr::Min. For the least value over many records, use a deo:AggregateCondition with deo:Min."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Greater a skos:Concept ; rdfs:label "greater"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The greater of the two operands, as in max(income − deduction, 0)."@en ; skos:scopeNote "HydraDL Expr::Max. For the greatest value over many records, use a deo:AggregateCondition with deo:Max."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Round a skos:Concept ; rdfs:label "round"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The operand rounded to deo:places decimal places by deo:roundingMode."@en ; skos:scopeNote "HydraDL Expr::Round(expr, places, Rounding)."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Floor a skos:Concept ; rdfs:label "floor"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The greatest integer not above the operand."@en ; skos:scopeNote "HydraDL Expr::Floor."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Ceil a skos:Concept ; rdfs:label "ceiling"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The least integer not below the operand."@en ; skos:scopeNote "HydraDL Expr::Ceil."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:YearsBetween a skos:Concept ; rdfs:label "years between"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "Whole calendar years from the first instant to the second, such as an age."@en ; skos:scopeNote "HydraDL Expr::YearsBetween."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:MonthsBetween a skos:Concept ; rdfs:label "months between"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "Whole calendar months from the first instant to the second."@en ; skos:scopeNote "HydraDL Expr::MonthsBetween."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:DaysBetween a skos:Concept ; rdfs:label "days between"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "Whole civil days from the first instant to the second."@en ; skos:scopeNote "HydraDL Expr::DaysBetween."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:AddDays a skos:Concept ; rdfs:label "add days"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The first operand, an instant, plus a whole number of days (the second)."@en ; skos:scopeNote "HydraDL Expr::AddDays."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:AddMonths a skos:Concept ; rdfs:label "add months"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The first operand, an instant, plus a whole number of calendar months (the second)."@en ; skos:scopeNote "HydraDL Expr::AddMonths."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:AddYears a skos:Concept ; rdfs:label "add years"@en ;
+  skos:inScheme deo:OperationScheme ; skos:topConceptOf deo:OperationScheme ;
+  skos:definition "The first operand, an instant, plus a whole number of calendar years (the second)."@en ; skos:scopeNote "HydraDL Expr::AddYears."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:RoundingModeScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Rounding modes"@en ;
+  skos:definition "How deo:Round resolves the digits it drops."@en ;
+  skos:scopeNote "HydraDL Rounding."@en ;
+  skos:hasTopConcept deo:HalfUp , deo:HalfEven , deo:Down , deo:Up ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:HalfUp a skos:Concept ; rdfs:label "half up"@en ;
+  skos:inScheme deo:RoundingModeScheme ; skos:topConceptOf deo:RoundingModeScheme ;
+  skos:definition "To the nearest neighbour; a tie goes away from zero."@en ; skos:scopeNote "HydraDL Rounding::HalfUp."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:HalfEven a skos:Concept ; rdfs:label "half even"@en ;
+  skos:inScheme deo:RoundingModeScheme ; skos:topConceptOf deo:RoundingModeScheme ;
+  skos:definition "To the nearest neighbour; a tie goes to the even neighbour (banker's rounding)."@en ; skos:scopeNote "HydraDL Rounding::HalfEven."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Down a skos:Concept ; rdfs:label "down"@en ;
+  skos:inScheme deo:RoundingModeScheme ; skos:topConceptOf deo:RoundingModeScheme ;
+  skos:definition "Toward zero: the dropped digits are discarded."@en ; skos:scopeNote "HydraDL Rounding::Down."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Up a skos:Concept ; rdfs:label "up"@en ;
+  skos:inScheme deo:RoundingModeScheme ; skos:topConceptOf deo:RoundingModeScheme ;
+  skos:definition "Away from zero whenever a nonzero digit is dropped."@en ; skos:scopeNote "HydraDL Rounding::Up."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:AssignmentCondition
+  a owl:Class ;
+  rdfs:label "Assignment Condition"@en ;
+  rdfs:subClassOf deo:Condition ;
+  skos:definition """A condition that binds a fresh variable to a computed value: "let ?fee
+be round(0.015 × ?amount, 2)"."""@en ;
+  skos:scopeNote """The variable is given by deo:assigns and the value by deo:expression (a
+deo:Expression, a deo:Variable or a literal). It holds once the expression's
+variables are bound; over an unknown value the assigned value is unknown. The
+variable must be bound nowhere else in the rule. A constitutive rule concluding
+a literal whose value argument is the assigned variable computes a value of
+that predicate. Never negated. HydraDL: Condition::Let { var, expr }."""@en ;
+  skos:example """
+ex:c_fee
+  a deo:AssignmentCondition ;
+  deo:assigns ex:var_fee ;
+  deo:expression ex:expr_fee ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:AggregateCondition
+  a owl:Class ;
+  rdfs:label "Aggregate Condition"@en ;
+  rdfs:subClassOf deo:Condition ;
+  skos:definition """A condition that binds a fresh variable to the sum, count, minimum or
+maximum of an expression over every distinct solution of a pattern of
+conditions: "?gross is the sum of ?amount over wage(?person, ?month, ?amount)"."""@en ;
+  skos:scopeNote """The operator is deo:aggregateOperator, the bound variable deo:assigns, the
+value of each solution deo:expression, and the pattern deo:pattern (fact,
+class and property conditions). A variable of the pattern also bound
+elsewhere in the rule is a group key; the others are local to the aggregate.
+Set semantics: each distinct solution counts once, so records that must count
+separately carry an identifying argument (the month of a wage). Over no
+solution a sum or count is 0 and a minimum or maximum has no value (the
+condition is refuted); over an open base predicate the aggregate is
+undetermined. Never negated. HydraDL: Condition::Aggregate { var, op, expr,
+pattern }."""@en ;
+  skos:example """
+ex:c_gross
+  a deo:AggregateCondition ;
+  deo:aggregateOperator deo:Sum ;
+  deo:assigns ex:var_gross ;
+  deo:expression ex:var_wage ;
+  deo:pattern [
+    a deo:FactCondition ;
+    deo:predicate ex:wage ;
+    deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_person ] ,
+                    [ a deo:Argument ; deo:argumentIndex 1 ; deo:argumentValue ex:var_month ] ,
+                    [ a deo:Argument ; deo:argumentIndex 2 ; deo:argumentValue ex:var_wage ]
+  ] ."""@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:AggregateOperatorScheme
+  a skos:ConceptScheme ;
+  rdfs:label "Aggregate operators"@en ;
+  skos:definition "How an aggregate condition combines the values of its pattern's solutions."@en ;
+  skos:scopeNote "HydraDL AggregateOp."@en ;
+  skos:hasTopConcept deo:Sum , deo:Count , deo:Min , deo:Max ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:Sum a skos:Concept ; rdfs:label "sum"@en ;
+  skos:inScheme deo:AggregateOperatorScheme ; skos:topConceptOf deo:AggregateOperatorScheme ;
+  skos:definition "The sum of the solutions' values; 0 over no solution."@en ; skos:scopeNote "HydraDL AggregateOp::Sum."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Count a skos:Concept ; rdfs:label "count"@en ;
+  skos:inScheme deo:AggregateOperatorScheme ; skos:topConceptOf deo:AggregateOperatorScheme ;
+  skos:definition "The number of distinct solutions; 0 over none."@en ; skos:scopeNote "HydraDL AggregateOp::Count."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Min a skos:Concept ; rdfs:label "minimum"@en ;
+  skos:inScheme deo:AggregateOperatorScheme ; skos:topConceptOf deo:AggregateOperatorScheme ;
+  skos:definition "The least of the solutions' values; none over no solution."@en ; skos:scopeNote "HydraDL AggregateOp::Min."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+deo:Max a skos:Concept ; rdfs:label "maximum"@en ;
+  skos:inScheme deo:AggregateOperatorScheme ; skos:topConceptOf deo:AggregateOperatorScheme ;
+  skos:definition "The greatest of the solutions' values; none over no solution."@en ; skos:scopeNote "HydraDL AggregateOp::Max."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# OBJECT PROPERTIES
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ── Normative system ──
+
+deo:hasRule
+  a owl:ObjectProperty ;
+  rdfs:label "has rule"@en ;
+  rdfs:domain deo:NormativeSystem ;
+  rdfs:range  deo:Rule ;
+  skos:definition "A rule of the normative system."@en ;
+  skos:scopeNote "ODRL odrl:permission / odrl:prohibition / odrl:obligation; LegalRuleML hasStatement."@en ;
+  skos:example "ex:policy_2026 deo:hasRule ex:r_pay_claim ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:hasOverride
+  a owl:ObjectProperty ;
+  rdfs:label "has override"@en ;
+  rdfs:domain deo:NormativeSystem ;
+  rdfs:range  deo:Override ;
+  skos:definition "An override that holds within the normative system."@en ;
+  skos:scopeNote "LegalRuleML OverrideStatement / hasQualification."@en ;
+  skos:example "ex:policy_2026 deo:hasOverride ex:ov_flood ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:hasFactualStatement
+  a owl:ObjectProperty ;
+  rdfs:label "has factual statement"@en ;
+  rdfs:domain deo:NormativeSystem ;
+  rdfs:range  deo:FactualStatement ;
+  skos:definition "A factual statement the normative system makes."@en ;
+  skos:example "ex:policy_2026 deo:hasFactualStatement ex:fs_authority ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:hasReparation
+  a owl:ObjectProperty ;
+  rdfs:label "has reparation"@en ;
+  rdfs:domain deo:NormativeSystem ;
+  rdfs:range  deo:Reparation ;
+  skos:definition "A reparation stated within the normative system."@en ;
+  skos:scopeNote "LegalRuleML ReparationStatement."@en ;
+  skos:example "ex:policy_2026 deo:hasReparation ex:rep_late_fee ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:hasAlternatives
+  a owl:ObjectProperty ;
+  rdfs:label "has alternatives"@en ;
+  rdfs:domain deo:NormativeSystem ;
+  rdfs:range  deo:Alternatives ;
+  skos:definition "A set of alternative formalisations within the normative system."@en ;
+  skos:example "ex:policy_2026 deo:hasAlternatives ex:alt_art7 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:inheritsFrom
+  a owl:ObjectProperty , owl:TransitiveProperty ;
+  rdfs:label "inherits from"@en ;
+  rdfs:domain deo:NormativeSystem ;
+  rdfs:range  deo:NormativeSystem ;
+  skos:definition "A normative system whose rules this one includes."@en ;
+  skos:scopeNote "ODRL odrl:inheritFrom."@en ;
+  skos:example "ex:policy_2026 deo:inheritsFrom ex:master_terms ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:policyType
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "policy type"@en ;
+  rdfs:domain deo:NormativeSystem ;
+  rdfs:range  skos:Concept ;
+  skos:definition "The kind of instrument (a concept of deo:PolicyTypeScheme)."@en ;
+  skos:example "ex:policy_2026 deo:policyType deo:Agreement ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:conflictStrategy
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "conflict strategy"@en ;
+  rdfs:domain deo:NormativeSystem ;
+  rdfs:range  skos:Concept ;
+  skos:definition "What an unresolved conflict yields (a concept of deo:ConflictStrategyScheme)."@en ;
+  skos:scopeNote "ODRL odrl:conflict. Absent: ambiguity blocking."@en ;
+  skos:example "ex:policy_2026 deo:conflictStrategy deo:ProhibitionPrevails ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:declaresComplete
+  a owl:ObjectProperty ;
+  rdfs:label "declares complete"@en ;
+  rdfs:domain deo:NormativeSystem ;
+  skos:definition """A predicate, class or property whose record is complete: an
+unrecorded fact of it counts as false rather than unknown."""@en ;
+  skos:scopeNote """The closed-world declaration. Without it every record is open, and the
+absence of a record (for example of a payment) never proves that something did
+not happen. HydraDL: NormSystem.closed. Only predicates that no rule concludes
+may be declared complete."""@en ;
+  skos:example "ex:policy_2026 deo:declaresComplete ex:paid , ex:approvedAt ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:authority
+  a owl:ObjectProperty ;
+  rdfs:label "authority"@en ;
+  rdfs:range  ent:NamedEntity ;
+  skos:definition "The person or organisation that creates, endorses or enforces the norms."@en ;
+  skos:scopeNote "LegalRuleML Authority. On a normative system or a rule."@en ;
+  skos:example "ex:policy_2026 deo:authority ex:acme_insurance ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:jurisdiction
+  a owl:ObjectProperty ;
+  rdfs:label "jurisdiction"@en ;
+  rdfs:range  ent:NamedEntity ;
+  skos:definition "The territory or subject matter over which the norms apply."@en ;
+  skos:scopeNote "LegalRuleML Jurisdiction. On a normative system or a rule."@en ;
+  skos:example "ex:policy_2026 deo:jurisdiction ex:michigan ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:legalSource
+  a owl:ObjectProperty ;
+  rdfs:label "legal source"@en ;
+  rdfs:range  ldso:LegalResource ;
+  skos:definition "The legal instrument the norms derive from."@en ;
+  skos:scopeNote "LegalRuleML LegalSource / fromLegalSources. On a normative system, a rule or an Alternatives set."@en ;
+  skos:example "ex:policy_2026 deo:legalSource ex:policy_doc ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+# ── Rules ──
+
+deo:strength
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "strength"@en ;
+  rdfs:domain deo:Rule ;
+  rdfs:range  skos:Concept ;
+  skos:definition "The rule's strength (a concept of deo:StrengthScheme)."@en ;
+  skos:scopeNote "LegalRuleML hasStrength / appliesStrength."@en ;
+  skos:example "ex:r_pay_claim deo:strength deo:DefeasibleStrength ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:hasCondition
+  a owl:ObjectProperty ;
+  rdfs:label "has condition"@en ;
+  rdfs:domain deo:Rule ;
+  rdfs:range  deo:Condition ;
+  skos:definition "One conjunct of the rule's antecedent."@en ;
+  skos:scopeNote "ruleml:if; ODRL odrl:constraint. All conditions of a rule must hold for it to apply."@en ;
+  skos:example "ex:r_pay_claim deo:hasCondition ex:c_payable ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:activatedBy
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "activated by"@en ;
+  rdfs:domain deo:Rule ;
+  rdfs:range  deo:FactCondition ;
+  skos:definition """The fact condition of the rule whose time sets when the rule's
+obligation starts (and so when a relative deadline runs from)."""@en ;
+  skos:scopeNote """Must be one of the rule's own conditions. Absent: the latest time among
+the rule's timestamped fact conditions. HydraDL: Rule.activated_by. The
+LDSO-Operations trigger of an operative rule usually corresponds to it."""@en ;
+  skos:example "ex:r_pay_claim deo:activatedBy ex:c_approved_at ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:hasConsequent
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "has consequent"@en ;
+  rdfs:domain deo:PrescriptiveRule ;
+  skos:definition "The deontic conclusion of a prescriptive rule: a deontic statement or a reparation chain."@en ;
+  skos:scopeNote "ruleml:then (a SuborderList in LegalRuleML)."@en ;
+  skos:example "ex:r_pay_claim deo:hasConsequent ex:chain_pay ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:concludes
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "concludes"@en ;
+  rdfs:domain deo:ConstitutiveRule ;
+  rdfs:range  deo:Literal ;
+  skos:definition "The factual conclusion of a constitutive rule."@en ;
+  skos:example "ex:r_late_payment deo:concludes ex:lit_late_payment ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:asserts
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "asserts"@en ;
+  rdfs:domain deo:FactualStatement ;
+  rdfs:range  deo:Literal ;
+  skos:definition "The fact a factual statement asserts."@en ;
+  skos:example "ex:fs_authority deo:asserts ex:lit_agency_competent ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:formalizes
+  a owl:ObjectProperty ;
+  rdfs:label "formalizes"@en ;
+  skos:definition """What a formal term formalises: the LDSO-Semantics annotation
+(normative statement, condition, exception, definition) or the LDSO-Operations
+operative rule it is the formal counterpart of."""@en ;
+  skos:scopeNote """The provenance link from the formal layer to the annotated text. A
+reasoner's explanation cites the source provision through it: deo:formalizes
+→ leg:annotates → the structural element and its citation. Domain: a rule, a
+condition or a deontic statement."""@en ;
+  skos:example "ex:r_pay_claim deo:formalizes ex:Oblig_Clause8 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:temporalCharacteristic
+  a owl:ObjectProperty ;
+  rdfs:label "temporal characteristic"@en ;
+  rdfs:domain deo:Rule ;
+  rdfs:range  deo:TemporalCharacteristic ;
+  skos:definition "A dated change in the rule's legal status."@en ;
+  skos:scopeNote "LegalRuleML hasTemporalCharacteristic."@en ;
+  skos:example "ex:r_pay_claim deo:temporalCharacteristic ex:tc_r1_start ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+# ── Deontic statements ──
+
+deo:bearer
+  a owl:ObjectProperty ;
+  rdfs:label "bearer"@en ;
+  rdfs:domain deo:DeonticStatement ;
+  skos:definition """The party the statement is primarily directed at: who must, must not
+or may act. A role, a named party, a party collection, or a variable."""@en ;
+  skos:scopeNote "LegalRuleML Bearer; ODRL assignee (for a duty's or permission's party). HydraDL: the bearer of O/F/P."@en ;
+  skos:example "ex:obl_pay deo:bearer ex:insurer_role ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:assignee
+  a owl:ObjectProperty ;
+  rdfs:label "assignee"@en ;
+  rdfs:subPropertyOf deo:bearer ;
+  skos:definition "The party a rule is granted or issued to."@en ;
+  skos:scopeNote "ODRL odrl:assignee."@en ;
+  skos:example "ex:perm_use deo:assignee ex:licensee ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:auxiliaryParty
+  a owl:ObjectProperty ;
+  rdfs:label "auxiliary party"@en ;
+  rdfs:domain deo:DeonticStatement ;
+  skos:definition "A party involved in the statement other than its bearer, such as its beneficiary or issuer."@en ;
+  skos:scopeNote "LegalRuleML AuxiliaryParty; parent of deo:assigner and deo:beneficiary."@en ;
+  skos:example "ex:obl_pay deo:auxiliaryParty ex:policyholder_role ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:assigner
+  a owl:ObjectProperty ;
+  rdfs:label "assigner"@en ;
+  rdfs:subPropertyOf deo:auxiliaryParty ;
+  skos:definition "The party that issues the rule."@en ;
+  skos:scopeNote "ODRL odrl:assigner."@en ;
+  skos:example "ex:perm_use deo:assigner ex:rights_holder ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:beneficiary
+  a owl:ObjectProperty ;
+  rdfs:label "beneficiary"@en ;
+  rdfs:subPropertyOf deo:auxiliaryParty ;
+  skos:definition "The party in whose favour the statement holds (the creditor of an obligation)."@en ;
+  skos:example "ex:obl_pay deo:beneficiary ex:policyholder_role ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:action
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "action"@en ;
+  rdfs:domain deo:DeonticStatement ;
+  rdfs:range  deo:Action ;
+  skos:definition "What the statement requires, forbids or permits."@en ;
+  skos:scopeNote "ODRL odrl:action."@en ;
+  skos:example "ex:obl_pay deo:action ex:act_pay ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:deonticContent
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "deontic content"@en ;
+  rdfs:domain deo:DeonticStatement ;
+  rdfs:range  deo:DeonticStatement ;
+  skos:definition """The deontic statement this one is about, in place of an action: an
+obligation to grant a permission, a permission to impose an obligation."""@en ;
+  skos:scopeNote """LegalRuleML deontic elements are recursive (an Obligation may contain a
+Permission). A statement has either a deo:action or a deo:deonticContent. The
+common case — an obligation to let someone act — is usually better stated as a
+deo:Right with its correlative. Not evaluated by HydraDL, whose norms are over
+actions."""@en ;
+  skos:example "ex:obl_grant_access deo:deonticContent ex:perm_access ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:target
+  a owl:ObjectProperty ;
+  rdfs:label "target"@en ;
+  rdfs:domain deo:DeonticStatement ;
+  skos:definition "The asset (or asset collection) the action is performed on."@en ;
+  skos:scopeNote "ODRL odrl:target. A compiler adds it as an argument of the action when the action does not already name it."@en ;
+  skos:example "ex:perm_use deo:target ex:dataset_42 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:deadline
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "deadline"@en ;
+  rdfs:domain deo:DeonticStatement ;
+  rdfs:range  ops:Schedule ;
+  skos:definition """When the statement must be complied with: by an absolute date
+(ops:deadlineDate), within a duration from activation (ops:deadlineDuration),
+or on a recurring schedule."""@en ;
+  skos:scopeNote """Reuses the LDSO-Operations schedules. An ops:Deadline gives one due
+time: HydraDL Deadline::At for a date, Deadline::Within for a duration counted
+from activation. No deadline: the obligation must be met by the time of
+evaluation. An ops:RecurringSchedule or ops:PeriodSchedule states a recurring
+obligation (pay every month); HydraDL does not yet evaluate those."""@en ;
+  skos:example "ex:obl_pay deo:deadline ex:dl_30_days ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:obligationType
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "obligation type"@en ;
+  rdfs:domain deo:DeonticStatement ;
+  rdfs:range  skos:Concept ;
+  skos:definition "Achievement, maintenance or punctual (a concept of deo:ObligationTypeScheme)."@en ;
+  skos:scopeNote "Absent: achievement. Applies to obligations and prohibitions (a prohibition is a maintenance obligation of the negated action over its period)."@en ;
+  skos:example "ex:obl_keep_insured deo:obligationType deo:Maintenance ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:requiresDuty
+  a owl:ObjectProperty ;
+  rdfs:label "requires duty"@en ;
+  rdfs:domain deo:Permission ;
+  rdfs:range  deo:Obligation ;
+  skos:definition "A duty that must be fulfilled before the permission may be exercised."@en ;
+  skos:scopeNote """ODRL odrl:duty on a Permission. Compiles to a rule with the
+permission's conditions concluding the duty, and a Condition::Fulfilled on
+the duty added to the permission's rule (see deo:NormCondition)."""@en ;
+  skos:example "ex:perm_use deo:requiresDuty ex:obl_attribute ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:correlative
+  a owl:ObjectProperty ;
+  rdfs:label "correlative"@en ;
+  rdfs:domain deo:Right ;
+  rdfs:range  deo:DeonticStatement ;
+  skos:definition "An obligation or prohibition on an auxiliary party that a right implies."@en ;
+  skos:scopeNote "Compare LDSO-Semantics leg:correlatesTo, which annotates the same relation in text."@en ;
+  skos:example "ex:right_access deo:correlative ex:obl_provide_file ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+# ── Reparation ──
+
+deo:hasChainElement
+  a owl:ObjectProperty ;
+  rdfs:label "has chain element"@en ;
+  rdfs:domain deo:ReparationChain ;
+  rdfs:range  deo:ChainElement ;
+  skos:definition "A position of the reparation chain."@en ;
+  skos:example "ex:chain_pay deo:hasChainElement ex:chain_pay_1 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:statement
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "statement"@en ;
+  rdfs:domain deo:ChainElement ;
+  rdfs:range  deo:DeonticStatement ;
+  skos:definition "The deontic statement at a chain position."@en ;
+  skos:example "ex:chain_pay_1 deo:statement ex:obl_pay ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:repairs
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "repairs"@en ;
+  rdfs:domain deo:Reparation ;
+  rdfs:range  deo:DeonticStatement ;
+  skos:definition "The statement whose violation the reparation answers."@en ;
+  skos:scopeNote "LegalRuleML toPrescriptiveStatement."@en ;
+  skos:example "ex:rep_late_fee deo:repairs ex:obl_pay ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:imposes
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "imposes"@en ;
+  rdfs:domain deo:Reparation ;
+  skos:definition "What the violation imposes: a deontic statement or a reparation chain."@en ;
+  skos:scopeNote "LegalRuleML appliesPenalty; ODRL consequence / remedy value."@en ;
+  skos:example "ex:rep_late_fee deo:imposes ex:obl_late_fee ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:reparationKind
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "reparation kind"@en ;
+  rdfs:domain deo:Reparation ;
+  rdfs:range  skos:Concept ;
+  skos:definition "Consequence, remedy or penalty (a concept of deo:ReparationKindScheme)."@en ;
+  skos:example "ex:rep_late_fee deo:reparationKind deo:Penalty ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+# ── Overrides and alternatives ──
+
+deo:overriding
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "overriding"@en ;
+  rdfs:domain deo:Override ;
+  rdfs:range  deo:Rule ;
+  skos:definition "The rule that prevails."@en ;
+  skos:scopeNote "LegalRuleML Override @over."@en ;
+  skos:example "ex:ov_flood deo:overriding ex:r_flood_endorsement ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:overridden
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "overridden"@en ;
+  rdfs:domain deo:Override ;
+  rdfs:range  deo:Rule ;
+  skos:definition "The rule that yields."@en ;
+  skos:scopeNote "LegalRuleML Override @under."@en ;
+  skos:example "ex:ov_flood deo:overridden ex:r_pay_claim ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:overrideBasis
+  a owl:ObjectProperty ;
+  rdfs:label "override basis"@en ;
+  rdfs:domain deo:Override ;
+  rdfs:range  skos:Concept ;
+  skos:definition "The legal ground of the override (a concept of deo:OverrideBasisScheme)."@en ;
+  skos:example "ex:ov_flood deo:overrideBasis deo:LexSpecialis ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:basisProvision
+  a owl:ObjectProperty ;
+  rdfs:label "basis provision"@en ;
+  rdfs:domain deo:Override ;
+  rdfs:range  ldso:LegalElement ;
+  skos:definition "The provision that states or justifies the override."@en ;
+  skos:example "ex:ov_flood deo:basisProvision ex:endorsement_3 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:alternative
+  a owl:ObjectProperty ;
+  rdfs:label "alternative"@en ;
+  rdfs:domain deo:Alternatives ;
+  rdfs:range  deo:Rule ;
+  skos:definition "One of the mutually exclusive formalisations."@en ;
+  skos:scopeNote "LegalRuleML hasAlternative."@en ;
+  skos:example "ex:alt_art7 deo:alternative ex:r_art7_strict_reading ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:adopted
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "adopted"@en ;
+  rdfs:domain deo:Alternatives ;
+  rdfs:range  deo:Rule ;
+  skos:definition "The alternative in use; it must be one of the set's alternatives."@en ;
+  skos:example "ex:alt_art7 deo:adopted ex:r_art7_strict_reading ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+# ── Literals and actions ──
+
+deo:predicate
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "predicate"@en ;
+  rdfs:domain deo:Literal ;
+  skos:definition "The predicate of the literal: the IRI of a relation, an act type or a concept."@en ;
+  skos:example "ex:act_pay deo:predicate ex:payClaim ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:hasArgument
+  a owl:ObjectProperty ;
+  rdfs:label "has argument"@en ;
+  rdfs:domain deo:Literal ;
+  rdfs:range  deo:Argument ;
+  skos:definition "One argument of the literal."@en ;
+  skos:example "ex:act_pay deo:hasArgument ex:arg_0 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:argumentValue
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "argument value"@en ;
+  rdfs:domain deo:Argument ;
+  skos:definition "The value of the argument: a named entity, an individual IRI, or a deo:Variable."@en ;
+  skos:example "ex:arg_0 deo:argumentValue ex:var_claim ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:refinement
+  a owl:ObjectProperty ;
+  rdfs:label "refinement"@en ;
+  rdfs:range  deo:Condition ;
+  skos:definition "A condition narrowing an action, an asset collection or a party collection."@en ;
+  skos:scopeNote "ODRL odrl:refinement. A compiler adds it to the conditions of each rule that uses the refined term."@en ;
+  skos:example "ex:act_print deo:refinement ex:c_max_copies ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:memberOf
+  a owl:ObjectProperty ;
+  rdfs:label "member of"@en ;
+  rdfs:range  deo:Collection ;
+  skos:definition "A collection the resource belongs to."@en ;
+  skos:scopeNote "ODRL odrl:partOf."@en ;
+  skos:example "ex:claim_123 deo:memberOf ex:all_claims_2026 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:includedIn
+  a owl:ObjectProperty , owl:TransitiveProperty ;
+  rdfs:label "included in"@en ;
+  skos:definition "Between act types: performing the first counts as performing the second."@en ;
+  skos:scopeNote "ODRL odrl:includedIn. Compiles to strict constitutive rules (doing the narrower act is doing the broader one)."@en ;
+  skos:example "ex:print deo:includedIn ex:use ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:implies
+  a owl:ObjectProperty ;
+  rdfs:label "implies"@en ;
+  skos:definition "Between act types: when the first is exercised, the second is not prohibited."@en ;
+  skos:scopeNote "ODRL odrl:implies. Compiles to a defeater against prohibitions of the second act whenever the first is permitted and exercised."@en ;
+  skos:example "ex:share deo:implies ex:distribute ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+# ── Conditions ──
+
+deo:classExpression
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "class expression"@en ;
+  rdfs:domain deo:ClassCondition ;
+  skos:definition "The OWL class (named, or a class expression node) the subject must belong to."@en ;
+  skos:example "ex:c_payable deo:classExpression ex:PayableClaim ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:property
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "property"@en ;
+  rdfs:domain deo:PropertyCondition ;
+  rdfs:range  owl:ObjectProperty ;
+  skos:definition "The OWL object property the subject and object must stand in."@en ;
+  skos:example "ex:c_insurer_of deo:property ex:insurerOf ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:subject
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "subject"@en ;
+  skos:definition "The individual or variable a class or property condition is about."@en ;
+  skos:example "ex:c_payable deo:subject ex:var_claim ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:object
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "object"@en ;
+  rdfs:domain deo:PropertyCondition ;
+  skos:definition "The second individual or variable of a property condition."@en ;
+  skos:example "ex:c_insurer_of deo:object ex:var_claim ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:aboutStatement
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "about statement"@en ;
+  rdfs:domain deo:NormCondition ;
+  rdfs:range  deo:DeonticStatement ;
+  skos:definition "The deontic statement whose state a norm condition tests."@en ;
+  skos:example "ex:c_pay_violated deo:aboutStatement ex:obl_pay ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:normState
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "norm state"@en ;
+  rdfs:domain deo:NormCondition ;
+  rdfs:range  skos:Concept ;
+  skos:definition "The state tested (a concept of deo:NormStateScheme)."@en ;
+  skos:example "ex:c_pay_violated deo:normState deo:Violated ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:leftOperand
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "left operand"@en ;
+  rdfs:domain deo:ComparisonCondition ;
+  skos:definition "What is compared: an ODRL left operand (dateTime, count, spatial…) or a domain measure."@en ;
+  skos:scopeNote "ODRL odrl:leftOperand."@en ;
+  skos:example "ex:c_amount_cap deo:leftOperand ex:claimedAmount ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:operator
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "operator"@en ;
+  rdfs:domain deo:ComparisonCondition ;
+  skos:definition "The comparison: an ops:Comparator or a deo:SetOperator."@en ;
+  skos:scopeNote "ODRL odrl:operator."@en ;
+  skos:example "ex:c_amount_cap deo:operator ops:LessThanOrEqual ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:rightOperandReference
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "right operand reference"@en ;
+  rdfs:domain deo:ComparisonCondition ;
+  skos:definition "A resource whose value is the right operand, to be looked up when evaluating."@en ;
+  skos:scopeNote "ODRL odrl:rightOperandReference."@en ;
+  skos:example "ex:c_quota deo:rightOperandReference ex:current_quota ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:logicalOperator
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "logical operator"@en ;
+  rdfs:domain deo:LogicalCondition ;
+  rdfs:range  skos:Concept ;
+  skos:definition "And, or, exactly one, or and-in-sequence (a concept of deo:LogicalOperatorScheme)."@en ;
+  skos:example "ex:c_either deo:logicalOperator deo:Or ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:operand
+  a owl:ObjectProperty ;
+  rdfs:label "operand"@en ;
+  rdfs:domain deo:LogicalCondition ;
+  skos:definition "An operand of a logical condition: a condition, or a sequenced operand for and-in-sequence."@en ;
+  skos:example "ex:c_either deo:operand ex:c_flood ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:operandCondition
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "operand condition"@en ;
+  rdfs:domain deo:SequencedOperand ;
+  rdfs:range  deo:Condition ;
+  skos:definition "The condition at a position of an and-in-sequence."@en ;
+  skos:example "ex:seq_1 deo:operandCondition ex:c_registered ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+# ── Temporal characteristics ──
+
+deo:forStatus
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "for status"@en ;
+  rdfs:domain deo:TemporalCharacteristic ;
+  rdfs:range  skos:Concept ;
+  skos:definition "The legal status that changes (a concept of deo:LegalStatusScheme)."@en ;
+  skos:scopeNote "LegalRuleML forStatus."@en ;
+  skos:example "ex:tc_r1_start deo:forStatus deo:StatusInForce ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:statusDevelopment
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "status development"@en ;
+  rdfs:domain deo:TemporalCharacteristic ;
+  rdfs:range  skos:Concept ;
+  skos:definition "Whether the status starts or ends (a concept of deo:StatusDevelopmentScheme)."@en ;
+  skos:scopeNote "LegalRuleML hasStatusDevelopment."@en ;
+  skos:example "ex:tc_r1_start deo:statusDevelopment deo:Starts ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ── Values ──
+
+deo:declaresSignature
+  a owl:ObjectProperty ;
+  rdfs:label "declares signature"@en ;
+  rdfs:domain deo:NormativeSystem ;
+  rdfs:range  deo:PredicateSignature ;
+  skos:definition "The signature of a predicate that carries values in this normative system."@en ;
+  skos:scopeNote "At most one signature per predicate, including those of the systems inherited from. HydraDL: NormSystem.signatures."@en ;
+  skos:example "ex:policy_2026 deo:declaresSignature ex:sig_claim_amount ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:signaturePredicate
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "signature predicate"@en ;
+  rdfs:domain deo:PredicateSignature ;
+  skos:definition "The predicate the signature types: the IRI used as deo:predicate of its literals."@en ;
+  skos:scopeNote "Exactly one per signature. The signature applies to every literal, action and fact condition whose deo:predicate is this IRI. HydraDL: the key of NormSystem.signatures."@en ;
+  skos:example "ex:sig_claim_amount deo:signaturePredicate ex:claimAmount ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:hasArgumentSlot
+  a owl:ObjectProperty ;
+  rdfs:label "has argument slot"@en ;
+  rdfs:domain deo:PredicateSignature ;
+  rdfs:range  deo:ArgumentSlot ;
+  skos:definition "One argument position of the signature."@en ;
+  skos:scopeNote "One slot per argument, indexed 0..n-1 by deo:argumentIndex; a literal of the predicate has as many arguments as the signature has slots. HydraDL: Signature.args, in index order."@en ;
+  skos:example "ex:sig_claim_amount deo:hasArgumentSlot ex:slot_amount ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:valueType
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "value type"@en ;
+  rdfs:domain deo:ArgumentSlot ;
+  rdfs:range  skos:Concept ;
+  skos:definition "The type of value an argument slot holds (a concept of deo:ValueTypeScheme)."@en ;
+  skos:scopeNote "Exactly one per slot. HydraDL: the ValueType at that position of Signature.args."@en ;
+  skos:example "ex:slot_amount deo:valueType deo:Number ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:operation
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "operation"@en ;
+  rdfs:domain deo:Expression ;
+  rdfs:range  skos:Concept ;
+  skos:definition "The operation an expression applies (a concept of deo:OperationScheme)."@en ;
+  skos:scopeNote "Exactly one per expression; it fixes the number of operands. HydraDL: the Expr variant."@en ;
+  skos:example "ex:expr_fee deo:operation deo:Round ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:hasOperand
+  a owl:ObjectProperty ;
+  rdfs:label "has operand"@en ;
+  rdfs:domain deo:Expression ;
+  rdfs:range  deo:ExpressionOperand ;
+  skos:definition "One operand of the expression."@en ;
+  skos:scopeNote "Distinct from deo:operand, which gives the operands of a logical condition."@en ;
+  skos:example "ex:expr_fee deo:hasOperand ex:operand_rate ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:operandValue
+  a rdf:Property ;
+  rdfs:label "operand value"@en ;
+  rdfs:domain deo:ExpressionOperand ;
+  skos:definition "The value of an expression operand: a literal, an individual IRI, a deo:Variable or a nested deo:Expression."@en ;
+  skos:scopeNote "Exactly one per operand. An rdf:Property because its value is a literal or a resource. Literals: xsd:decimal or xsd:integer (number), xsd:dateTime (instant), xsd:duration (duration), xsd:string (text)."@en ;
+  skos:example "ex:operand_rate deo:operandValue \"0.015\"^^xsd:decimal ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:roundingMode
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "rounding mode"@en ;
+  rdfs:domain deo:Expression ;
+  rdfs:range  skos:Concept ;
+  skos:definition "How a deo:Round expression rounds (a concept of deo:RoundingModeScheme)."@en ;
+  skos:scopeNote "Exactly one on a deo:Round expression, none on any other. HydraDL: the Rounding of Expr::Round."@en ;
+  skos:example "ex:expr_fee deo:roundingMode deo:HalfEven ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:assigns
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "assigns"@en ;
+  skos:definition "The fresh variable an assignment or aggregate condition binds."@en ;
+  skos:scopeNote "On a deo:AssignmentCondition or a deo:AggregateCondition; the value is a deo:Variable (left without an rdfs:range so that the shapes can tell an individual from a variable)."@en ;
+  skos:example "ex:c_fee deo:assigns ex:var_fee ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:expression
+  a rdf:Property ;
+  rdfs:label "expression"@en ;
+  skos:definition """What an assignment binds its variable to, or the value of each solution
+of an aggregate: a deo:Expression, a deo:Variable or a literal."""@en ;
+  skos:scopeNote "Exactly one, on a deo:AssignmentCondition or a deo:AggregateCondition. An rdf:Property because its value is a literal or a resource."@en ;
+  skos:example "ex:c_fee deo:expression ex:expr_fee ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:aggregateOperator
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "aggregate operator"@en ;
+  rdfs:domain deo:AggregateCondition ;
+  rdfs:range  skos:Concept ;
+  skos:definition "Sum, count, minimum or maximum (a concept of deo:AggregateOperatorScheme)."@en ;
+  skos:scopeNote "Exactly one per aggregate condition. HydraDL: AggregateOp."@en ;
+  skos:example "ex:c_gross deo:aggregateOperator deo:Sum ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:pattern
+  a owl:ObjectProperty ;
+  rdfs:label "pattern"@en ;
+  rdfs:domain deo:AggregateCondition ;
+  rdfs:range  deo:Condition ;
+  skos:definition "One condition of the pattern an aggregate ranges over: a fact, class or property condition."@en ;
+  skos:scopeNote "All the pattern's conditions must hold together for a solution."@en ;
+  skos:example "ex:c_gross deo:pattern ex:c_wage ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:fulfilmentComparator
+  a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:label "fulfilment comparator"@en ;
+  rdfs:domain deo:DeonticStatement ;
+  rdfs:range  ops:Comparator ;
+  skos:definition """How a recorded action's value must compare with the value the statement
+requires, read "recorded comparator required": an obligation to pay at least the
+fee is fulfilled by a payment ≥ the fee."""@en ;
+  skos:scopeNote """Absent: ops:Equal. Anything else needs an action whose predicate has a
+signature with exactly one value argument after its key (an ordered one, not a
+text, for <, ≤, >, ≥). One payment is compared at a time: partial payments are
+not summed. ODRL: a duty refined by a payAmount constraint. HydraDL:
+Deontic.fulfilment (fulfilled_when)."""@en ;
+  skos:example "ex:obl_late_fee deo:fulfilmentComparator ops:GreaterThanOrEqual ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DATATYPE PROPERTIES
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:negated
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "negated"@en ;
+  rdfs:range  xsd:boolean ;
+  skos:definition "Whether the literal or condition is negated. Absent: false."@en ;
+  skos:scopeNote "On a literal (including actions and fact conditions), a class, property or norm condition."@en ;
+  skos:example "ex:act_disclose_records deo:negated false ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:argumentIndex
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "argument index"@en ;
+  rdfs:range  xsd:integer ;
+  skos:definition "The 0-based position of an argument in its literal, or of an argument slot in its signature."@en ;
+  skos:scopeNote "On a deo:Argument or a deo:ArgumentSlot."@en ;
+  skos:example "ex:arg_0 deo:argumentIndex 0 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:position
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "position"@en ;
+  rdfs:range  xsd:integer ;
+  skos:definition "The 1-based position of a chain element, of a sequenced operand or of an expression operand."@en ;
+  skos:example "ex:chain_pay_1 deo:position 1 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:preemptive
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "preemptive"@en ;
+  rdfs:domain deo:DeonticStatement ;
+  rdfs:range  xsd:boolean ;
+  skos:definition """Whether performing the action before the obligation is activated
+complies with it. Absent: false (only performance from activation counts)."""@en ;
+  skos:scopeNote "HydraDL evaluates non-preemptive obligations only."@en ;
+  skos:example "ex:obl_pay deo:preemptive false ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:perdurant
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "perdurant"@en ;
+  rdfs:domain deo:DeonticStatement ;
+  rdfs:range  xsd:boolean ;
+  skos:definition """Whether the obligation remains in force after it has been violated
+(paying late still owes the payment). Absent: false."""@en ;
+  skos:scopeNote "HydraDL evaluates non-perdurant obligations only; the violation stays on record either way."@en ;
+  skos:example "ex:obl_pay deo:perdurant true ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:rightOperand
+  a rdf:Property ;
+  rdfs:label "right operand"@en ;
+  rdfs:domain deo:ComparisonCondition ;
+  skos:definition """The value compared against: a literal for a comparator, one literal
+per member of the set for deo:IsAnyOf and deo:IsNoneOf, a class IRI for
+deo:IsA. Use deo:rightOperandReference for a value to be looked up."""@en ;
+  skos:scopeNote """ODRL odrl:rightOperand. Repeated rather than an rdf:List for a set
+(LDSO uses no rdf:List). An rdf:Property because its value is a literal or, for
+deo:IsA, a class."""@en ;
+  skos:example "ex:c_amount_cap deo:rightOperand \"10000\"^^xsd:decimal ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:unit
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "unit"@en ;
+  rdfs:domain deo:ComparisonCondition ;
+  rdfs:range  xsd:string ;
+  skos:definition "The unit of the right operand, as a standard code."@en ;
+  skos:scopeNote "ODRL odrl:unit."@en ;
+  skos:example "ex:c_amount_cap deo:unit \"USD\" ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:dataType
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "data type"@en ;
+  rdfs:domain deo:ComparisonCondition ;
+  rdfs:range  xsd:anyURI ;
+  skos:definition "The datatype of the right operand."@en ;
+  skos:scopeNote "ODRL odrl:dataType."@en ;
+  skos:example "ex:c_amount_cap deo:dataType \"http://www.w3.org/2001/XMLSchema#decimal\"^^xsd:anyURI ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:status
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "status"@en ;
+  rdfs:domain deo:ComparisonCondition ;
+  skos:definition "A value generated from the left operand's action (for example the number of times exercised), compared instead of the left operand itself."@en ;
+  skos:scopeNote "ODRL odrl:status."@en ;
+  skos:example "ex:c_max_plays deo:status 3 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:atTime
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "at time"@en ;
+  rdfs:domain deo:TemporalCharacteristic ;
+  rdfs:range  xsd:dateTime ;
+  skos:definition "When the status development occurs."@en ;
+  skos:scopeNote "LegalRuleML atTime."@en ;
+  skos:example "ex:tc_r1_start deo:atTime \"2026-01-01T00:00:00Z\"^^xsd:dateTime ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:paraphrase
+  a owl:DatatypeProperty ;
+  rdfs:label "paraphrase"@en ;
+  rdfs:range  rdf:langString ;
+  skos:definition "A natural-language rendering of a formal rule, for review."@en ;
+  skos:scopeNote "LegalRuleML Paraphrase. Useful to check an LLM-proposed formalisation against its source text."@en ;
+  skos:example "ex:r_pay_claim deo:paraphrase \"The insurer must pay a payable claim within 30 days of approval, or else pay a late fee.\"@en ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:profile
+  a owl:DatatypeProperty ;
+  rdfs:label "profile"@en ;
+  rdfs:domain deo:NormativeSystem ;
+  rdfs:range  xsd:anyURI ;
+  skos:definition "An ODRL profile (or other extension vocabulary) the normative system uses."@en ;
+  skos:scopeNote "ODRL odrl:profile."@en ;
+  skos:example "ex:policy_2026 deo:profile \"https://example.org/odrl-profile/insurance\"^^xsd:anyURI ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+deo:keyLength
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "key length"@en ;
+  rdfs:domain deo:PredicateSignature ;
+  rdfs:range  xsd:integer ;
+  skos:definition "The number of leading arguments of the predicate that identify a record."@en ;
+  skos:scopeNote "At most the number of argument slots. A quantity has exactly one slot after its key. HydraDL: Signature.key."@en ;
+  skos:example "ex:sig_claim_amount deo:keyLength 1 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:isQuantity
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "is quantity"@en ;
+  rdfs:domain deo:PredicateSignature ;
+  rdfs:range  xsd:boolean ;
+  skos:definition "True for a quantity, which has one value per key; false for a relation, which may have any number."@en ;
+  skos:scopeNote "A quantity is never negated in a rule: \"the value is not 100\" is a comparison, and a defeater blocks a value without giving another. HydraDL: Signature.quantity."@en ;
+  skos:example "ex:sig_claim_amount deo:isQuantity true ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:places
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "places"@en ;
+  rdfs:domain deo:Expression ;
+  rdfs:range  xsd:integer ;
+  skos:definition "The number of decimal places a deo:Round expression keeps."@en ;
+  skos:scopeNote "Exactly one on a deo:Round expression (0 or more), none on any other. HydraDL: the digits of Expr::Round."@en ;
+  skos:example "ex:expr_fee deo:places 2 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+deo:utcOffset
+  a owl:DatatypeProperty , owl:FunctionalProperty ;
+  rdfs:label "UTC offset"@en ;
+  rdfs:domain deo:NormativeSystem ;
+  rdfs:range  xsd:integer ;
+  skos:definition "The offset from UTC, in seconds, of the civil time the normative system's dates are counted in."@en ;
+  skos:scopeNote "Absent: 0 (UTC). Calendar operations (years, months and days between instants, adding months) use civil dates at this offset. One fixed offset: no daylight saving. HydraDL: NormSystem.utc_offset."@en ;
+  skos:example "ex:policy_2026 deo:utcOffset -18000 ."@en ;
+  rdfs:isDefinedBy <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DISJOINTNESS
+# ═════════════════════════════════════════════════════════════════════════════
+
+[] a owl:AllDisjointClasses ;
+   owl:members ( deo:Obligation deo:Prohibition deo:Permission deo:Right ) .
+
+[] a owl:AllDisjointClasses ;
+   owl:members ( deo:FactCondition deo:ClassCondition deo:PropertyCondition
+                 deo:NormCondition deo:ComparisonCondition deo:LogicalCondition
+                 deo:AssignmentCondition deo:AggregateCondition ) .
+
+deo:PrescriptiveRule owl:disjointWith deo:ConstitutiveRule .
+deo:AssetCollection  owl:disjointWith deo:PartyCollection .
+deo:Rule             owl:disjointWith deo:DeonticStatement , deo:Condition , deo:Override , deo:Reparation .
+deo:DeonticStatement owl:disjointWith deo:Condition , deo:Literal .
+deo:Action           owl:disjointWith deo:Condition .
+deo:Expression       owl:disjointWith deo:Condition , deo:Literal , deo:Variable .
+deo:PredicateSignature owl:disjointWith deo:Condition , deo:Literal .

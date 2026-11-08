@@ -1,0 +1,172 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix leg:  <https://w3id.org/ldso/semantics#> .
+@prefix ops:  <https://w3id.org/ldso/operations#> .
+@prefix deo:  <https://w3id.org/ldso/deontic#> .
+@prefix lrml: <http://docs.oasis-open.org/legalruleml/ns/v1.0/> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Deontic alignments to OASIS LegalRuleML Core 1.0 and W3C ODRL 2.2
+#
+# SKOS mapping properties only: nothing here imports or constrains the
+# external vocabularies. lrml: terms are the element and attribute names of the
+# LegalRuleML XML namespace. LegalRuleML has no elements for obligation kinds
+# (achievement, maintenance, punctual, preemptive, perdurant), for legal
+# statuses (InForce, Efficacious…) or for Violation / Compliance: it refers to
+# them by @iri to an external vocabulary, so they are mapped in README.md, not
+# here. exactMatch = same meaning; closeMatch = same intent,
+# different structure (an n-ary node instead of attributes, a SKOS concept
+# instead of an IRI value); broadMatch / narrowMatch = the external term is
+# broader / narrower. README.md gives the full coverage tables, including the
+# LegalRuleML and ODRL terms expressed without a deo term.
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/deontic/alignments>
+  a owl:Ontology ;
+  dct:title "LDSO-Deontic alignments to LegalRuleML and ODRL"@en ;
+  dct:description "SKOS mappings from LDSO-Deontic terms to OASIS LegalRuleML Core 1.0 and the W3C ODRL 2.2 Information Model and Vocabulary."@en ;
+  dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+  owl:imports <https://w3id.org/ldso/deontic> .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Normative system
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:NormativeSystem   skos:closeMatch lrml:Statements , odrl:Policy .
+deo:Set               skos:exactMatch odrl:Set .
+deo:Offer             skos:exactMatch odrl:Offer .
+deo:Agreement         skos:exactMatch odrl:Agreement .
+deo:Assertion         skos:exactMatch odrl:Assertion .
+deo:Privacy           skos:exactMatch odrl:Privacy .
+deo:Request           skos:exactMatch odrl:Request .
+deo:Ticket            skos:exactMatch odrl:Ticket .
+deo:hasRule           skos:broadMatch odrl:permission , odrl:prohibition , odrl:obligation ;
+                      skos:closeMatch lrml:hasStatement .
+deo:inheritsFrom      skos:exactMatch odrl:inheritFrom .
+deo:profile           skos:exactMatch odrl:profile .
+deo:conflictStrategy  skos:exactMatch odrl:conflict .
+deo:PermissionPrevails  skos:exactMatch odrl:perm .
+deo:ProhibitionPrevails skos:exactMatch odrl:prohibit .
+deo:Invalidate        skos:exactMatch odrl:invalid .
+deo:authority         skos:closeMatch lrml:Authority .
+deo:jurisdiction      skos:closeMatch lrml:Jurisdiction .
+deo:legalSource       skos:closeMatch lrml:LegalSource , lrml:fromLegalSources .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Rules and strength
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:Rule              skos:closeMatch odrl:Rule .
+deo:PrescriptiveRule  skos:closeMatch lrml:PrescriptiveStatement .
+deo:ConstitutiveRule  skos:closeMatch lrml:ConstitutiveStatement .
+deo:FactualStatement  skos:closeMatch lrml:FactualStatement .
+deo:strength          skos:closeMatch lrml:hasStrength .
+deo:StrictStrength    skos:exactMatch lrml:StrictStrength .
+deo:DefeasibleStrength skos:exactMatch lrml:DefeasibleStrength .
+deo:DefeaterStrength  skos:exactMatch lrml:Defeater .
+deo:hasCondition      skos:closeMatch odrl:constraint .
+deo:paraphrase        skos:closeMatch lrml:Paraphrase .
+deo:Override          skos:closeMatch lrml:Override .
+deo:overriding        skos:closeMatch lrml:over .
+deo:overridden        skos:closeMatch lrml:under .
+deo:hasOverride       skos:closeMatch lrml:OverrideStatement .
+deo:Alternatives      skos:exactMatch lrml:Alternatives .
+deo:alternative       skos:exactMatch lrml:hasAlternative .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Deontic statements
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:Obligation        skos:exactMatch lrml:Obligation ;
+                      skos:closeMatch odrl:Duty .
+deo:Prohibition       skos:exactMatch lrml:Prohibition , odrl:Prohibition .
+deo:Permission        skos:exactMatch lrml:Permission , odrl:Permission .
+deo:Right             skos:exactMatch lrml:Right .
+deo:bearer            skos:closeMatch lrml:Bearer .
+deo:auxiliaryParty    skos:closeMatch lrml:AuxiliaryParty .
+deo:assignee          skos:exactMatch odrl:assignee .
+deo:assigner          skos:exactMatch odrl:assigner .
+deo:action            skos:exactMatch odrl:action .
+deo:target            skos:exactMatch odrl:target .
+deo:requiresDuty      skos:exactMatch odrl:duty .
+deo:correlative       skos:relatedMatch leg:correlatesTo .
+deo:formalizes        skos:relatedMatch lrml:appliesAssociation .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Reparation
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:ReparationChain   skos:exactMatch lrml:SuborderList .
+deo:Reparation        skos:exactMatch lrml:Reparation .
+deo:repairs           skos:exactMatch lrml:toPrescriptiveStatement .
+deo:imposes           skos:closeMatch lrml:appliesPenalty , odrl:consequence , odrl:remedy .
+deo:Penalty           skos:closeMatch lrml:PenaltyStatement .
+deo:Consequence       skos:closeMatch odrl:consequence .
+deo:Remedy            skos:closeMatch odrl:remedy .
+deo:hasReparation     skos:closeMatch lrml:ReparationStatement .
+deo:Violated          skos:relatedMatch odrl:failure .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Literals, assets, parties, actions
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:Action            skos:closeMatch odrl:Action .
+deo:includedIn        skos:exactMatch odrl:includedIn .
+deo:implies           skos:exactMatch odrl:implies .
+deo:refinement        skos:exactMatch odrl:refinement .
+deo:Collection        skos:broadMatch odrl:Asset , odrl:Party .
+deo:AssetCollection   skos:exactMatch odrl:AssetCollection .
+deo:PartyCollection   skos:exactMatch odrl:PartyCollection .
+deo:memberOf          skos:exactMatch odrl:partOf .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Conditions and operators
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:ComparisonCondition skos:exactMatch odrl:Constraint .
+deo:LogicalCondition  skos:exactMatch odrl:LogicalConstraint .
+deo:leftOperand       skos:exactMatch odrl:leftOperand .
+deo:operator          skos:exactMatch odrl:operator .
+deo:rightOperand      skos:exactMatch odrl:rightOperand .
+deo:rightOperandReference skos:exactMatch odrl:rightOperandReference .
+deo:unit              skos:exactMatch odrl:unit .
+deo:dataType          skos:exactMatch odrl:dataType .
+deo:status            skos:exactMatch odrl:status .
+deo:And               skos:exactMatch odrl:and .
+deo:Or                skos:exactMatch odrl:or .
+deo:Xone              skos:exactMatch odrl:xone .
+deo:AndSequence       skos:exactMatch odrl:andSequence .
+deo:IsA               skos:exactMatch odrl:isA .
+deo:HasPart           skos:exactMatch odrl:hasPart .
+deo:IsPartOf          skos:exactMatch odrl:isPartOf .
+deo:IsAllOf           skos:exactMatch odrl:isAllOf .
+deo:IsAnyOf           skos:exactMatch odrl:isAnyOf .
+deo:IsNoneOf          skos:exactMatch odrl:isNoneOf .
+ops:Equal             skos:exactMatch odrl:eq .
+ops:NotEqual          skos:exactMatch odrl:neq .
+ops:LessThan          skos:exactMatch odrl:lt .
+ops:LessThanOrEqual   skos:exactMatch odrl:lteq .
+ops:GreaterThan       skos:exactMatch odrl:gt .
+ops:GreaterThanOrEqual skos:exactMatch odrl:gteq .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Temporal characteristics
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:TemporalCharacteristic skos:exactMatch lrml:TemporalCharacteristic .
+deo:temporalCharacteristic skos:exactMatch lrml:hasTemporalCharacteristic .
+deo:forStatus         skos:closeMatch lrml:forStatus .
+deo:statusDevelopment skos:closeMatch lrml:hasStatusDevelopment .
+deo:atTime            skos:closeMatch lrml:atTime .

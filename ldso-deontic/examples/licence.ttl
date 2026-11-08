@@ -1,0 +1,355 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+@prefix ops:  <https://w3id.org/ldso/operations#> .
+@prefix deo:  <https://w3id.org/ldso/deontic#> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix ex:   <https://example.org/licence/> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Deontic Example: a dataset licence (ODRL and LegalRuleML constructs)
+#
+# Conforms to shapes.ttl. Deliberately NOT executable: it uses constructs
+# outside the HydraDL profile, and hydradl-profile-shapes.ttl reports each
+# (G2 temporal characteristic, G3 maintenance and perdurant obligations,
+# G4 part-of comparisons and a referenced right operand, G5 and-in-sequence,
+# G7 recurring schedule, G8 calendar duration, G9 a norm about a norm).
+# The duty precondition, the comparisons with stated values (count ≤ 10,
+# purpose is any of …) and the chain ending in a permission are executable.
+#
+# Demonstrates:
+#   - ODRL Agreement with assigner / assignee, inheritFrom, profile, conflict
+#   - odrl:target an AssetCollection with a refinement
+#   - ODRL Permission with a duty (deo:requiresDuty) and a refined action
+#   - ODRL Prohibition with a remedy (deo:Reparation, deo:Remedy)
+#   - ODRL Constraint (deo:ComparisonCondition: lteq, isAnyOf, isPartOf) and
+#     LogicalConstraint (or, andSequence), with signatures for the left
+#     operands that carry values
+#   - odrl:includedIn between act types
+#   - LegalRuleML Alternatives, TemporalCharacteristic, maintenance and
+#     perdurant obligations, a permission closing a reparation chain
+#   - a nested deontic statement (an obligation to grant a permission)
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:licence_doc a ldso:LegalResource ; rdfs:label "Open Data Licence — Research Use"@en .
+ex:clause_4    a ldso:LegalElement ; rdfs:label "Clause 4 — Retention"@en .
+
+ex:provider
+  a ent:NamedEntity ;
+  ent:entityType ent:Organization ;
+  ent:href "https://example.org/orgs/provider"^^xsd:anyURI ;
+  ent:showAs "Data Provider"@en .
+
+ex:licensee
+  a ent:NamedEntity ;
+  ent:entityType ent:Organization ;
+  ent:href "https://example.org/orgs/licensee"^^xsd:anyURI ;
+  ent:showAs "Licensee"@en .
+
+ex:var_ds a deo:Variable ; rdfs:label "?dataset" .
+
+# act types (ODRL actions) and how they relate
+odrl:print deo:includedIn odrl:use .
+
+ex:master_terms
+  a deo:NormativeSystem ;
+  rdfs:label "Provider master terms"@en ;
+  deo:policyType deo:Set ;
+  deo:legalSource ex:licence_doc ;
+  deo:hasRule ex:r_no_resale .
+
+ex:licence
+  a deo:NormativeSystem ;
+  rdfs:label "Research licence for the 2026 survey datasets"@en ;
+  deo:policyType deo:Agreement ;
+  deo:conflictStrategy deo:ProhibitionPrevails ;
+  deo:inheritsFrom ex:master_terms ;
+  deo:profile "https://example.org/odrl-profile/research"^^xsd:anyURI ;
+  deo:legalSource ex:licence_doc ;
+  deo:hasRule ex:r_use , ex:r_no_distribute , ex:r_retain , ex:r_delete_strict , ex:r_delete_broad ,
+              ex:r_grant_archive ;
+  deo:declaresSignature ex:sig_count , ex:sig_purpose ;
+  deo:hasOverride ex:ov_strategy ;
+  deo:hasReparation ex:rep_remedy ;
+  deo:hasAlternatives ex:alt_clause4 .
+
+# ── Signatures of the left operands that carry values ──
+
+# odrl:count(?dataset, ?n): how many copies, one number per dataset.
+ex:sig_count
+  a deo:PredicateSignature ;
+  deo:signaturePredicate odrl:count ;
+  deo:keyLength 1 ;
+  deo:isQuantity true ;
+  deo:hasArgumentSlot [ a deo:ArgumentSlot ; deo:argumentIndex 0 ; deo:valueType deo:Individual ] ,
+                      [ a deo:ArgumentSlot ; deo:argumentIndex 1 ; deo:valueType deo:Number ] .
+
+# odrl:purpose(?dataset, ?purpose): the declared purpose, one text per dataset.
+ex:sig_purpose
+  a deo:PredicateSignature ;
+  deo:signaturePredicate odrl:purpose ;
+  deo:keyLength 1 ;
+  deo:isQuantity true ;
+  deo:hasArgumentSlot [ a deo:ArgumentSlot ; deo:argumentIndex 0 ; deo:valueType deo:Individual ] ,
+                      [ a deo:ArgumentSlot ; deo:argumentIndex 1 ; deo:valueType deo:Text ] .
+
+# ── Assets ──
+
+ex:survey_2026
+  a deo:AssetCollection ;
+  rdfs:label "2026 survey datasets"@en ;
+  deo:refinement ex:c_anonymised .
+
+ex:c_anonymised
+  a deo:ClassCondition ;
+  deo:classExpression ex:AnonymisedDataset ;
+  deo:subject ex:var_ds .
+
+ex:c_in_collection
+  a deo:FactCondition ;
+  deo:predicate deo:memberOf ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_ds ] ,
+                  [ a deo:Argument ; deo:argumentIndex 1 ; deo:argumentValue ex:survey_2026 ] .
+
+# ── Actions ──
+
+ex:act_use
+  a deo:Action ;
+  deo:predicate odrl:use ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_ds ] ;
+  deo:refinement ex:c_max_copies , ex:c_purpose .
+
+ex:act_distribute
+  a deo:Action ;
+  deo:predicate odrl:distribute ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_ds ] .
+
+ex:act_sell
+  a deo:Action ;
+  deo:predicate odrl:sell ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_ds ] .
+
+ex:act_attribute
+  a deo:Action ;
+  deo:predicate odrl:attribute ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_ds ] .
+
+ex:act_delete
+  a deo:Action ;
+  deo:predicate odrl:delete ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_ds ] .
+
+ex:act_keep_secure
+  a deo:Action ;
+  deo:predicate ex:keptSecure ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_ds ] .
+
+ex:act_report
+  a deo:Action ;
+  deo:predicate ex:reportedUse ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_ds ] .
+
+ex:act_archive
+  a deo:Action ;
+  deo:predicate odrl:archive ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_ds ] .
+
+# ── Constraints (ODRL Constraint / LogicalConstraint) ──
+
+ex:c_max_copies
+  a deo:ComparisonCondition ;
+  deo:leftOperand odrl:count ;
+  deo:operator ops:LessThanOrEqual ;
+  deo:rightOperand 10 ;
+  deo:dataType "http://www.w3.org/2001/XMLSchema#integer"^^xsd:anyURI .
+
+ex:c_purpose
+  a deo:ComparisonCondition ;
+  deo:leftOperand odrl:purpose ;
+  deo:operator deo:IsAnyOf ;
+  deo:rightOperand "research" , "education" .
+
+ex:c_in_eu
+  a deo:ComparisonCondition ;
+  deo:leftOperand odrl:spatial ;
+  deo:operator deo:IsPartOf ;
+  deo:rightOperandReference <http://sws.geonames.org/6255148/> .
+
+ex:c_in_us
+  a deo:ComparisonCondition ;
+  deo:leftOperand odrl:spatial ;
+  deo:operator deo:IsPartOf ;
+  deo:rightOperandReference <http://sws.geonames.org/6252001/> .
+
+ex:c_region
+  a deo:LogicalCondition ;
+  deo:logicalOperator deo:Or ;
+  deo:operand ex:c_in_eu , ex:c_in_us .
+
+ex:c_registered_then_approved
+  a deo:LogicalCondition ;
+  deo:logicalOperator deo:AndSequence ;
+  deo:operand
+    [ a deo:SequencedOperand ; deo:position 1 ; deo:operandCondition ex:c_registered ] ,
+    [ a deo:SequencedOperand ; deo:position 2 ; deo:operandCondition ex:c_approved ] .
+
+ex:c_registered
+  a deo:FactCondition ;
+  deo:predicate ex:registered ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:licensee ] .
+
+ex:c_approved
+  a deo:FactCondition ;
+  deo:predicate ex:approvedProject ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:licensee ] .
+
+ex:c_project_ended
+  a deo:FactCondition ;
+  deo:predicate ex:projectEnded ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:licensee ] .
+
+# ── Deontic statements ──
+
+ex:obl_attribute
+  a deo:Obligation ;
+  deo:bearer ex:licensee ;
+  deo:action ex:act_attribute .
+
+ex:perm_use
+  a deo:Permission ;
+  deo:assignee ex:licensee ;
+  deo:assigner ex:provider ;
+  deo:action ex:act_use ;
+  deo:target ex:survey_2026 ;
+  deo:requiresDuty ex:obl_attribute .
+
+ex:proh_distribute
+  a deo:Prohibition ;
+  deo:assignee ex:licensee ;
+  deo:assigner ex:provider ;
+  deo:action ex:act_distribute ;
+  deo:target ex:survey_2026 .
+
+ex:proh_sell
+  a deo:Prohibition ;
+  deo:bearer ex:licensee ;
+  deo:action ex:act_sell .
+
+ex:obl_delete
+  a deo:Obligation ;
+  deo:bearer ex:licensee ;
+  deo:action ex:act_delete ;
+  deo:deadline [ a ops:Deadline ; ops:deadlineDuration "P6M"^^xsd:duration ] ;
+  deo:perdurant true .
+
+ex:obl_keep_secure
+  a deo:Obligation ;
+  deo:bearer ex:licensee ;
+  deo:action ex:act_keep_secure ;
+  deo:obligationType deo:Maintenance .
+
+ex:obl_report
+  a deo:Obligation ;
+  deo:bearer ex:licensee ;
+  deo:action ex:act_report ;
+  deo:deadline [ a ops:RecurringSchedule ] .
+
+ex:perm_archive
+  a deo:Permission ;
+  deo:bearer ex:licensee ;
+  deo:action ex:act_archive .
+
+ex:chain_retain
+  a deo:ReparationChain ;
+  deo:hasChainElement
+    [ a deo:ChainElement ; deo:position 1 ; deo:statement ex:obl_delete ] ,
+    [ a deo:ChainElement ; deo:position 2 ; deo:statement ex:perm_archive ] .
+
+# ── Rules ──
+
+ex:r_use
+  a deo:PrescriptiveRule ;
+  deo:strength deo:DefeasibleStrength ;
+  deo:hasCondition ex:c_in_collection , ex:c_region , ex:c_registered_then_approved ;
+  deo:hasConsequent ex:perm_use ;
+  deo:formalizes ex:clause_4 ;
+  deo:temporalCharacteristic [
+    a deo:TemporalCharacteristic ;
+    deo:forStatus deo:StatusInForce ;
+    deo:statusDevelopment deo:Starts ;
+    deo:atTime "2026-01-01T00:00:00Z"^^xsd:dateTime
+  ] .
+
+ex:r_no_distribute
+  a deo:PrescriptiveRule ;
+  deo:strength deo:DefeasibleStrength ;
+  deo:hasCondition ex:c_in_collection ;
+  deo:hasConsequent ex:proh_distribute ;
+  deo:formalizes ex:clause_4 .
+
+ex:r_no_resale
+  a deo:PrescriptiveRule ;
+  deo:strength deo:StrictStrength ;
+  deo:hasCondition ex:c_in_collection ;
+  deo:hasConsequent ex:proh_sell ;
+  deo:formalizes ex:clause_4 .
+
+ex:r_retain
+  a deo:PrescriptiveRule ;
+  deo:strength deo:DefeasibleStrength ;
+  deo:hasCondition ex:c_in_collection ;
+  deo:hasConsequent ex:obl_keep_secure ;
+  deo:formalizes ex:clause_4 .
+
+ex:r_delete_strict
+  a deo:PrescriptiveRule ;
+  rdfs:label "Clause 4, strict reading: delete within six months, else archive"@en ;
+  deo:strength deo:DefeasibleStrength ;
+  deo:hasCondition ex:c_in_collection , ex:c_project_ended ;
+  deo:activatedBy ex:c_project_ended ;
+  deo:hasConsequent ex:chain_retain ;
+  deo:formalizes ex:clause_4 .
+
+ex:r_delete_broad
+  a deo:PrescriptiveRule ;
+  rdfs:label "Clause 4, broad reading: report use every year"@en ;
+  deo:strength deo:DefeasibleStrength ;
+  deo:hasCondition ex:c_in_collection ;
+  deo:hasConsequent ex:obl_report ;
+  deo:formalizes ex:clause_4 .
+
+ex:alt_clause4
+  a deo:Alternatives ;
+  deo:alternative ex:r_delete_strict , ex:r_delete_broad ;
+  deo:legalSource ex:licence_doc .
+
+ex:ov_strategy
+  a deo:Override ;
+  deo:overriding ex:r_no_distribute ;
+  deo:overridden ex:r_use ;
+  deo:overrideBasis deo:ConflictStrategyBasis .
+
+ex:rep_remedy
+  a deo:Reparation ;
+  deo:repairs ex:proh_distribute ;
+  deo:imposes ex:obl_delete ;
+  deo:reparationKind deo:Remedy .
+
+# ── A norm about a norm (LegalRuleML recursive deontics) ──
+
+ex:obl_grant_archive
+  a deo:Obligation ;
+  deo:bearer ex:provider ;
+  deo:auxiliaryParty ex:licensee ;
+  deo:deonticContent ex:perm_archive .
+
+ex:r_grant_archive
+  a deo:PrescriptiveRule ;
+  rdfs:label "Clause 4: the provider must allow the licensee to archive"@en ;
+  deo:strength deo:DefeasibleStrength ;
+  deo:hasCondition ex:c_project_ended ;
+  deo:hasConsequent ex:obl_grant_archive ;
+  deo:formalizes ex:clause_4 .

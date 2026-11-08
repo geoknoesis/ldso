@@ -1,0 +1,1181 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix ops:  <https://w3id.org/ldso/operations#> .
+@prefix deo:  <https://w3id.org/ldso/deontic#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Deontic SHACL Shapes
+# Structural well-formedness of any LDSO-Deontic data. The stricter subset a
+# HydraDL compiler accepts is in hydradl-profile-shapes.ttl.
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/deontic/shapes>
+  a owl:Ontology ;
+  dct:title "LDSO-Deontic SHACL Validation Shapes"@en ;
+  dct:description "SHACL node shapes for validating instances of LDSO-Deontic classes."@en ;
+  owl:imports <https://w3id.org/ldso/deontic> ;
+  sh:declare [
+    sh:prefix "deo" ;
+    sh:namespace "https://w3id.org/ldso/deontic#"^^xsd:anyURI ;
+  ] , [
+    sh:prefix "ops" ;
+    sh:namespace "https://w3id.org/ldso/operations#"^^xsd:anyURI ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# NormativeSystem
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:NormativeSystemShape
+  a sh:NodeShape ;
+  sh:targetClass deo:NormativeSystem ;
+  sh:nodeKind sh:IRI ;
+
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+    sh:severity sh:Violation ;
+    sh:message "NormativeSystem MUST have at least one rdfs:label (language-tagged)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:hasRule ;
+    sh:minCount 1 ;
+    sh:class deo:Rule ;
+    sh:severity sh:Violation ;
+    sh:message "NormativeSystem MUST have at least one deo:Rule via deo:hasRule." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:hasOverride ;
+    sh:class deo:Override ;
+    sh:severity sh:Violation ;
+    sh:message "deo:hasOverride MUST point to a deo:Override." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:policyType ;
+    sh:maxCount 1 ;
+    sh:in ( deo:Set deo:Offer deo:Agreement deo:Assertion deo:Privacy deo:Request deo:Ticket ) ;
+    sh:severity sh:Violation ;
+    sh:message "deo:policyType MUST be at most one concept of deo:PolicyTypeScheme." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:conflictStrategy ;
+    sh:maxCount 1 ;
+    sh:in ( deo:AmbiguityBlocking deo:PermissionPrevails deo:ProhibitionPrevails deo:Invalidate ) ;
+    sh:severity sh:Violation ;
+    sh:message "deo:conflictStrategy MUST be at most one concept of deo:ConflictStrategyScheme." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:legalSource ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Warning ;
+    sh:message "NormativeSystem SHOULD cite the legal instrument it formalises via deo:legalSource." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:declaresComplete ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "deo:declaresComplete MUST name a predicate, class or property by IRI." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:declaresSignature ;
+    sh:class deo:PredicateSignature ;
+    sh:severity sh:Violation ;
+    sh:message "deo:declaresSignature MUST point to a deo:PredicateSignature." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:utcOffset ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive -64800 ;
+    sh:maxInclusive 64800 ;
+    sh:severity sh:Violation ;
+    sh:message "deo:utcOffset MUST be at most one xsd:integer: seconds east of UTC, between -64800 and 64800 (18 hours)." ;
+  ] ;
+
+  sh:sparql [
+    sh:message "deo:inheritsFrom MUST NOT be cyclic: {$this} inherits from itself." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this WHERE { $this deo:inheritsFrom+ $this . }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "A predicate MUST have at most one signature in a normative system and the systems it inherits from: {?value} has two." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT DISTINCT $this ?value WHERE {
+        $this deo:inheritsFrom*/deo:declaresSignature ?a .
+        $this deo:inheritsFrom*/deo:declaresSignature ?b .
+        ?a deo:signaturePredicate ?value .
+        ?b deo:signaturePredicate ?value .
+        FILTER (?a != ?b)
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Rules and factual statements
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:RuleShape
+  a sh:NodeShape ;
+  sh:targetClass deo:Rule ;
+
+  sh:or (
+    [ sh:class deo:PrescriptiveRule ]
+    [ sh:class deo:ConstitutiveRule ]
+  ) ;
+  sh:message "A deo:Rule MUST be typed deo:PrescriptiveRule or deo:ConstitutiveRule." ;
+
+  sh:property [
+    sh:path deo:strength ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:in ( deo:StrictStrength deo:DefeasibleStrength deo:DefeaterStrength ) ;
+    sh:severity sh:Violation ;
+    sh:message "Rule MUST have exactly one deo:strength: strict, defeasible or defeater." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:hasCondition ;
+    sh:class deo:Condition ;
+    sh:severity sh:Violation ;
+    sh:message "deo:hasCondition MUST point to a deo:Condition." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:activatedBy ;
+    sh:maxCount 1 ;
+    sh:class deo:FactCondition ;
+    sh:severity sh:Violation ;
+    sh:message "deo:activatedBy MUST be at most one deo:FactCondition." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:formalizes ;
+    sh:minCount 1 ;
+    sh:severity sh:Warning ;
+    sh:message "Rule SHOULD link to the annotation or operative rule it formalises via deo:formalizes, so explanations can cite the source provision." ;
+  ] ;
+
+  sh:sparql [
+    sh:message "deo:activatedBy MUST be one of the rule's own positive conditions." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:activatedBy ?value .
+        FILTER (NOT EXISTS { $this deo:hasCondition ?value }
+                || EXISTS { ?value deo:negated true })
+      }
+    """ ;
+  ] .
+
+deo:PrescriptiveRuleShape
+  a sh:NodeShape ;
+  sh:targetClass deo:PrescriptiveRule ;
+
+  sh:property [
+    sh:path deo:hasConsequent ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:or ( [ sh:class deo:DeonticStatement ] [ sh:class deo:ReparationChain ] ) ;
+    sh:severity sh:Violation ;
+    sh:message "PrescriptiveRule MUST have exactly one deo:hasConsequent: a deo:DeonticStatement or a deo:ReparationChain." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:concludes ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "PrescriptiveRule MUST NOT use deo:concludes (use deo:hasConsequent)." ;
+  ] .
+
+deo:ConstitutiveRuleShape
+  a sh:NodeShape ;
+  sh:targetClass deo:ConstitutiveRule ;
+
+  sh:property [
+    sh:path deo:concludes ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class deo:Literal ;
+    sh:severity sh:Violation ;
+    sh:message "ConstitutiveRule MUST conclude exactly one deo:Literal." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:hasConsequent ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "ConstitutiveRule MUST NOT have a deontic consequent (LegalRuleML: constitutive statements conclude no deontic formula)." ;
+  ] .
+
+deo:FactualStatementShape
+  a sh:NodeShape ;
+  sh:targetClass deo:FactualStatement ;
+
+  sh:property [
+    sh:path deo:asserts ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class deo:Literal ;
+    sh:severity sh:Violation ;
+    sh:message "FactualStatement MUST assert exactly one deo:Literal." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Deontic statements
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:DeonticStatementShape
+  a sh:NodeShape ;
+  sh:targetClass deo:DeonticStatement ;
+
+  sh:or (
+    [ sh:class deo:Obligation ]
+    [ sh:class deo:Prohibition ]
+    [ sh:class deo:Permission ]
+    [ sh:class deo:Right ]
+  ) ;
+  sh:message "A deo:DeonticStatement MUST be typed Obligation, Prohibition, Permission or Right." ;
+
+  sh:property [
+    sh:path deo:bearer ;
+    sh:minCount 1 ;
+    sh:severity sh:Warning ;
+    sh:message "DeonticStatement SHOULD name its bearer (LegalRuleML Bearer, ODRL assignee)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:bearer ;
+    sh:or ( [ sh:class <https://w3id.org/ldso/entities#NamedEntity> ]
+            [ sh:class deo:PartyCollection ]
+            [ sh:class deo:Variable ] ) ;
+    sh:severity sh:Violation ;
+    sh:message "deo:bearer MUST be an ent:NamedEntity, a deo:PartyCollection or a deo:Variable." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:auxiliaryParty ;
+    sh:or ( [ sh:class <https://w3id.org/ldso/entities#NamedEntity> ]
+            [ sh:class deo:PartyCollection ]
+            [ sh:class deo:Variable ] ) ;
+    sh:severity sh:Violation ;
+    sh:message "deo:auxiliaryParty (and assigner, beneficiary) MUST be an ent:NamedEntity, a deo:PartyCollection or a deo:Variable." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:deadline ;
+    sh:maxCount 1 ;
+    sh:class ops:Schedule ;
+    sh:severity sh:Violation ;
+    sh:message "deo:deadline MUST be at most one ops:Schedule (usually an ops:Deadline)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:obligationType ;
+    sh:maxCount 1 ;
+    sh:in ( deo:Achievement deo:Maintenance deo:Punctual ) ;
+    sh:severity sh:Violation ;
+    sh:message "deo:obligationType MUST be at most one of Achievement, Maintenance, Punctual." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:preemptive ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:boolean ;
+    sh:severity sh:Violation ;
+    sh:message "deo:preemptive MUST be a single xsd:boolean." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:perdurant ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:boolean ;
+    sh:severity sh:Violation ;
+    sh:message "deo:perdurant MUST be a single xsd:boolean." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:fulfilmentComparator ;
+    sh:maxCount 1 ;
+    sh:class ops:Comparator ;
+    sh:severity sh:Violation ;
+    sh:message "deo:fulfilmentComparator MUST be at most one ops:Comparator (ops:Equal, ops:GreaterThanOrEqual…)." ;
+  ] .
+
+deo:DeonticContentShape
+  a sh:NodeShape ;
+  sh:targetClass deo:DeonticStatement ;
+  sh:xone (
+    [ sh:path deo:action ; sh:minCount 1 ; sh:maxCount 1 ; sh:class deo:Action ]
+    [ sh:path deo:deonticContent ; sh:minCount 1 ; sh:maxCount 1 ; sh:class deo:DeonticStatement ]
+  ) ;
+  sh:message "DeonticStatement MUST have exactly one deo:action (a deo:Action) or exactly one deo:deonticContent (a nested deo:DeonticStatement), not both." .
+
+deo:PermissionShape
+  a sh:NodeShape ;
+  sh:targetClass deo:Permission ;
+
+  sh:property [
+    sh:path deo:obligationType ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "A Permission has no obligation type." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:requiresDuty ;
+    sh:class deo:Obligation ;
+    sh:severity sh:Violation ;
+    sh:message "deo:requiresDuty MUST point to a deo:Obligation." ;
+  ] .
+
+deo:RightShape
+  a sh:NodeShape ;
+  sh:targetClass deo:Right ;
+
+  sh:property [
+    sh:path deo:correlative ;
+    sh:minCount 1 ;
+    sh:or ( [ sh:class deo:Obligation ] [ sh:class deo:Prohibition ] ) ;
+    sh:severity sh:Warning ;
+    sh:message "A Right SHOULD list its correlative obligations or prohibitions on auxiliary parties." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Reparation chains and reparations
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:ReparationChainShape
+  a sh:NodeShape ;
+  sh:targetClass deo:ReparationChain ;
+
+  sh:property [
+    sh:path deo:hasChainElement ;
+    sh:minCount 2 ;
+    sh:class deo:ChainElement ;
+    sh:severity sh:Violation ;
+    sh:message "ReparationChain MUST have at least two deo:ChainElement members." ;
+  ] ;
+
+  sh:sparql [
+    sh:message "ReparationChain positions MUST be unique and run 1..n without gaps." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this WHERE {
+        { SELECT $this (COUNT(?e) AS ?n) (COUNT(DISTINCT ?p) AS ?d) (MIN(?p) AS ?lo) (MAX(?p) AS ?hi)
+          WHERE { $this deo:hasChainElement ?e . ?e deo:position ?p . }
+          GROUP BY $this }
+        FILTER (?n != ?d || ?lo != 1 || ?hi != ?n)
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Only the last element of a reparation chain may be a Permission or Right: a permission cannot be violated, so nothing can follow it." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:hasChainElement ?e , ?later .
+        ?e deo:position ?p ; deo:statement ?value .
+        ?later deo:position ?q .
+        FILTER (?q > ?p)
+        { ?value a deo:Permission } UNION { ?value a deo:Right }
+      }
+    """ ;
+  ] .
+
+deo:ChainElementShape
+  a sh:NodeShape ;
+  sh:targetClass deo:ChainElement ;
+
+  sh:property [
+    sh:path deo:position ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:severity sh:Violation ;
+    sh:message "ChainElement MUST have exactly one deo:position (xsd:integer >= 1)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:statement ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class deo:DeonticStatement ;
+    sh:severity sh:Violation ;
+    sh:message "ChainElement MUST have exactly one deo:statement (a deo:DeonticStatement)." ;
+  ] .
+
+deo:ReparationShape
+  a sh:NodeShape ;
+  sh:targetClass deo:Reparation ;
+
+  sh:property [
+    sh:path deo:repairs ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:or ( [ sh:class deo:Obligation ] [ sh:class deo:Prohibition ] ) ;
+    sh:severity sh:Violation ;
+    sh:message "Reparation MUST repair exactly one Obligation or Prohibition (permissions cannot be violated)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:imposes ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:or ( [ sh:class deo:DeonticStatement ] [ sh:class deo:ReparationChain ] ) ;
+    sh:severity sh:Violation ;
+    sh:message "Reparation MUST impose exactly one deo:DeonticStatement or deo:ReparationChain." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:reparationKind ;
+    sh:maxCount 1 ;
+    sh:in ( deo:Consequence deo:Remedy deo:Penalty ) ;
+    sh:severity sh:Violation ;
+    sh:message "deo:reparationKind MUST be at most one of Consequence, Remedy, Penalty." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Overrides and alternatives
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:OverrideShape
+  a sh:NodeShape ;
+  sh:targetClass deo:Override ;
+
+  sh:property [
+    sh:path deo:overriding ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class deo:Rule ;
+    sh:severity sh:Violation ;
+    sh:message "Override MUST have exactly one deo:overriding rule." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:overridden ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class deo:Rule ;
+    sh:severity sh:Violation ;
+    sh:message "Override MUST have exactly one deo:overridden rule." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:overrideBasis ;
+    sh:minCount 1 ;
+    sh:in ( deo:LexSpecialis deo:LexPosterior deo:LexSuperior deo:ExplicitClause deo:ConflictStrategyBasis ) ;
+    sh:severity sh:Violation ;
+    sh:message "Override MUST record its legal basis (a concept of deo:OverrideBasisScheme): priority is never implicit." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:basisProvision ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "deo:basisProvision MUST be the IRI of a provision." ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Override MUST relate two different rules." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this WHERE { $this deo:overriding ?r ; deo:overridden ?r . }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Overrides MUST NOT form a cycle: {?value} overrides {?under}, which (transitively) overrides it." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this ?value ?under WHERE {
+        $this deo:overriding ?value ; deo:overridden ?under .
+        ?under (^deo:overriding/deo:overridden)+ ?value .
+      }
+    """ ;
+  ] .
+
+deo:AlternativesShape
+  a sh:NodeShape ;
+  sh:targetClass deo:Alternatives ;
+
+  sh:property [
+    sh:path deo:alternative ;
+    sh:minCount 2 ;
+    sh:class deo:Rule ;
+    sh:severity sh:Violation ;
+    sh:message "Alternatives MUST list at least two alternative rules." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:adopted ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "Alternatives MUST adopt at most one alternative." ;
+  ] ;
+
+  sh:sparql [
+    sh:message "The adopted rule MUST be one of the set's alternatives." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:adopted ?value .
+        FILTER NOT EXISTS { $this deo:alternative ?value }
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Literals, actions, arguments
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:LiteralShape
+  a sh:NodeShape ;
+  sh:targetClass deo:Literal ;
+
+  sh:property [
+    sh:path deo:predicate ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "Literal MUST have exactly one deo:predicate (an IRI)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:hasArgument ;
+    sh:class deo:Argument ;
+    sh:severity sh:Violation ;
+    sh:message "deo:hasArgument MUST point to a deo:Argument." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:negated ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:boolean ;
+    sh:severity sh:Violation ;
+    sh:message "deo:negated MUST be a single xsd:boolean." ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Literal argument indexes MUST be unique and run 0..n-1 without gaps." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this WHERE {
+        { SELECT $this (COUNT(?a) AS ?n) (COUNT(DISTINCT ?i) AS ?d) (MIN(?i) AS ?lo) (MAX(?i) AS ?hi)
+          WHERE { $this deo:hasArgument ?a . ?a deo:argumentIndex ?i . }
+          GROUP BY $this }
+        FILTER (?n != ?d || ?lo != 0 || ?hi != ?n - 1)
+      }
+    """ ;
+  ] .
+
+deo:ArgumentShape
+  a sh:NodeShape ;
+  sh:targetClass deo:Argument ;
+
+  sh:property [
+    sh:path deo:argumentIndex ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 0 ;
+    sh:severity sh:Violation ;
+    sh:message "Argument MUST have exactly one deo:argumentIndex (xsd:integer >= 0)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:argumentValue ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "Argument MUST have exactly one deo:argumentValue (an individual IRI or a deo:Variable)." ;
+  ] .
+
+deo:CollectionShape
+  a sh:NodeShape ;
+  sh:targetClass deo:Collection ;
+
+  sh:or ( [ sh:class deo:AssetCollection ] [ sh:class deo:PartyCollection ] ) ;
+  sh:message "A deo:Collection MUST be an AssetCollection or a PartyCollection." ;
+
+  sh:property [
+    sh:path deo:refinement ;
+    sh:class deo:Condition ;
+    sh:severity sh:Violation ;
+    sh:message "deo:refinement MUST point to a deo:Condition." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Conditions
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:ClassConditionShape
+  a sh:NodeShape ;
+  sh:targetClass deo:ClassCondition ;
+  sh:property [
+    sh:path deo:classExpression ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "ClassCondition MUST have exactly one deo:classExpression." ;
+  ] ;
+  sh:property [
+    sh:path deo:subject ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "ClassCondition MUST have exactly one deo:subject (an individual or a variable)." ;
+  ] .
+
+deo:PropertyConditionShape
+  a sh:NodeShape ;
+  sh:targetClass deo:PropertyCondition ;
+  sh:property [
+    sh:path deo:property ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "PropertyCondition MUST have exactly one deo:property." ;
+  ] ;
+  sh:property [
+    sh:path deo:subject ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "PropertyCondition MUST have exactly one deo:subject." ;
+  ] ;
+  sh:property [
+    sh:path deo:object ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "PropertyCondition MUST have exactly one deo:object." ;
+  ] .
+
+deo:NormConditionShape
+  a sh:NodeShape ;
+  sh:targetClass deo:NormCondition ;
+  sh:property [
+    sh:path deo:aboutStatement ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class deo:DeonticStatement ;
+    sh:severity sh:Violation ;
+    sh:message "NormCondition MUST be about exactly one deo:DeonticStatement." ;
+  ] ;
+  sh:property [
+    sh:path deo:normState ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:in ( deo:InForce deo:Violated deo:Fulfilled ) ;
+    sh:severity sh:Violation ;
+    sh:message "NormCondition MUST test exactly one state: InForce, Violated or Fulfilled." ;
+  ] ;
+  sh:sparql [
+    sh:message "Violated and Fulfilled apply to obligations and prohibitions only: a permission cannot be violated." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:normState ?s ; deo:aboutStatement ?value .
+        FILTER (?s IN (deo:Violated, deo:Fulfilled))
+        { ?value a deo:Permission } UNION { ?value a deo:Right }
+      }
+    """ ;
+  ] .
+
+deo:ComparisonConditionShape
+  a sh:NodeShape ;
+  sh:targetClass deo:ComparisonCondition ;
+  sh:property [
+    sh:path deo:leftOperand ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "ComparisonCondition MUST have exactly one deo:leftOperand." ;
+  ] ;
+  sh:property [
+    sh:path deo:operator ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:or ( [ sh:class ops:Comparator ] [ sh:class deo:SetOperator ] ) ;
+    sh:severity sh:Violation ;
+    sh:message "ComparisonCondition MUST have exactly one deo:operator: an ops:Comparator or a deo:SetOperator." ;
+  ] ;
+  sh:xone (
+    [ sh:path deo:rightOperand ; sh:minCount 1 ]
+    [ sh:path deo:rightOperandReference ; sh:minCount 1 ; sh:maxCount 1 ]
+  ) ;
+  sh:message "ComparisonCondition MUST have exactly one of deo:rightOperand (one or more values) and deo:rightOperandReference (one reference)." .
+
+deo:ComparisonOperandShape
+  a sh:NodeShape ;
+  sh:targetClass deo:ComparisonCondition ;
+
+  sh:sparql [
+    sh:message "Only deo:IsAnyOf and deo:IsNoneOf compare with a set: other operators take one deo:rightOperand." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT DISTINCT $this WHERE {
+        $this deo:operator ?op ; deo:rightOperand ?a , ?b .
+        FILTER (!sameTerm(?a, ?b) && ?op NOT IN (deo:IsAnyOf, deo:IsNoneOf))
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "deo:rightOperand {?value} MUST be a literal value with a comparator, deo:IsAnyOf or deo:IsNoneOf, and a class IRI with deo:IsA." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:operator ?op ; deo:rightOperand ?value .
+        FILTER ( (?op = deo:IsA && !isIRI(?value))
+              || ((?op IN (deo:IsAnyOf, deo:IsNoneOf) || EXISTS { ?op a ops:Comparator }) && !isLiteral(?value)) )
+      }
+    """ ;
+  ] .
+
+deo:LogicalConditionShape
+  a sh:NodeShape ;
+  sh:targetClass deo:LogicalCondition ;
+  sh:property [
+    sh:path deo:logicalOperator ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:in ( deo:And deo:Or deo:Xone deo:AndSequence ) ;
+    sh:severity sh:Violation ;
+    sh:message "LogicalCondition MUST have exactly one deo:logicalOperator." ;
+  ] ;
+  sh:property [
+    sh:path deo:operand ;
+    sh:minCount 2 ;
+    sh:severity sh:Violation ;
+    sh:message "LogicalCondition MUST have at least two operands." ;
+  ] ;
+  sh:sparql [
+    sh:message "Operands of and-in-sequence MUST be deo:SequencedOperand nodes; operands of the other operators MUST be deo:Condition nodes." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:logicalOperator ?op ; deo:operand ?value .
+        FILTER ( (?op = deo:AndSequence && NOT EXISTS { ?value a deo:SequencedOperand })
+              || (?op != deo:AndSequence && EXISTS { ?value a deo:SequencedOperand }) )
+      }
+    """ ;
+  ] ;
+  sh:sparql [
+    sh:message "A logical condition MUST NOT contain itself." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this WHERE { $this (deo:operand|deo:operandCondition)+ $this . }
+    """ ;
+  ] .
+
+deo:SequencedOperandShape
+  a sh:NodeShape ;
+  sh:targetClass deo:SequencedOperand ;
+  sh:property [
+    sh:path deo:position ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:severity sh:Violation ;
+    sh:message "SequencedOperand MUST have exactly one deo:position." ;
+  ] ;
+  sh:property [
+    sh:path deo:operandCondition ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class deo:Condition ;
+    sh:severity sh:Violation ;
+    sh:message "SequencedOperand MUST have exactly one deo:operandCondition." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Values: signatures, expressions, assignments, aggregates
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:PredicateSignatureShape
+  a sh:NodeShape ;
+  sh:targetClass deo:PredicateSignature ;
+
+  sh:property [
+    sh:path deo:signaturePredicate ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "PredicateSignature MUST have exactly one deo:signaturePredicate (an IRI)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:hasArgumentSlot ;
+    sh:minCount 1 ;
+    sh:class deo:ArgumentSlot ;
+    sh:severity sh:Violation ;
+    sh:message "PredicateSignature MUST have at least one deo:ArgumentSlot via deo:hasArgumentSlot." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:keyLength ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 0 ;
+    sh:severity sh:Violation ;
+    sh:message "PredicateSignature MUST have exactly one deo:keyLength (xsd:integer >= 0)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:isQuantity ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:boolean ;
+    sh:severity sh:Violation ;
+    sh:message "PredicateSignature MUST say whether it is a quantity: exactly one deo:isQuantity (xsd:boolean)." ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Signature argument slot indexes MUST be unique and run 0..n-1 without gaps." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this WHERE {
+        { SELECT $this (COUNT(?a) AS ?n) (COUNT(DISTINCT ?i) AS ?d) (MIN(?i) AS ?lo) (MAX(?i) AS ?hi)
+          WHERE { $this deo:hasArgumentSlot ?a . ?a deo:argumentIndex ?i . }
+          GROUP BY $this }
+        FILTER (?n != ?d || ?lo != 0 || ?hi != ?n - 1)
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "A signature's deo:keyLength MUST NOT exceed its number of argument slots (NormError::Signature)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this WHERE {
+        $this deo:keyLength ?k .
+        { SELECT $this (COUNT(?a) AS ?n) WHERE { $this deo:hasArgumentSlot ?a . } GROUP BY $this }
+        FILTER (?k > ?n)
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "A quantity's signature MUST have exactly one argument slot after its key: one value per key (NormError::Signature)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this WHERE {
+        $this deo:isQuantity true ; deo:keyLength ?k .
+        { SELECT $this (COUNT(?a) AS ?n) WHERE { $this deo:hasArgumentSlot ?a . } GROUP BY $this }
+        FILTER (?n - ?k != 1)
+      }
+    """ ;
+  ] .
+
+deo:ArgumentSlotShape
+  a sh:NodeShape ;
+  sh:targetClass deo:ArgumentSlot ;
+
+  sh:property [
+    sh:path deo:argumentIndex ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 0 ;
+    sh:severity sh:Violation ;
+    sh:message "ArgumentSlot MUST have exactly one deo:argumentIndex (xsd:integer >= 0)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:valueType ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:in ( deo:Individual deo:Number deo:Instant deo:Duration deo:Text ) ;
+    sh:severity sh:Violation ;
+    sh:message "ArgumentSlot MUST have exactly one deo:valueType, a concept of deo:ValueTypeScheme." ;
+  ] .
+
+deo:ExpressionShape
+  a sh:NodeShape ;
+  sh:targetClass deo:Expression ;
+
+  sh:property [
+    sh:path deo:operation ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:in ( deo:Now deo:Neg deo:Abs deo:Add deo:Sub deo:Mul deo:Div deo:Lesser deo:Greater
+            deo:Round deo:Floor deo:Ceil deo:YearsBetween deo:MonthsBetween deo:DaysBetween
+            deo:AddDays deo:AddMonths deo:AddYears ) ;
+    sh:severity sh:Violation ;
+    sh:message "Expression MUST have exactly one deo:operation, a concept of deo:OperationScheme." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:hasOperand ;
+    sh:class deo:ExpressionOperand ;
+    sh:severity sh:Violation ;
+    sh:message "deo:hasOperand MUST point to a deo:ExpressionOperand." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:places ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 0 ;
+    sh:severity sh:Violation ;
+    sh:message "deo:places MUST be a single xsd:integer >= 0." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:roundingMode ;
+    sh:maxCount 1 ;
+    sh:in ( deo:HalfUp deo:HalfEven deo:Down deo:Up ) ;
+    sh:severity sh:Violation ;
+    sh:message "deo:roundingMode MUST be at most one concept of deo:RoundingModeScheme." ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Expression operand positions MUST be unique and run 1..n without gaps." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this WHERE {
+        { SELECT $this (COUNT(?o) AS ?n) (COUNT(DISTINCT ?p) AS ?d) (MIN(?p) AS ?lo) (MAX(?p) AS ?hi)
+          WHERE { $this deo:hasOperand ?o . ?o deo:position ?p . }
+          GROUP BY $this }
+        FILTER (?n != ?d || ?lo != 1 || ?hi != ?n)
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Expression {$this} MUST have as many operands as its operation {?value} takes: none for deo:Now; one for deo:Neg, deo:Abs, deo:Round, deo:Floor and deo:Ceil; two for the others." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:operation ?value .
+        { SELECT $this (COUNT(?o) AS ?n) WHERE { $this deo:operation ?x . OPTIONAL { $this deo:hasOperand ?o } } GROUP BY $this }
+        BIND (IF(?value = deo:Now, 0, IF(?value IN (deo:Neg, deo:Abs, deo:Round, deo:Floor, deo:Ceil), 1, 2)) AS ?arity)
+        FILTER (?n != ?arity)
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "deo:places and deo:roundingMode MUST both be given on a deo:Round expression, and only there." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this WHERE {
+        $this deo:operation ?op .
+        FILTER ( (?op = deo:Round && (NOT EXISTS { $this deo:places ?p } || NOT EXISTS { $this deo:roundingMode ?m }))
+              || (?op != deo:Round && (EXISTS { $this deo:places ?p } || EXISTS { $this deo:roundingMode ?m })) )
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "An expression MUST NOT contain itself." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this WHERE { $this (deo:hasOperand/deo:operandValue)+ $this . }
+    """ ;
+  ] .
+
+deo:ExpressionOperandShape
+  a sh:NodeShape ;
+  sh:targetClass deo:ExpressionOperand ;
+
+  sh:property [
+    sh:path deo:position ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 1 ;
+    sh:severity sh:Violation ;
+    sh:message "ExpressionOperand MUST have exactly one deo:position (xsd:integer >= 1)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:operandValue ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:or ( [ sh:nodeKind sh:Literal ] [ sh:nodeKind sh:IRI ] [ sh:class deo:Expression ] ) ;
+    sh:severity sh:Violation ;
+    sh:message "ExpressionOperand MUST have exactly one deo:operandValue: a literal, an individual, a deo:Variable or a deo:Expression." ;
+  ] .
+
+deo:AssignmentConditionShape
+  a sh:NodeShape ;
+  sh:targetClass deo:AssignmentCondition ;
+
+  sh:property [
+    sh:path deo:assigns ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class deo:Variable ;
+    sh:severity sh:Violation ;
+    sh:message "AssignmentCondition MUST assign exactly one deo:Variable (deo:assigns)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:expression ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:or ( [ sh:class deo:Expression ] [ sh:class deo:Variable ] [ sh:nodeKind sh:Literal ] ) ;
+    sh:severity sh:Violation ;
+    sh:message "AssignmentCondition MUST have exactly one deo:expression: a deo:Expression, a deo:Variable or a literal." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:negated ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "An assignment condition cannot be negated: it binds a value." ;
+  ] .
+
+deo:AggregateConditionShape
+  a sh:NodeShape ;
+  sh:targetClass deo:AggregateCondition ;
+
+  sh:property [
+    sh:path deo:aggregateOperator ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:in ( deo:Sum deo:Count deo:Min deo:Max ) ;
+    sh:severity sh:Violation ;
+    sh:message "AggregateCondition MUST have exactly one deo:aggregateOperator: Sum, Count, Min or Max." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:assigns ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:class deo:Variable ;
+    sh:severity sh:Violation ;
+    sh:message "AggregateCondition MUST assign exactly one deo:Variable (deo:assigns)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:expression ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:or ( [ sh:class deo:Expression ] [ sh:class deo:Variable ] [ sh:nodeKind sh:Literal ] ) ;
+    sh:severity sh:Violation ;
+    sh:message "AggregateCondition MUST have exactly one deo:expression (the value of each solution): a deo:Expression, a deo:Variable or a literal." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:pattern ;
+    sh:minCount 1 ;
+    sh:or ( [ sh:class deo:FactCondition ] [ sh:class deo:ClassCondition ] [ sh:class deo:PropertyCondition ] ) ;
+    sh:severity sh:Violation ;
+    sh:message "AggregateCondition MUST have at least one deo:pattern condition, each a fact, class or property condition." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:negated ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "An aggregate condition cannot be negated: it binds a value." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Temporal characteristics
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:TemporalCharacteristicShape
+  a sh:NodeShape ;
+  sh:targetClass deo:TemporalCharacteristic ;
+  sh:property [
+    sh:path deo:forStatus ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:in ( deo:StatusInForce deo:StatusEfficacious deo:StatusApplicable deo:StatusEnforceable ) ;
+    sh:severity sh:Violation ;
+    sh:message "TemporalCharacteristic MUST have exactly one deo:forStatus." ;
+  ] ;
+  sh:property [
+    sh:path deo:statusDevelopment ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:in ( deo:Starts deo:Ends ) ;
+    sh:severity sh:Violation ;
+    sh:message "TemporalCharacteristic MUST have exactly one deo:statusDevelopment (Starts or Ends)." ;
+  ] ;
+  sh:property [
+    sh:path deo:atTime ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:dateTime ;
+    sh:severity sh:Violation ;
+    sh:message "TemporalCharacteristic MUST have exactly one deo:atTime (xsd:dateTime)." ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Warnings (SHACL takes the severity from the shape)
+# ═════════════════════════════════════════════════════════════════════════════
+
+deo:ExplicitClauseShape
+  a sh:NodeShape ;
+  sh:targetSubjectsOf deo:overrideBasis ;
+  sh:severity sh:Warning ;
+  sh:sparql [
+    sh:message "An override on an explicit clause SHOULD cite that clause via deo:basisProvision." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this WHERE {
+        $this deo:overrideBasis deo:ExplicitClause .
+        FILTER NOT EXISTS { $this deo:basisProvision ?p }
+      }
+    """ ;
+  ] .
+
+deo:ReparationShapeWarning
+  a sh:NodeShape ;
+  sh:targetClass deo:Reparation ;
+  sh:severity sh:Warning ;
+  sh:sparql [
+    sh:message "A Remedy answers an infringed Prohibition and a Consequence an unfulfilled Obligation (ODRL)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/shapes> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:reparationKind ?k ; deo:repairs ?value .
+        FILTER ( (?k = deo:Remedy && NOT EXISTS { ?value a deo:Prohibition })
+              || (?k = deo:Consequence && NOT EXISTS { ?value a deo:Obligation }) )
+      }
+    """ ;
+  ] .

@@ -1,0 +1,446 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix ldso: <https://w3id.org/ldso/core#> .
+@prefix ent:  <https://w3id.org/ldso/entities#> .
+@prefix leg:  <https://w3id.org/ldso/semantics#> .
+@prefix ops:  <https://w3id.org/ldso/operations#> .
+@prefix deo:  <https://w3id.org/ldso/deontic#> .
+@prefix ex:   <https://example.org/insurance/> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Deontic Example: a household insurance policy, formalised
+#
+# Executable: conforms to shapes.ttl and to hydradl-profile-shapes.ttl, so it
+# compiles to a hydradl-deontic NormSystem.
+#
+# Demonstrates:
+#   - deo:NormativeSystem as an Agreement with closed predicates
+#   - deo:PrescriptiveRule with class, property, fact and norm conditions
+#   - a two-element deo:ReparationChain (pay, else pay a late fee)
+#   - deadlines relative to activation (deo:activatedBy, ops:deadlineDuration)
+#   - a defeater (the flood exclusion) and a lex specialis override of it
+#   - deadline competition decided by an explicit-clause override
+#   - a deo:Reparation stated in another clause (deo:Penalty)
+#   - a deo:Right with its correlative obligation
+#   - a deo:ConstitutiveRule over a violation, and a deo:FactualStatement
+#   - deo:formalizes links to LDSO-Semantics annotations
+#   - values: signatures for the claim amount (a quantity), the late fee and
+#     its payments; the fee computed as round(0.015 × amount, 2, half even) by
+#     a constitutive rule; an obligation to pay at least that fee
+#     (deo:fulfilmentComparator ops:GreaterThanOrEqual); a UTC offset
+#     Because ex:r_pay reads lateFeeAmount for its whole chain, the obligation
+#     to pay the claim, too, needs claimAmount recorded: without it the fee is
+#     unknown and so is the status of both obligations.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SOURCE AND ANNOTATIONS (abbreviated: see ldso-core and ldso-semantics)
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:policy_doc
+  a ldso:LegalResource ;
+  rdfs:label "Household policy wording 2026"@en .
+
+ex:clause_8      a ldso:LegalElement ; rdfs:label "Clause 8 — Claims payment"@en .
+ex:clause_9      a ldso:LegalElement ; rdfs:label "Clause 9 — Exclusions"@en .
+ex:clause_11     a ldso:LegalElement ; rdfs:label "Clause 11 — Decisions and access to records"@en .
+ex:endorsement_3 a ldso:LegalElement ; rdfs:label "Endorsement 3 — Flood cover"@en .
+
+ex:Oblig_Clause8 a leg:Obligation ; leg:annotates ex:clause_8 .
+ex:Excep_Clause9 a leg:Exception  ; leg:annotates ex:clause_9 .
+ex:Oblig_End3    a leg:Obligation ; leg:annotates ex:endorsement_3 .
+ex:Oblig_Clause11 a leg:Obligation ; leg:annotates ex:clause_11 .
+ex:Right_Clause11 a leg:Right     ; leg:annotates ex:clause_11 .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PARTIES AND DOMAIN VOCABULARY
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:regulator
+  a ent:NamedEntity ;
+  ent:entityType ent:Organization ;
+  ent:href "https://example.org/orgs/difs"^^xsd:anyURI ;
+  ent:showAs "Department of Insurance and Financial Services"@en .
+
+ex:michigan
+  a ent:NamedEntity ;
+  ent:entityType ent:Place ;
+  ent:href "https://example.org/places/michigan"^^xsd:anyURI ;
+  ent:showAs "Michigan"@en .
+
+ex:CoveredClaim a owl:Class ; rdfs:label "covered claim"@en .
+ex:FloodClaim   a owl:Class ; rdfs:label "flood claim"@en .
+ex:insurerOf    a owl:ObjectProperty ; rdfs:label "insurer of"@en .
+ex:holderOf     a owl:ObjectProperty ; rdfs:label "holder of"@en .
+
+ex:var_claim   a deo:Variable ; rdfs:label "?claim" .
+ex:var_insurer a deo:Variable ; rdfs:label "?insurer" .
+ex:var_holder  a deo:Variable ; rdfs:label "?holder" .
+ex:var_amount  a deo:Variable ; rdfs:label "?amount" .
+ex:var_fee     a deo:Variable ; rdfs:label "?fee" .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NORMATIVE SYSTEM
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:policy_2026
+  a deo:NormativeSystem ;
+  rdfs:label "Household insurance policy 2026, formalised"@en ;
+  deo:policyType deo:Agreement ;
+  deo:conflictStrategy deo:AmbiguityBlocking ;
+  deo:legalSource ex:policy_doc ;
+  deo:authority ex:regulator ;
+  deo:jurisdiction ex:michigan ;
+  deo:utcOffset -18000 ;
+  deo:declaresComplete ex:paid , ex:paidLateFee , ex:notified , ex:providedFile ;
+  deo:declaresSignature ex:sig_claim_amount , ex:sig_late_fee_amount , ex:sig_paid_late_fee ;
+  deo:hasRule ex:r_pay , ex:r_flood_exclusion , ex:r_flood_endorsement ,
+              ex:r_notify , ex:r_access , ex:r_late_payment , ex:r_late_fee_amount ;
+  deo:hasOverride ex:ov_endorsement_over_exclusion , ex:ov_endorsement_deadline ;
+  deo:hasReparation ex:rep_notify_penalty ;
+  deo:hasFactualStatement ex:fs_regulator .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SIGNATURES: predicates that carry values
+# ─────────────────────────────────────────────────────────────────────────────
+
+# claimAmount(?claim, ?amount): one amount per claim, recorded.
+ex:sig_claim_amount
+  a deo:PredicateSignature ;
+  deo:signaturePredicate ex:claimAmount ;
+  deo:keyLength 1 ;
+  deo:isQuantity true ;
+  deo:hasArgumentSlot [ a deo:ArgumentSlot ; deo:argumentIndex 0 ; deo:valueType deo:Individual ] ,
+                      [ a deo:ArgumentSlot ; deo:argumentIndex 1 ; deo:valueType deo:Number ] .
+
+# lateFeeAmount(?claim, ?fee): one fee per claim, computed by ex:r_late_fee_amount.
+ex:sig_late_fee_amount
+  a deo:PredicateSignature ;
+  deo:signaturePredicate ex:lateFeeAmount ;
+  deo:keyLength 1 ;
+  deo:isQuantity true ;
+  deo:hasArgumentSlot [ a deo:ArgumentSlot ; deo:argumentIndex 0 ; deo:valueType deo:Individual ] ,
+                      [ a deo:ArgumentSlot ; deo:argumentIndex 1 ; deo:valueType deo:Number ] .
+
+# paidLateFee(?claim, ?amount): a relation, since a claim may see several payments.
+ex:sig_paid_late_fee
+  a deo:PredicateSignature ;
+  deo:signaturePredicate ex:paidLateFee ;
+  deo:keyLength 1 ;
+  deo:isQuantity false ;
+  deo:hasArgumentSlot [ a deo:ArgumentSlot ; deo:argumentIndex 0 ; deo:valueType deo:Individual ] ,
+                      [ a deo:ArgumentSlot ; deo:argumentIndex 1 ; deo:valueType deo:Number ] .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ACTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:act_pay
+  a deo:Action ;
+  deo:predicate ex:paid ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] .
+
+ex:act_pay_late_fee
+  a deo:Action ;
+  deo:predicate ex:paidLateFee ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] ,
+                  [ a deo:Argument ; deo:argumentIndex 1 ; deo:argumentValue ex:var_fee ] .
+
+ex:act_notify
+  a deo:Action ;
+  deo:predicate ex:notified ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] .
+
+ex:act_compensate
+  a deo:Action ;
+  deo:predicate ex:compensatedDelay ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] .
+
+ex:act_access
+  a deo:Action ;
+  deo:predicate ex:accessedFile ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] .
+
+ex:act_provide_file
+  a deo:Action ;
+  deo:predicate ex:providedFile ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DEADLINES (LDSO-Operations)
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:dl_10_days a ops:Deadline ; ops:deadlineDuration "P10D"^^xsd:duration .
+ex:dl_15_days a ops:Deadline ; ops:deadlineDuration "P15D"^^xsd:duration .
+ex:dl_30_days a ops:Deadline ; ops:deadlineDuration "P30D"^^xsd:duration .
+ex:dl_60_days a ops:Deadline ; ops:deadlineDuration "P60D"^^xsd:duration .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DEONTIC STATEMENTS
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:obl_pay
+  a deo:Obligation ;
+  rdfs:label "the insurer must pay the claim within 30 days"@en ;
+  deo:bearer ex:var_insurer ;
+  deo:action ex:act_pay ;
+  deo:deadline ex:dl_30_days ;
+  deo:obligationType deo:Achievement .
+
+ex:obl_late_fee
+  a deo:Obligation ;
+  rdfs:label "the insurer must pay at least the late fee within 10 days"@en ;
+  deo:bearer ex:var_insurer ;
+  deo:action ex:act_pay_late_fee ;
+  deo:fulfilmentComparator ops:GreaterThanOrEqual ;
+  deo:deadline ex:dl_10_days .
+
+ex:obl_pay_flood
+  a deo:Obligation ;
+  rdfs:label "the insurer must pay a flood claim within 60 days"@en ;
+  deo:bearer ex:var_insurer ;
+  deo:action ex:act_pay ;
+  deo:deadline ex:dl_60_days .
+
+ex:proh_pay
+  a deo:Prohibition ;
+  rdfs:label "the insurer is not to pay the claim"@en ;
+  deo:bearer ex:var_insurer ;
+  deo:action ex:act_pay .
+
+ex:obl_notify
+  a deo:Obligation ;
+  rdfs:label "the insurer must notify its decision within 15 days"@en ;
+  deo:bearer ex:var_insurer ;
+  deo:action ex:act_notify ;
+  deo:deadline ex:dl_15_days .
+
+ex:obl_compensate
+  a deo:Obligation ;
+  rdfs:label "the insurer must compensate the delay within 30 days"@en ;
+  deo:bearer ex:var_insurer ;
+  deo:action ex:act_compensate ;
+  deo:deadline ex:dl_30_days .
+
+ex:obl_provide_file
+  a deo:Obligation ;
+  rdfs:label "the insurer must provide the claim file within 10 days"@en ;
+  deo:bearer ex:var_insurer ;
+  deo:action ex:act_provide_file ;
+  deo:deadline ex:dl_10_days .
+
+ex:right_access
+  a deo:Right ;
+  rdfs:label "the policyholder may access the claim file"@en ;
+  deo:bearer ex:var_holder ;
+  deo:auxiliaryParty ex:var_insurer ;
+  deo:action ex:act_access ;
+  deo:correlative ex:obl_provide_file .
+
+ex:chain_pay
+  a deo:ReparationChain ;
+  deo:hasChainElement
+    [ a deo:ChainElement ; deo:position 1 ; deo:statement ex:obl_pay ] ,
+    [ a deo:ChainElement ; deo:position 2 ; deo:statement ex:obl_late_fee ] .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONDITIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:c_covered
+  a deo:ClassCondition ;
+  deo:classExpression ex:CoveredClaim ;
+  deo:subject ex:var_claim .
+
+ex:c_flood
+  a deo:ClassCondition ;
+  deo:classExpression ex:FloodClaim ;
+  deo:subject ex:var_claim .
+
+ex:c_insurer_of
+  a deo:PropertyCondition ;
+  deo:property ex:insurerOf ;
+  deo:subject ex:var_insurer ;
+  deo:object ex:var_claim .
+
+ex:c_holder_of
+  a deo:PropertyCondition ;
+  deo:property ex:holderOf ;
+  deo:subject ex:var_holder ;
+  deo:object ex:var_claim .
+
+ex:c_approved
+  a deo:FactCondition ;
+  deo:predicate ex:approved ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] .
+
+ex:c_filed
+  a deo:FactCondition ;
+  deo:predicate ex:filed ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] .
+
+ex:c_requested
+  a deo:FactCondition ;
+  deo:predicate ex:requestedFile ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] .
+
+ex:c_flood_endorsed
+  a deo:FactCondition ;
+  deo:predicate ex:floodEndorsed ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] .
+
+ex:c_pay_violated
+  a deo:NormCondition ;
+  deo:aboutStatement ex:obl_pay ;
+  deo:normState deo:Violated .
+
+ex:c_claim_amount
+  a deo:FactCondition ;
+  deo:predicate ex:claimAmount ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] ,
+                  [ a deo:Argument ; deo:argumentIndex 1 ; deo:argumentValue ex:var_amount ] .
+
+ex:c_late_fee_amount
+  a deo:FactCondition ;
+  deo:predicate ex:lateFeeAmount ;
+  deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] ,
+                  [ a deo:Argument ; deo:argumentIndex 1 ; deo:argumentValue ex:var_fee ] .
+
+# ?fee = round(0.015 × ?amount, 2, half even)
+ex:c_fee
+  a deo:AssignmentCondition ;
+  deo:assigns ex:var_fee ;
+  deo:expression ex:expr_fee .
+
+ex:expr_fee
+  a deo:Expression ;
+  deo:operation deo:Round ;
+  deo:places 2 ;
+  deo:roundingMode deo:HalfEven ;
+  deo:hasOperand [ a deo:ExpressionOperand ; deo:position 1 ; deo:operandValue ex:expr_fee_raw ] .
+
+ex:expr_fee_raw
+  a deo:Expression ;
+  deo:operation deo:Mul ;
+  deo:hasOperand [ a deo:ExpressionOperand ; deo:position 1 ; deo:operandValue "0.015"^^xsd:decimal ] ,
+                 [ a deo:ExpressionOperand ; deo:position 2 ; deo:operandValue ex:var_amount ] .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RULES
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:r_pay
+  a deo:PrescriptiveRule ;
+  rdfs:label "Clause 8: pay an approved covered claim"@en ;
+  deo:strength deo:DefeasibleStrength ;
+  deo:hasCondition ex:c_covered , ex:c_insurer_of , ex:c_approved , ex:c_late_fee_amount ;
+  deo:activatedBy ex:c_approved ;
+  deo:hasConsequent ex:chain_pay ;
+  deo:formalizes ex:Oblig_Clause8 ;
+  deo:legalSource ex:policy_doc ;
+  deo:paraphrase "The insurer must pay an approved covered claim within 30 days of approval; failing that, it must pay at least the late fee within 10 days. The rule reads the late fee, computed from the recorded claim amount, so without a claimAmount record its obligations are Unknown."@en .
+
+ex:r_flood_exclusion
+  a deo:PrescriptiveRule ;
+  rdfs:label "Clause 9: flood damage is excluded"@en ;
+  deo:strength deo:DefeaterStrength ;
+  deo:hasCondition ex:c_flood , ex:c_insurer_of ;
+  deo:hasConsequent ex:proh_pay ;
+  deo:formalizes ex:Excep_Clause9 ;
+  deo:paraphrase "A flood claim blocks the obligation to pay (without forbidding payment)."@en .
+
+ex:r_flood_endorsement
+  a deo:PrescriptiveRule ;
+  rdfs:label "Endorsement 3: flood claims are paid within 60 days"@en ;
+  deo:strength deo:DefeasibleStrength ;
+  deo:hasCondition ex:c_flood , ex:c_flood_endorsed , ex:c_insurer_of , ex:c_approved ;
+  deo:activatedBy ex:c_approved ;
+  deo:hasConsequent ex:obl_pay_flood ;
+  deo:formalizes ex:Oblig_End3 ;
+  deo:paraphrase "Where the flood endorsement applies, the insurer must pay an approved flood claim within 60 days of approval."@en .
+
+ex:r_notify
+  a deo:PrescriptiveRule ;
+  rdfs:label "Clause 11(1): notify the decision"@en ;
+  deo:strength deo:StrictStrength ;
+  deo:hasCondition ex:c_filed , ex:c_insurer_of ;
+  deo:hasConsequent ex:obl_notify ;
+  deo:formalizes ex:Oblig_Clause11 .
+
+ex:r_access
+  a deo:PrescriptiveRule ;
+  rdfs:label "Clause 11(2): the policyholder's right of access"@en ;
+  deo:strength deo:DefeasibleStrength ;
+  deo:hasCondition ex:c_requested , ex:c_holder_of , ex:c_insurer_of ;
+  deo:hasConsequent ex:right_access ;
+  deo:formalizes ex:Right_Clause11 .
+
+ex:r_late_payment
+  a deo:ConstitutiveRule ;
+  rdfs:label "A missed payment deadline counts as late payment"@en ;
+  deo:strength deo:StrictStrength ;
+  deo:hasCondition ex:c_pay_violated , ex:c_approved , ex:c_insurer_of ;
+  deo:concludes [
+    a deo:Literal ;
+    deo:predicate ex:latePayment ;
+    deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ]
+  ] ;
+  deo:formalizes ex:Oblig_Clause8 .
+
+ex:r_late_fee_amount
+  a deo:ConstitutiveRule ;
+  rdfs:label "Clause 8: the late fee is 1.5% of the claim amount, to the cent"@en ;
+  deo:strength deo:StrictStrength ;
+  deo:hasCondition ex:c_claim_amount , ex:c_fee ;
+  deo:concludes [
+    a deo:Literal ;
+    deo:predicate ex:lateFeeAmount ;
+    deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:var_claim ] ,
+                    [ a deo:Argument ; deo:argumentIndex 1 ; deo:argumentValue ex:var_fee ]
+  ] ;
+  deo:formalizes ex:Oblig_Clause8 ;
+  deo:paraphrase "The late fee of a claim is 1.5% of its amount, rounded half even to two decimal places."@en .
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# OVERRIDES, REPARATION, FACTUAL STATEMENT
+# ─────────────────────────────────────────────────────────────────────────────
+
+ex:ov_endorsement_over_exclusion
+  a deo:Override ;
+  deo:overriding ex:r_flood_endorsement ;
+  deo:overridden ex:r_flood_exclusion ;
+  deo:overrideBasis deo:LexSpecialis ;
+  deo:basisProvision ex:endorsement_3 .
+
+ex:ov_endorsement_deadline
+  a deo:Override ;
+  deo:overriding ex:r_flood_endorsement ;
+  deo:overridden ex:r_pay ;
+  deo:overrideBasis deo:ExplicitClause ;
+  deo:basisProvision ex:endorsement_3 .
+
+ex:rep_notify_penalty
+  a deo:Reparation ;
+  deo:repairs ex:obl_notify ;
+  deo:imposes ex:obl_compensate ;
+  deo:reparationKind deo:Penalty .
+
+ex:fs_regulator
+  a deo:FactualStatement ;
+  deo:asserts [
+    a deo:Literal ;
+    deo:predicate ex:competentRegulator ;
+    deo:hasArgument [ a deo:Argument ; deo:argumentIndex 0 ; deo:argumentValue ex:regulator ]
+  ] .

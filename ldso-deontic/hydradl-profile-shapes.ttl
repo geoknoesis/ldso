@@ -1,0 +1,578 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix ops:  <https://w3id.org/ldso/operations#> .
+@prefix deo:  <https://w3id.org/ldso/deontic#> .
+@prefix deox: <https://w3id.org/ldso/deontic/hydradl-profile#> .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LDSO-Deontic HydraDL Profile
+#
+# The executable subset: data that conforms to shapes.ttl AND to these shapes
+# compiles to a hydradl-deontic NormSystem that passes NormSystem::validate().
+# Each Violation names the gap (G2…G5, G7…G9, see README.md) or the engine
+# error (NormError::…) it stands for. Run these shapes after shapes.ttl; the
+# compiler still calls validate(), which also catches what SPARQL cannot see
+# (status cycles through Violated and Fulfilled conditions, value cycles
+# between strata, the type of every expression).
+# ─────────────────────────────────────────────────────────────────────────────
+
+<https://w3id.org/ldso/deontic/hydradl-profile>
+  a owl:Ontology ;
+  dct:title "LDSO-Deontic HydraDL Profile Shapes"@en ;
+  dct:description "SHACL shapes restricting LDSO-Deontic data to what the HydraDL defeasible deontic engine evaluates."@en ;
+  owl:imports <https://w3id.org/ldso/deontic/shapes> ;
+  sh:declare [
+    sh:prefix "deo" ;
+    sh:namespace "https://w3id.org/ldso/deontic#"^^xsd:anyURI ;
+  ] , [
+    sh:prefix "ops" ;
+    sh:namespace "https://w3id.org/ldso/operations#"^^xsd:anyURI ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Normative system
+# ═════════════════════════════════════════════════════════════════════════════
+
+deox:NormativeSystemProfile
+  a sh:NodeShape ;
+  sh:targetClass deo:NormativeSystem ;
+
+  sh:sparql [
+    sh:message "Override {$value} relates a rule outside this system and the systems it inherits from (NormError::UnknownRule)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:hasOverride ?value .
+        ?value deo:overriding|deo:overridden ?r .
+        FILTER NOT EXISTS { $this deo:inheritsFrom*/deo:hasRule ?r }
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Predicate {?value} is declared complete but a constitutive rule of the system concludes it (NormError::ClosedHead)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:declaresComplete ?value ;
+              deo:inheritsFrom*/deo:hasRule ?r .
+        ?r deo:concludes/deo:predicate ?value .
+      }
+    """ ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Rules
+# ═════════════════════════════════════════════════════════════════════════════
+
+deox:RuleProfile
+  a sh:NodeShape ;
+  sh:targetClass deo:Rule ;
+
+  sh:property [
+    sh:path deo:temporalCharacteristic ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "G2: HydraDL does not evaluate rule validity windows (deo:temporalCharacteristic). Select the rules in force before compiling." ;
+  ] ;
+
+  sh:sparql [
+    sh:message "A defeater blocks but concludes nothing: it cannot have a reparation chain (NormError::DefeaterChain)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this WHERE {
+        $this deo:strength deo:DefeaterStrength ;
+              deo:hasConsequent ?c .
+        ?c a deo:ReparationChain .
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Variable {?value} is not bound by a positive fact, class or property condition, an assignment or an aggregate of the rule (NormError::Unsafe)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT DISTINCT $this ?value WHERE {
+        { $this (deo:hasConsequent|deo:concludes|deo:hasCondition|deo:hasChainElement|deo:statement
+                 |deo:action|deo:bearer|deo:target|deo:aboutStatement|deo:operand|deo:operandCondition
+                 |deo:hasArgument|deo:argumentValue|deo:subject|deo:object)+ ?value . }
+        UNION
+        { $this deo:hasCondition ?let .
+          ?let a deo:AssignmentCondition ; deo:expression/(deo:hasOperand/deo:operandValue)* ?value . }
+        ?value a deo:Variable .
+        FILTER NOT EXISTS {
+          $this deo:hasCondition ?c .
+          FILTER NOT EXISTS { ?c deo:negated true }
+          { ?c a deo:FactCondition ; deo:hasArgument/deo:argumentValue ?value }
+          UNION { ?c a deo:ClassCondition ; deo:subject ?value }
+          UNION { ?c a deo:PropertyCondition ; (deo:subject|deo:object) ?value }
+          UNION { ?c a deo:AssignmentCondition ; deo:assigns ?value }
+          UNION { ?c a deo:AggregateCondition ; deo:assigns ?value }
+        }
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Variable {?value} of an aggregate is bound neither by a positive condition of its pattern nor by the rule (NormError::Unsafe)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT DISTINCT $this ?value WHERE {
+        $this deo:hasCondition ?g .
+        ?g a deo:AggregateCondition .
+        { ?g deo:expression/(deo:hasOperand/deo:operandValue)* ?value }
+        UNION { ?g deo:pattern/(deo:hasArgument/deo:argumentValue|deo:subject|deo:object) ?value }
+        ?value a deo:Variable .
+        FILTER NOT EXISTS {
+          ?g deo:pattern ?pc .
+          FILTER NOT EXISTS { ?pc deo:negated true }
+          ?pc (deo:hasArgument/deo:argumentValue|deo:subject|deo:object) ?value .
+        }
+        FILTER NOT EXISTS {
+          $this deo:hasCondition ?c .
+          FILTER NOT EXISTS { ?c deo:negated true }
+          { ?c a deo:FactCondition ; deo:hasArgument/deo:argumentValue ?value }
+          UNION { ?c a deo:ClassCondition ; deo:subject ?value }
+          UNION { ?c a deo:PropertyCondition ; (deo:subject|deo:object) ?value }
+          UNION { ?c deo:assigns ?value }
+        }
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Variable {?value} is assigned by an assignment or aggregate but also bound by another condition of the rule: an assigned variable must be fresh (NormError::Type)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT DISTINCT $this ?value WHERE {
+        $this deo:hasCondition ?c , ?d .
+        ?c deo:assigns ?value .
+        FILTER (?c != ?d)
+        { ?d deo:assigns ?value }
+        UNION { ?d a deo:ClassCondition ; deo:subject ?value }
+        UNION { ?d a deo:PropertyCondition ; (deo:subject|deo:object) ?value }
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Deontic statements
+# ═════════════════════════════════════════════════════════════════════════════
+
+deox:DeonticStatementProfile
+  a sh:NodeShape ;
+  sh:targetClass deo:DeonticStatement ;
+
+  sh:property [
+    sh:path deo:bearer ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "HydraDL norms have exactly one bearer (a term): state one deo:bearer, or one deo:PartyCollection." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:deonticContent ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "G9: HydraDL norms are over actions; a norm about another norm (deo:deonticContent) is not supported. State a deo:Right with its correlative instead." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:obligationType ;
+    sh:in ( deo:Achievement ) ;
+    sh:severity sh:Violation ;
+    sh:message "G3: HydraDL evaluates achievement obligations only; maintenance and punctual obligations are not supported." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:preemptive ;
+    sh:in ( false ) ;
+    sh:severity sh:Violation ;
+    sh:message "G3: HydraDL evaluates non-preemptive obligations only (an action before activation does not comply)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:perdurant ;
+    sh:in ( false ) ;
+    sh:severity sh:Violation ;
+    sh:message "G3: HydraDL evaluates non-perdurant obligations only (a violated obligation is not owed further)." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:deadline ;
+    sh:class ops:Deadline ;
+    sh:severity sh:Violation ;
+    sh:message "G7: HydraDL evaluates one due time per obligation; recurring and period schedules are not supported." ;
+  ] ;
+
+  sh:property [
+    sh:path ( deo:deadline ops:deadlineDuration ) ;
+    sh:pattern "^P(\\d+W|(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+(\\.\\d+)?S)?)?)$" ;
+    sh:severity sh:Violation ;
+    sh:message "G8: a relative deadline must be a fixed, non-negative length (weeks, days, hours, minutes, seconds). Calendar months and years vary in length; state an absolute date instead." ;
+  ] ;
+
+  sh:sparql [
+    sh:message "A deadline compiles to either Deadline::At or Deadline::Within: give one of ops:deadlineDate and ops:deadlineDuration, not both." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:deadline ?value .
+        ?value ops:deadlineDate ?d ; ops:deadlineDuration ?u .
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Fulfilment comparator {?value} needs an action whose predicate has a signature with exactly one value argument (not an individual) after its key: only such an action has a recorded value to compare (NormError::Type)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:fulfilmentComparator ?value ; deo:action/deo:predicate ?p .
+        FILTER (?value != ops:Equal)
+        FILTER NOT EXISTS {
+          ?sig deo:signaturePredicate ?p ; deo:keyLength ?k ; deo:hasArgumentSlot ?vs .
+          ?vs deo:argumentIndex ?k ; deo:valueType ?vt .
+          FILTER (?vt != deo:Individual)
+          FILTER NOT EXISTS { ?sig deo:hasArgumentSlot/deo:argumentIndex ?j . FILTER (?j > ?k) }
+        }
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Fulfilment comparator {?value} orders the action's value, but that value is a text: texts are only equal or not (NormError::Type)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:fulfilmentComparator ?value ; deo:action/deo:predicate ?p .
+        FILTER (?value NOT IN (ops:Equal, ops:NotEqual))
+        ?sig deo:signaturePredicate ?p ; deo:keyLength ?k ; deo:hasArgumentSlot ?slot .
+        ?slot deo:argumentIndex ?k ; deo:valueType deo:Text .
+      }
+    """ ;
+  ] .
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Reparation
+# ═════════════════════════════════════════════════════════════════════════════
+
+deox:ReparationChainProfile
+  a sh:NodeShape ;
+  sh:targetClass deo:ReparationChain ;
+  sh:sparql [
+    sh:message "Right {?value} compiles to a permission plus its correlative duties, which a reparation chain cannot hold: end the chain with the bearer's deo:Permission and conclude the correlatives in their own rules (NormError::PermissionChain)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:hasChainElement/deo:statement ?value .
+        ?value a deo:Right .
+      }
+    """ ;
+  ] .
+
+deox:ReparationProfile
+  a sh:NodeShape ;
+  sh:targetClass deo:Reparation ;
+
+  sh:sparql [
+    sh:message "Right {?value} compiles to a permission plus its correlative duties, which a reparation (a chain element) cannot impose: impose the bearer's deo:Permission and conclude the correlatives in their own rules (NormError::PermissionChain)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        { $this deo:imposes ?value }
+        UNION { $this deo:imposes/deo:hasChainElement/deo:statement ?value }
+        ?value a deo:Right .
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "A reparation imposing a permission is appended as the last chain element, so it must be the only reparation of {?value}: a permission cannot be violated, so nothing can follow it (NormError::PermissionChain)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT DISTINCT $this ?value WHERE {
+        $this deo:repairs ?value .
+        { $this deo:imposes ?p . ?p a deo:Permission }
+        UNION { $this deo:imposes/deo:hasChainElement/deo:statement ?p . ?p a deo:Permission }
+        ?other deo:repairs ?value .
+        FILTER (?other != $this)
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "A reparation is appended to the chain of each rule concluding the repaired statement, so that statement must be the last element wherever rule {?value} concludes it." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:repairs ?s .
+        ?value deo:hasConsequent ?chain .
+        ?chain deo:hasChainElement ?e , ?later .
+        ?e deo:statement ?s ; deo:position ?p .
+        ?later deo:position ?q .
+        FILTER (?q > ?p)
+      }
+    """ ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Conditions
+# ═════════════════════════════════════════════════════════════════════════════
+
+deox:ComparisonConditionProfile
+  a sh:NodeShape ;
+  sh:targetClass deo:ComparisonCondition ;
+
+  sh:property [
+    sh:path deo:operator ;
+    sh:not [ sh:in ( deo:IsPartOf deo:HasPart deo:IsAllOf ) ] ;
+    sh:severity sh:Violation ;
+    sh:message "G4 (part-of and set operands): HydraDL does not evaluate part-of and all-of comparisons (deo:IsPartOf, deo:HasPart, deo:IsAllOf). Record the outcome as a fact (for example inEU(?x)) and use a deo:FactCondition." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:rightOperandReference ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "G4 (part-of and set operands): HydraDL compares with stated values only, not with a value looked up through deo:rightOperandReference." ;
+  ] ;
+
+  sh:property [
+    sh:path deo:status ;
+    sh:maxCount 0 ;
+    sh:severity sh:Violation ;
+    sh:message "G4 (part-of and set operands): HydraDL does not compare an ODRL status (deo:status), a value generated from the left operand's action at evaluation time. Record the status as a fact and compare that." ;
+  ] .
+
+deox:ComparisonKeyProfile
+  a sh:NodeShape ;
+  sh:targetClass deo:ComparisonCondition ;
+
+  sh:sparql [
+    sh:message "The compiler cannot place the comparison's key: the condition refines no statement with a deo:target, and its rule has no positive class condition whose subject could be the key." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this WHERE {
+        $this deo:operator ?op .
+        FILTER (?op NOT IN (deo:IsPartOf, deo:HasPart, deo:IsAllOf))
+        FILTER NOT EXISTS {
+          ?s deo:target ?t ;
+             (deo:refinement|deo:action/deo:refinement|deo:target/deo:refinement)/(deo:operand|deo:operandCondition)* $this .
+        }
+        FILTER NOT EXISTS {
+          ?r deo:hasCondition/(deo:operand|deo:operandCondition)* $this ;
+             deo:hasCondition ?cc .
+          ?cc a deo:ClassCondition ; deo:subject ?key .
+          FILTER NOT EXISTS { ?cc deo:negated true }
+        }
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "The compiler cannot place the comparison's key: the condition refines no statement with a deo:target, and rule {?value} has positive class conditions on more than one subject, so the key is ambiguous." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT DISTINCT $this ?value WHERE {
+        $this deo:operator ?op .
+        FILTER (?op NOT IN (deo:IsPartOf, deo:HasPart, deo:IsAllOf))
+        FILTER NOT EXISTS {
+          ?s deo:target ?t ;
+             (deo:refinement|deo:action/deo:refinement|deo:target/deo:refinement)/(deo:operand|deo:operandCondition)* $this .
+        }
+        ?value deo:hasCondition/(deo:operand|deo:operandCondition)* $this ;
+               deo:hasCondition ?c1 , ?c2 .
+        ?c1 a deo:ClassCondition ; deo:subject ?k1 .
+        ?c2 a deo:ClassCondition ; deo:subject ?k2 .
+        FILTER NOT EXISTS { ?c1 deo:negated true }
+        FILTER NOT EXISTS { ?c2 deo:negated true }
+        FILTER (?k1 != ?k2)
+      }
+    """ ;
+  ] .
+
+deox:LogicalConditionProfile
+  a sh:NodeShape ;
+  sh:targetClass deo:LogicalCondition ;
+  sh:property [
+    sh:path deo:logicalOperator ;
+    sh:not [ sh:hasValue deo:AndSequence ] ;
+    sh:severity sh:Violation ;
+    sh:message "G5: HydraDL does not evaluate and-in-sequence (order in time between conditions)." ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Literals and signatures
+# ═════════════════════════════════════════════════════════════════════════════
+
+deox:LiteralSignatureProfile
+  a sh:NodeShape ;
+  sh:targetClass deo:Literal ;
+
+  sh:sparql [
+    sh:message "Predicate {?value} has a signature with a different number of arguments than this literal (NormError::Arity)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT DISTINCT $this ?value WHERE {
+        $this deo:predicate ?value .
+        ?sig deo:signaturePredicate ?value .
+        { ?sig deo:hasArgumentSlot/deo:argumentIndex ?i .
+          FILTER NOT EXISTS { $this deo:hasArgument/deo:argumentIndex ?i } }
+        UNION
+        { $this deo:hasArgument/deo:argumentIndex ?i .
+          FILTER NOT EXISTS { ?sig deo:hasArgumentSlot/deo:argumentIndex ?i } }
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Quantity {?value} is negated: it has one value per key, so state a comparison of its value instead, or block a value with a defeater (NormError::NegatedQuantity)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:negated true ; deo:predicate ?value .
+        ?sig deo:signaturePredicate ?value ; deo:isQuantity true .
+        FILTER NOT EXISTS { ?r deo:strength deo:DefeaterStrength ; deo:concludes $this }
+      }
+    """ ;
+  ] ;
+
+  sh:sparql [
+    sh:message "Argument {?value} is an individual where the predicate's signature expects a value: a value argument is a variable, bound by a fact, an assignment or an aggregate (NormError::Type)." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:predicate ?p ; deo:hasArgument ?a .
+        ?a deo:argumentIndex ?i ; deo:argumentValue ?value .
+        ?sig deo:signaturePredicate ?p ; deo:hasArgumentSlot ?slot .
+        ?slot deo:argumentIndex ?i ; deo:valueType ?t .
+        FILTER (?t != deo:Individual)
+        FILTER NOT EXISTS { ?value a deo:Variable }
+      }
+    """ ;
+  ] .
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Warnings (SHACL takes the severity from the shape)
+# ═════════════════════════════════════════════════════════════════════════════
+
+deox:LiteralProfile
+  a sh:NodeShape ;
+  sh:targetClass deo:Literal ;
+  sh:severity sh:Warning ;
+  sh:sparql [
+    sh:message "Predicate {?value} is used with different numbers of arguments; HydraDL treats each arity as a different atom." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:predicate ?value .
+        ?other deo:predicate ?value .
+        FILTER (?other != $this)
+        { SELECT $this (COUNT(?a) AS ?n) WHERE { $this deo:predicate ?p1 . OPTIONAL { $this deo:hasArgument ?a } } GROUP BY $this }
+        { SELECT ?other (COUNT(?b) AS ?m) WHERE { ?other deo:predicate ?p2 . OPTIONAL { ?other deo:hasArgument ?b } } GROUP BY ?other }
+        FILTER (?n != ?m)
+      }
+    """ ;
+  ] .
+
+deox:NormConditionProfileWarning
+  a sh:NodeShape ;
+  sh:targetClass deo:NormCondition ;
+  sh:severity sh:Warning ;
+  sh:sparql [
+    sh:message "No rule concludes {?value}, so this condition is never established." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:aboutStatement ?value .
+        FILTER NOT EXISTS { ?r deo:hasConsequent ?value }
+        FILTER NOT EXISTS { ?r deo:hasConsequent/deo:hasChainElement/deo:statement ?value }
+        FILTER NOT EXISTS { ?x deo:imposes ?value }
+      }
+    """ ;
+  ] .
+
+deox:ReparationProfileWarning
+  a sh:NodeShape ;
+  sh:targetClass deo:Reparation ;
+  sh:severity sh:Warning ;
+  sh:sparql [
+    sh:message "No rule concludes the repaired statement, so the reparation never applies." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this WHERE {
+        $this deo:repairs ?s .
+        FILTER NOT EXISTS { ?r deo:hasConsequent ?s }
+        FILTER NOT EXISTS { ?r deo:hasConsequent/deo:hasChainElement/deo:statement ?s }
+      }
+    """ ;
+  ] .
+
+deox:DeonticStatementProfileWarning
+  a sh:NodeShape ;
+  sh:targetClass deo:DeonticStatement ;
+  sh:severity sh:Warning ;
+  sh:sparql [
+    sh:message "A prohibition of a negated action is an obligation to perform it: state a deo:Obligation instead." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this WHERE { $this a deo:Prohibition ; deo:action/deo:negated true . }
+    """ ;
+  ] .
+
+deox:NormativeSystemProfileWarning
+  a sh:NodeShape ;
+  sh:targetClass deo:NormativeSystem ;
+  sh:severity sh:Warning ;
+  sh:sparql [
+    sh:message "An Offer or Request grants and imposes nothing until accepted: every rule of {$this} evaluates as not in force." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this WHERE { $this deo:policyType ?t . FILTER (?t IN (deo:Offer, deo:Request)) }
+    """ ;
+  ] .
+
+deox:ComparisonConditionProfileWarning
+  a sh:NodeShape ;
+  sh:targetClass deo:ComparisonCondition ;
+  sh:severity sh:Warning ;
+
+  sh:sparql [
+    sh:message "Left operand {?value} has no signature with one key argument and a value after it: the compiler cannot type the comparison's value fact." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:leftOperand ?value ; deo:operator ?op .
+        FILTER (?op NOT IN (deo:IsA, deo:IsPartOf, deo:HasPart, deo:IsAllOf))
+        FILTER NOT EXISTS {
+          ?sig deo:signaturePredicate ?value ; deo:keyLength 1 ; deo:hasArgumentSlot ?slot .
+          ?slot deo:argumentIndex 1 ; deo:valueType ?t .
+          FILTER (?t != deo:Individual)
+        }
+      }
+    """ ;
+  ] .
+
+deox:NormativeSystemProfileWarning2
+  a sh:NodeShape ;
+  sh:targetClass deo:NormativeSystem ;
+  sh:severity sh:Warning ;
+  sh:sparql [
+    sh:message "Alternatives {?value} adopt no rule: the compiler produces one NormSystem per alternative and reports each." ;
+    sh:prefixes <https://w3id.org/ldso/deontic/hydradl-profile> ;
+    sh:select """
+      SELECT $this ?value WHERE {
+        $this deo:hasAlternatives ?value .
+        FILTER NOT EXISTS { ?value deo:adopted ?a }
+      }
+    """ ;
+  ] .
